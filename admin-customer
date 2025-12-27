@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+            </a>
+            <a href="admin-products.html" class="sidebar-link">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link active">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+            <h2 class="topbar-title">Customer Management</h2>
+            <div class="topbar-right">
+                <button class="btn btn-outline" onclick="exportCustomers()">
+                    📄 Export Customers
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- CUSTOMER STATS -->
+            <div class="stats-row">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-total-customers">0</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-repeat-customers">0</div>
+                        <div class="stat-label">Repeat Customers</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-avg-order-value">$0</div>
+                        <div class="stat-label">Avg Order Value</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-top-customer">—</div>
+                        <div class="stat-label">Top Customer</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEARCH -->
+            <div class="filters-bar">
+                <div class="filter-group" style="flex: 1;">
+                    <label>Search Customers:</label>
+                    <input type="text" class="form-input" id="customer-search" placeholder="Search by name, phone, or address..." onkeyup="filterCustomers()">
+                </div>
+                <div class="filter-group">
+                    <label>Sort By:</label>
+                    <select class="form-input" id="customer-sort" onchange="filterCustomers()">
+                        <option value="recent">Most Recent</option>
+                        <option value="orders">Most Orders</option>
+                        <option value="spent">Highest Spent</option>
+                        <option value="name">Name (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CUSTOMERS GRID -->
+            <div class="drivers-grid" id="customers-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <script src="main.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Initialize customers page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCustomersGrid();
+            updateCustomerStats();
+        });
+        
+        function updateCustomerStats() {
+            const customerMap = getCustomerMap();
+            const customers = Array.from(customerMap.values());
+            
+            const totalCustomers = customers.length;
+            const repeatCustomers = customers.filter(c => c.orders.length > 1).length;
+            const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
+            const avgOrderValue = totalCustomers > 0 ? totalRevenue / customers.reduce((sum, c) => sum + c.orders.length, 0) : 0;
+            
+            // Find top customer
+            const topCustomer = customers.sort((a, b) => b.totalSpent - a.totalSpent)[0];
+            
+            setElementText('stat-total-customers', totalCustomers);
+            setElementText('stat-repeat-customers', repeatCustomers);
+            setElementText('stat-avg-order-value', '$' + avgOrderValue.toFixed(2));
+            setElementText('stat-top-customer', topCustomer ? topCustomer.name.split(' ')[0] : '—');
+        }
+        
+        function getCustomerMap() {
+            const customerMap = new Map();
+            
+            adminOrders.forEach(order => {
+                if (!customerMap.has(order.phone)) {
+                    customerMap.set(order.phone, {
+                        name: order.name,
+                        phone: order.phone,
+                        email: order.email,
+                        address: order.address,
+                        orders: [],
+                        totalSpent: 0
+                    });
+                }
+                
+                const customer = customerMap.get(order.phone);
+                customer.orders.push(order);
+                customer.totalSpent += parseFloat(order.total);
+            });
+            
+            return customerMap;
+        }
+        
+        function filterCustomers() {
+            renderCustomersGrid();
+        }
+        
+        function exportCustomers() {
+            const customerMap = getCustomerMap();
+            const customers = Array.from(customerMap.values());
+            
+            if (customers.length === 0) {
+                showAdminToast('No customers to export', 'warning');
+                return;
+            }
+            
+            const headers = ['Name', 'Phone', 'Email', 'Address', 'Total Orders', 'Total Spent'];
+            const rows = customers.map(c => [
+                c.name,
+                c.phone,
+                c.email || '',
+                `"${c.address.replace(/"/g, '""')}"`,
+                c.orders.length,
+                '$' + c.totalSpent.toFixed(2)
+            ]);
+            
+            const csvContent = [headers, ...rows]
+                .map(row => row.join(','))
+                .join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'customers.csv';
+            link.click();
+            
+            showAdminToast(`Exported ${customers.length} customers`, 'success');
+        }
+    </script>
+</body>
+</html>
