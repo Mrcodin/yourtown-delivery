@@ -5,34 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hometown Grocery Delivery - Your Neighbors, Your Groceries</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- ACCESSIBILITY TOOLBAR -->
-    <div class="accessibility-toolbar">
-        <button onclick="toggleLargeText()" id="text-size-btn">🔤 Larger Text</button>
-        <button onclick="toggleContrast()" id="contrast-btn">🌓 High Contrast</button>
-        <button onclick="speakPage()" id="speak-btn">🔊 Read Page</button>
+    <div class="accessibility-bar">
+        <div class="container accessibility-container">
+            <span>Accessibility:</span>
+            <button onclick="toggleLargeText()" id="text-size-btn" class="access-btn">🔤 Larger Text</button>
+            <button onclick="toggleContrast()" id="contrast-btn" class="access-btn">🌓 High Contrast</button>
+            <button onclick="speakPage()" id="speak-btn" class="access-btn">🔊 Read Aloud</button>
+        </div>
     </div>
 
-    <!-- FLOATING CALL BUTTON -->
-    <a href="tel:555-LOCAL-01" class="floating-call">📞 Call to Order</a>
-
-    <!-- MAIN PHONE BAR -->
+    <!-- PHONE BAR -->
     <div class="phone-bar">
-        📞 <strong>Prefer to Call?</strong> Order by phone: <a href="tel:555-LOCAL-01">555-LOCAL-01</a> | 
-        M-F 8am-6pm, Sat 9am-3pm
+        <div class="container">
+            📞 <strong>Prefer to Call?</strong> 
+            <a href="tel:555-123-4567">555-123-4567</a> | 
+            Mon-Fri 8am-6pm, Sat 9am-3pm
+        </div>
     </div>
 
     <!-- HEADER -->
-    <header class="site-header">
-        <div class="container">
-            <h1 class="logo">🛒 Hometown Delivery</h1>
-            <nav>
-                <a href="index.html" class="active">Home</a>
-                <a href="shop.html">Shop</a>
-                <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
-                <a href="status.html">Track Order</a>
-                <a href="about.html">About Us</a>
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="shop.html" class="nav-link">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </a>
+                <a href="track.html" class="nav-link">Track Order</a>
+                <a href="about.html" class="nav-link">About Us</a>
             </nav>
         </div>
     </header>
@@ -40,135 +51,275 @@
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="container">
-            <h2>Groceries Delivered by Your Neighbors</h2>
-            <p class="subtitle">Serving [YOUR TOWN] seniors since 2024. Trusted by 300+ local families.</p>
-            
-            <div class="cta-buttons">
-                <a href="shop.html" class="btn btn-primary btn-large">🛍️ Start Shopping</a>
-                <a href="tel:555-LOCAL-01" class="btn btn-secondary btn-large">📞 Call Now</a>
-            </div>
+            <div class="hero-content">
+                <h1 class="hero-title">Groceries Delivered by Your Neighbors</h1>
+                <p class="hero-subtitle">
+                    No confusing apps. No strangers from far away. 
+                    Just local people helping local seniors in [YOUR TOWN].
+                </p>
+                
+                <div class="hero-buttons">
+                    <a href="shop.html" class="btn btn-primary btn-xl">
+                        🛍️ Start Shopping
+                    </a>
+                    <a href="tel:555-123-4567" class="btn btn-secondary btn-xl">
+                        📞 Call to Order
+                    </a>
+                </div>
 
-            <div class="trust-stats">
-                <div class="stat">
+                <div class="trust-badges">
+                    <div class="badge">✓ Same Day Delivery</div>
+                    <div class="badge">✓ Cash Accepted</div>
+                    <div class="badge">✓ Local Drivers</div>
+                    <div class="badge">✓ Senior Friendly</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
                     <div class="stat-number">500+</div>
                     <div class="stat-label">Deliveries Made</div>
                 </div>
-                <div class="stat">
+                <div class="stat-card">
                     <div class="stat-number">12</div>
                     <div class="stat-label">Local Drivers</div>
                 </div>
-                <div class="stat">
+                <div class="stat-card">
                     <div class="stat-number">4.9★</div>
                     <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2 hrs</div>
+                    <div class="stat-label">Avg Delivery Time</div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- HOW IT WORKS -->
-    <section class="how-it-works">
+    <section class="section how-it-works">
         <div class="container">
-            <h2>How It Works (3 Simple Steps)</h2>
-            <div class="steps">
-                <div class="step">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">3 Simple Steps to Get Your Groceries</p>
+            
+            <div class="steps-grid">
+                <div class="step-card">
                     <div class="step-number">1</div>
-                    <h3>Shop Online or Call</h3>
-                    <p>Browse our store with big pictures, or call us and we'll shop for you.</p>
-                    <small>💡 Tip: Save your "Usual Order" for one-click reordering!</small>
+                    <div class="step-icon">🛒</div>
+                    <h3 class="step-title">Shop Online or Call</h3>
+                    <p class="step-description">
+                        Browse our store with big pictures, or simply call us and we'll take your order over the phone.
+                    </p>
+                    <div class="step-tip">
+                        💡 Tip: Use "My Usual Order" for one-click reordering!
+                    </div>
                 </div>
-                <div class="step">
+                
+                <div class="step-card">
                     <div class="step-number">2</div>
-                    <h3>We Shop & Deliver Today</h3>
-                    <p>Your personal shopper calls to confirm, then delivers within 2 hours.</p>
-                    <small>📲 You'll get texts at each step!</small>
+                    <div class="step-icon">📱</div>
+                    <h3 class="step-title">We Confirm & Shop</h3>
+                    <p class="step-description">
+                        A real person calls you to confirm your order, then shops for your items at the local store.
+                    </p>
+                    <div class="step-tip">
+                        📲 You'll get text updates at every step!
+                    </div>
                 </div>
-                <div class="step">
+                
+                <div class="step-card">
                     <div class="step-number">3</div>
-                    <h3>Pay How You Want</h3>
-                    <p>Pay with card online, or give cash/check to your driver.</p>
-                    <small>🚪 Contactless delivery available</small>
+                    <div class="step-icon">🚗</div>
+                    <h3 class="step-title">Delivered to Your Door</h3>
+                    <p class="step-description">
+                        Your friendly neighborhood driver delivers within 2 hours. Pay with card, cash, or check!
+                    </p>
+                    <div class="step-tip">
+                        🚪 Contactless delivery available
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- FEATURES -->
-    <section class="senior-features">
+    <section class="section features-section">
         <div class="container">
-            <h2>Built for Our Community</h2>
+            <h2 class="section-title">Built for Our Community</h2>
+            <p class="section-subtitle">Features designed with seniors in mind</p>
+            
             <div class="features-grid">
-                <div class="feature">
-                    <h3>🔁 "My Usual Order"</h3>
-                    <p>One-click reorder of bread, milk, eggs, and everything you get every week.</p>
+                <div class="feature-card">
+                    <div class="feature-icon">🔁</div>
+                    <h3 class="feature-title">"My Usual Order"</h3>
+                    <p class="feature-description">
+                        One-click reorder of bread, milk, eggs, and everything you get every week.
+                    </p>
                 </div>
-                <div class="feature">
-                    <h3>📸 Picture Menu</h3>
-                    <p>See exactly what you're buying - no squinting at small text.</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3 class="feature-title">Picture Menu</h3>
+                    <p class="feature-description">
+                        See exactly what you're buying with big, clear photos of every item.
+                    </p>
                 </div>
-                <div class="feature">
-                    <h3>📞 Real People</h3>
-                    <p>Stuck? Call us and a neighbor helps you complete your order.</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3 class="feature-title">Real People</h3>
+                    <p class="feature-description">
+                        Call us anytime and a real neighbor helps you complete your order.
+                    </p>
                 </div>
-                <div class="feature">
-                    <h3>💵 Cash Welcome</h3>
-                    <p>Don't like credit cards? Just pay your driver with cash.</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💵</div>
+                    <h3 class="feature-title">Cash Welcome</h3>
+                    <p class="feature-description">
+                        Don't like credit cards? Just pay your driver with cash or check.
+                    </p>
                 </div>
-                <div class="feature">
-                    <h3>🔄 Smart Substitutions</h3>
-                    <p>Tell us your preferences - we'll call if something is out of stock.</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Smart Substitutions</h3>
+                    <p class="feature-description">
+                        Tell us your preferences - we'll call if something is out of stock.
+                    </p>
                 </div>
-                <div class="feature">
-                    <h3>📱 Text Updates</h3>
-                    <p>Get texts when we start shopping, when we leave, and when we arrive.</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Text Updates</h3>
+                    <p class="feature-description">
+                        Get texts when we start shopping, when we leave, and when we arrive.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- TESTIMONIALS -->
-    <section class="testimonials">
+    <section class="section testimonials-section">
         <div class="container">
-            <h2>What Our Neighbors Say</h2>
-            <div class="testimonial-grid">
-                <div class="testimonial">
-                    <div class="stars">★★★★★</div>
-                    <p>"I can't drive anymore. Hometown Delivery is a lifesaver! Mary, my driver, even puts my groceries on the kitchen counter."</p>
-                    <div class="author">- Margaret R., Age 78</div>
+            <h2 class="section-title">What Our Neighbors Say</h2>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">
+                        "I can't drive anymore. Hometown Delivery is a lifesaver! Mary, my driver, even puts my groceries on the kitchen counter."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">MR</div>
+                        <div class="author-info">
+                            <div class="author-name">Margaret R.</div>
+                            <div class="author-detail">Age 78, Customer since 2023</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="testimonial">
-                    <div class="stars">★★★★★</div>
-                    <p>"So easy! I just call and read my list. They deliver the same day and I pay with cash. Much better than those big city apps."</p>
-                    <div class="author">- Robert T., Age 82</div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">
+                        "So easy! I just call and read my list. They deliver the same day and I pay with cash. Much better than those big city apps."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">RT</div>
+                        <div class="author-info">
+                            <div class="author-name">Robert T.</div>
+                            <div class="author-detail">Age 82, Customer since 2023</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">
+                        "My daughter set this up for me. Now I order every week. The drivers are so kind and patient. Worth every penny!"
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">EB</div>
+                        <div class="author-info">
+                            <div class="author-name">Eleanor B.</div>
+                            <div class="author-detail">Age 85, Customer since 2024</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Ready to Get Started?</h2>
+            <p class="cta-subtitle">Your first delivery is on us! Use code NEIGHBOR at checkout.</p>
+            <div class="cta-buttons">
+                <a href="shop.html" class="btn btn-white btn-xl">🛍️ Shop Now</a>
+                <a href="tel:555-123-4567" class="btn btn-outline-white btn-xl">📞 Call Us</a>
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER -->
-    <footer>
+    <footer class="footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
-                    <h3>Hometown Delivery</h3>
+                <div class="footer-column">
+                    <h3 class="footer-title">🛒 Hometown Delivery</h3>
                     <p>Serving [YOUR TOWN] with ❤️</p>
-                    <p>📍 [Your Business Address]</p>
+                    <p>📍 123 Main Street</p>
+                    <p>[YOUR TOWN], State 12345</p>
                 </div>
-                <div>
-                    <h3>Quick Links</h3>
-                    <p><a href="about.html">About Us</a></p>
-                    <p><a href="drivers.html">Become a Driver</a></p>
-                    <p><a href="status.html">Track Order</a></p>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="shop.html">Shop Groceries</a></li>
+                        <li><a href="track.html">Track My Order</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="drivers.html">Become a Driver</a></li>
+                    </ul>
                 </div>
-                <div>
-                    <h3>Contact</h3>
-                    <p>📞 <a href="tel:555-LOCAL-01">555-LOCAL-01</a></p>
-                    <p>📧 orders@hometowndelivery.com</p>
-                    <p>Hours: M-F 8am-6pm, Sat 9am-3pm</p>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-links">
+                        <li>📞 <a href="tel:555-123-4567">555-123-4567</a></li>
+                        <li>📧 <a href="mailto:orders@hometown.com">orders@hometown.com</a></li>
+                        <li>Hours: Mon-Fri 8am-6pm</li>
+                        <li>Saturday 9am-3pm</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Safety & Trust</h3>
+                    <ul class="footer-links">
+                        <li>✅ Background Checked Drivers</li>
+                        <li>✅ Fully Insured</li>
+                        <li>✅ Satisfaction Guaranteed</li>
+                        <li>✅ Secure Payments</li>
+                    </ul>
                 </div>
             </div>
-            <p style="margin-top: 30px;">&copy; 2024 Hometown Grocery Delivery | Insured & Background Checked Drivers</p>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Hometown Grocery Delivery. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
+    <!-- FLOATING CALL BUTTON -->
+    <a href="tel:555-123-4567" class="floating-call-btn">
+        📞 Call Now
+    </a>
 
     <script src="main.js"></script>
 </body>
