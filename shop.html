@@ -5,47 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop Groceries - Hometown Delivery</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- PHONE BAR -->
     <div class="phone-bar">
-        📞 Need Help? <a href="tel:555-LOCAL-01">555-LOCAL-01</a>
+        <div class="container">
+            📞 Need help ordering? Call <a href="tel:555-123-4567">555-123-4567</a>
+        </div>
     </div>
 
-    <header class="site-header">
-        <div class="container">
-            <h1 class="logo">🛒 Hometown Delivery</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="shop.html" class="active">Shop Groceries</a>
-                <a href="cart.html">My Cart (<span id="cart-count">0</span>)</a>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="shop.html" class="nav-link active">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </a>
+                <a href="track.html" class="nav-link">Track Order</a>
+                <a href="about.html" class="nav-link">About Us</a>
             </nav>
         </div>
     </header>
 
-    <main class="container">
-        <div class="page-header">
-            <h2>Shop for Groceries</h2>
-            <button onclick="loadUsualOrder()" class="btn btn-secondary">🔁 Load My Usual Order</button>
-        </div>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="container">
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h1 class="page-title">Shop Groceries</h1>
+                    <p class="page-subtitle">Fresh items from [LOCAL STORE NAME]</p>
+                </div>
+                <div class="page-header-right">
+                    <button onclick="loadUsualOrder()" class="btn btn-secondary">
+                        🔁 Load My Usual Order
+                    </button>
+                </div>
+            </div>
 
-        <!-- CATEGORIES -->
-        <div class="categories">
-            <button class="category-btn active" onclick="filterCategory('all')">All Items</button>
-            <button class="category-btn" onclick="filterCategory('produce')">🥬 Produce</button>
-            <button class="category-btn" onclick="filterCategory('dairy')">🥛 Dairy</button>
-            <button class="category-btn" onclick="filterCategory('bakery')">🍞 Bakery</button>
-            <button class="category-btn" onclick="filterCategory('pantry')">🥫 Pantry</button>
-        </div>
+            <!-- SEARCH BAR -->
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="🔍 Search for items (e.g., milk, bread, eggs...)"
+                    onkeyup="searchItems()"
+                >
+            </div>
 
-        <!-- GROCERY GRID -->
-        <div class="grocery-grid" id="grocery-grid">
-            <!-- Items will be populated by JavaScript -->
+            <!-- CATEGORIES -->
+            <div class="categories-container">
+                <button class="category-btn active" onclick="filterCategory('all', this)">
+                    🏪 All Items
+                </button>
+                <button class="category-btn" onclick="filterCategory('produce', this)">
+                    🥬 Produce
+                </button>
+                <button class="category-btn" onclick="filterCategory('dairy', this)">
+                    🥛 Dairy & Eggs
+                </button>
+                <button class="category-btn" onclick="filterCategory('bakery', this)">
+                    🍞 Bakery
+                </button>
+                <button class="category-btn" onclick="filterCategory('meat', this)">
+                    🥩 Meat
+                </button>
+                <button class="category-btn" onclick="filterCategory('pantry', this)">
+                    🥫 Pantry
+                </button>
+                <button class="category-btn" onclick="filterCategory('frozen', this)">
+                    🧊 Frozen
+                </button>
+                <button class="category-btn" onclick="filterCategory('beverages', this)">
+                    🥤 Beverages
+                </button>
+            </div>
+
+            <!-- ITEM COUNT -->
+            <div class="results-info">
+                <span id="results-count">Showing all items</span>
+            </div>
+
+            <!-- GROCERY GRID -->
+            <div class="grocery-grid" id="grocery-grid">
+                <!-- Items loaded by JavaScript -->
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <div class="empty-icon">🔍</div>
+                <h3>No items found</h3>
+                <p>Try a different search or category</p>
+                <button onclick="filterCategory('all')" class="btn btn-primary">View All Items</button>
+            </div>
         </div>
     </main>
 
-    <footer>
+    <!-- CART PREVIEW -->
+    <div class="cart-preview" id="cart-preview">
+        <div class="cart-preview-content">
+            <div class="cart-preview-info">
+                <span class="cart-preview-count"><span id="preview-count">0</span> items</span>
+                <span class="cart-preview-total">$<span id="preview-total">0.00</span></span>
+            </div>
+            <a href="cart.html" class="btn btn-primary">View Cart & Checkout</a>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer footer-simple">
         <div class="container">
-            <p>&copy; 2024 Hometown Grocery Delivery</p>
+            <p>&copy; 2024 Hometown Grocery Delivery | 📞 <a href="tel:555-123-4567">555-123-4567</a></p>
         </div>
     </footer>
 
