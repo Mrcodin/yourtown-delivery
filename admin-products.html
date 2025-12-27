@@ -1,1 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+            </a>
+            <a href="admin-products.html" class="sidebar-link active">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+        </div>
+    </aside>
 
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+            <h2 class="topbar-title">Product Management</h2>
+            <div class="topbar-right">
+                <button class="btn btn-primary" onclick="openAddProductModal()">
+                    ➕ Add Product
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- FILTERS -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select class="form-input" id="filter-category" onchange="filterProducts()">
+                        <option value="all">All Categories</option>
+                        <option value="bakery">🍞 Bakery</option>
+                        <option value="dairy">🥛 Dairy & Eggs</option>
+                        <option value="produce">🥬 Produce</option>
+                        <option value="meat">🥩 Meat</option>
+                        <option value="pantry">🥫 Pantry</option>
+                        <option value="frozen">🧊 Frozen</option>
+                        <option value="beverages">🥤 Beverages</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select class="form-input" id="filter-product-status" onchange="filterProducts()">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                        <option value="hidden">Hidden</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Search:</label>
+                    <input type="text" class="form-input" id="filter-product-search" placeholder="Search products..." onkeyup="filterProducts()">
+                </div>
+            </div>
+
+            <!-- PRODUCT STATS -->
+            <div class="order-stats">
+                <div class="order-stat">
+                    <span class="order-stat-count" id="count-total-products">0</span>
+                    <span class="order-stat-label">Total Products</span>
+                </div>
+                <div class="order-stat delivered">
+                    <span class="order-stat-count" id="count-active-products">0</span>
+                    <span class="order-stat-label">Active</span>
+                </div>
+                <div class="order-stat new">
+                    <span class="order-stat-count" id="count-out-of-stock">0</span>
+                    <span class="order-stat-label">Out of Stock</span>
+                </div>
+            </div>
+
+            <!-- PRODUCTS GRID -->
+            <div class="products-admin-grid" id="products-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- ADD/EDIT PRODUCT MODAL -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="product-modal-title">Add New Product</h2>
+                <button class="modal-close" onclick="closeModal('product-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="product-form">
+                    <input type="hidden" id="product-id">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Product Name *</label>
+                        <input type="text" class="form-input" id="product-name" required placeholder="e.g., Whole Milk (1 gallon)">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Price *</label>
+                            <input type="number" class="form-input" id="product-price" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category *</label>
+                            <select class="form-input" id="product-category" required>
+                                <option value="">Select category...</option>
+                                <option value="bakery">🍞 Bakery</option>
+                                <option value="dairy">🥛 Dairy & Eggs</option>
+                                <option value="produce">🥬 Produce</option>
+                                <option value="meat">🥩 Meat</option>
+                                <option value="pantry">🥫 Pantry</option>
+                                <option value="frozen">🧊 Frozen</option>
+                                <option value="beverages">🥤 Beverages</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Emoji Icon</label>
+                            <input type="text" class="form-input" id="product-emoji" placeholder="🥛">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" id="product-status">
+                                <option value="active">Active</option>
+                                <option value="out-of-stock">Out of Stock</option>
+                                <option value="hidden">Hidden</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Image URL (optional)</label>
+                        <input type="url" class="form-input" id="product-image" placeholder="https://...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description (optional)</label>
+                        <textarea class="form-input form-textarea" id="product-description" placeholder="Product description..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('product-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
