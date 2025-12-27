@@ -1,0 +1,7 @@
+{
+  "items": [
+    {"id": 1, "name": "Wonder Bread (1 loaf)", "price": 2.99, "category": "bakery", "image": "bread.jpg"},
+    {"id": 2, "name": "Dean's Milk (1 gallon)", "price": 3.49, "category": "dairy", "image": "milk.jpg"},
+    {"id": 3, "name": "Eggland's Best Eggs (1 dozen)", "price": 3.29, "category": "dairy", "image": "eggs.jpg"}
+  ]
+}
