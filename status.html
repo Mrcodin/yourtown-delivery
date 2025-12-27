@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Your Order - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="phone-bar">📞 <a href="tel:555-LOCAL-01">555-LOCAL-01</a></div>
+    
+    <header class="site-header">
+        <div class="container">
+            <h1 class="logo">🛒 Hometown Delivery</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+                <a href="status.html" class="active">Track Order</a>
+                <a href="about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 50px 20px; text-align: center;">
+        <h2>Track Your Order</h2>
+        <p style="font-size: 22px; margin: 20px 0;">Enter your phone number to see your order status</p>
+        
+        <div style="max-width: 500px; margin: 0 auto;">
+            <input type="tel" id="track-phone" placeholder="555-123-4567" style="font-size: 24px; margin-bottom: 20px;">
+            <button onclick="trackOrder()" class="btn btn-primary btn-large" style="width: 100%;">Track My Order</button>
+        </div>
+
+        <div id="order-status" style="display: none; margin-top: 40px; text-align: left;">
+            <div class="status-timeline">
+                <div class="status-item completed">
+                    <div class="status-icon">✓</div>
+                    <div class="status-content">
+                        <h3>Order Placed</h3>
+                        <p>Your order was received at <span id="order-time"></span></p>
+                        <small id="order-details"></small>
+                    </div>
+                </div>
+                <div class="status-item" id="status-confirmed">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-content">
+                        <h3>Order Confirmed</h3>
+                        <p>Your shopper will call you at <span id="shopper-call"></span></p>
+                    </div>
+                </div>
+                <div class="status-item" id="status-shopping">
+                    <div class="status-icon">🛒</div>
+                    <div class="status-content">
+                        <h3>Shopping Now</h3>
+                        <p><span id="shopper-name"></span> is shopping for your items</p>
+                    </div>
+                </div>
+                <div class="status-item" id="status-delivering">
+                    <div class="status-icon">🚗</div>
+                    <div class="status-content">
+                        <h3>On the Way</h3>
+                        <p>Estimated arrival: <span id="eta"></span></p>
+                        <small>Driver: <span id="driver-info"></span></small>
+                    </div>
+                </div>
+                <div class="status-item" id="status-delivered">
+                    <div class="status-icon">✅</div>
+                    <div class="status-content">
+                        <h3>Delivered</h3>
+                        <p>Your groceries were delivered at <span id="delivery-time"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Hometown Grocery Delivery</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
