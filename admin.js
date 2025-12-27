@@ -1003,8 +1003,707 @@ function viewDriverDetail(driverId) {
     setElementText('driver-detail-email', driver.email || '—');
     setElementText('driver-detail-vehicle', driver.vehicle);
     
-    // Recent deliveries
+        // Recent deliveries
     const recentDeliveries = document.getElementById('driver-recent-deliveries');
     const driverName = `${driver.firstName} ${driver.lastName[0]}.`;
     const driverOrders = adminOrders.filter(o => o.driver === driverName).slice(0, 3);
     
+    if (recentDeliveries) {
+        if (driverOrders.length === 0) {
+            recentDeliveries.innerHTML = '<p class="empty-message">No recent deliveries</p>';
+        } else {
+            recentDeliveries.innerHTML = driverOrders.map(order => `
+                <div class="order-item" style="cursor: default;">
+                    <div class="order-id">${order.id}</div>
+                    <div class="order-customer">
+                        <div class="order-customer-name">${order.name}</div>
+                        <div class="order-customer-address">${formatTime(order.timestamp)}</div>
+                    </div>
+                    <div class="order-amount">$${order.total}</div>
+                    <div class="order-status ${order.status}">${formatStatus(order.status)}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    openModal('driver-detail-modal');
+}
+
+function callDriver(driverId) {
+    const driver = drivers.find(d => d.id === driverId);
+    if (driver) {
+        window.location.href = 'tel:' + driver.phone;
+    }
+}
+
+function deactivateDriver() {
+    const driverId = document.getElementById('driver-id')?.value;
+    if (!driverId) {
+        showAdminToast('No driver selected', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to deactivate this driver?')) return;
+    
+    const driver = drivers.find(d => d.id === parseInt(driverId));
+    if (driver) {
+        driver.status = 'inactive';
+        showAdminToast('Driver deactivated', 'warning');
+        closeModal('driver-detail-modal');
+        renderDriversGrid();
+        updateDriverStats();
+    }
+}
+
+// ============ CUSTOMERS PAGE ============
+
+function initCustomersPage() {
+    renderCustomersGrid();
+}
+
+function renderCustomersGrid() {
+    const container = document.getElementById('customers-grid');
+    if (!container) return;
+    
+    // Generate customers from orders
+    const customerMap = new Map();
+    
+    adminOrders.forEach(order => {
+        if (!customerMap.has(order.phone)) {
+            customerMap.set(order.phone, {
+                name: order.name,
+                phone: order.phone,
+                email: order.email,
+                address: order.address,
+                orders: [],
+                totalSpent: 0
+            });
+        }
+        
+        const customer = customerMap.get(order.phone);
+        customer.orders.push(order);
+        customer.totalSpent += parseFloat(order.total);
+    });
+    
+    const customersArray = Array.from(customerMap.values());
+    
+    if (customersArray.length === 0) {
+        container.innerHTML = `
+            <div class="admin-empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>No Customers Yet</h3>
+                <p>Customers will appear here after their first order.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = customersArray.map(customer => `
+        <div class="customer-card">
+            <div class="customer-header">
+                <div class="customer-avatar">${getInitials(customer.name)}</div>
+                <div class="customer-info">
+                    <h3>${customer.name}</h3>
+                    <p>${customer.phone}</p>
+                </div>
+            </div>
+            
+            <div class="customer-stats">
+                <div class="customer-stat">
+                    <div class="customer-stat-value">${customer.orders.length}</div>
+                    <div class="customer-stat-label">Orders</div>
+                </div>
+                <div class="customer-stat">
+                    <div class="customer-stat-value">$${customer.totalSpent.toFixed(2)}</div>
+                    <div class="customer-stat-label">Total Spent</div>
+                </div>
+            </div>
+            
+            <div class="driver-card-details">
+                <div class="driver-detail-row">
+                    <span>Email</span>
+                    <span>${customer.email || '—'}</span>
+                </div>
+                <div class="driver-detail-row">
+                    <span>Address</span>
+                    <span>${truncateText(customer.address, 25)}</span>
+                </div>
+                <div class="driver-detail-row">
+                    <span>Last Order</span>
+                    <span>${formatDate(customer.orders[0]?.timestamp)}</span>
+                </div>
+            </div>
+            
+            <div class="driver-card-actions">
+                <button class="btn btn-outline btn-sm" onclick="viewCustomerOrders('${customer.phone}')">View Orders</button>
+                <button class="btn btn-outline btn-sm" onclick="callCustomerDirect('${customer.phone}')">📞 Call</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function viewCustomerOrders(phone) {
+    // Navigate to orders page with filter
+    window.location.href = `admin-orders.html?search=${encodeURIComponent(phone)}`;
+}
+
+function callCustomerDirect(phone) {
+    window.location.href = 'tel:' + phone;
+}
+
+// ============ REPORTS PAGE ============
+
+function initReportsPage() {
+    renderReportsSummary();
+    renderSalesChart();
+    renderTopProducts();
+    renderDriverPerformance();
+}
+
+function renderReportsSummary() {
+    const today = new Date();
+    const thisMonth = today.getMonth();
+    const thisYear = today.getFullYear();
+    
+    const monthOrders = adminOrders.filter(o => {
+        const d = new Date(o.timestamp);
+        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    
+    const monthRevenue = monthOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    const avgOrderValue = monthOrders.length > 0 ? monthRevenue / monthOrders.length : 0;
+    const deliveredOrders = monthOrders.filter(o => o.status === 'delivered').length;
+    const deliveryRate = monthOrders.length > 0 ? (deliveredOrders / monthOrders.length * 100) : 0;
+    
+    setElementText('report-month-orders', monthOrders.length);
+    setElementText('report-month-revenue', '$' + monthRevenue.toFixed(2));
+    setElementText('report-avg-order', '$' + avgOrderValue.toFixed(2));
+    setElementText('report-delivery-rate', deliveryRate.toFixed(1) + '%');
+}
+
+function renderSalesChart() {
+    const container = document.getElementById('sales-chart');
+    if (!container) return;
+    
+    // Simple text-based chart (in production, use Chart.js)
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+        
+        const dayOrders = adminOrders.filter(o => {
+            const orderDate = new Date(o.timestamp);
+            return orderDate >= date && orderDate < nextDate;
+        });
+        
+        const dayRevenue = dayOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+        
+        last7Days.push({
+            date: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            orders: dayOrders.length,
+            revenue: dayRevenue
+        });
+    }
+    
+    const maxRevenue = Math.max(...last7Days.map(d => d.revenue), 1);
+    
+    container.innerHTML = `
+        <div class="simple-chart">
+            ${last7Days.map(day => `
+                <div class="chart-bar-container">
+                    <div class="chart-bar" style="height: ${(day.revenue / maxRevenue * 150)}px;">
+                        <span class="chart-value">$${day.revenue.toFixed(0)}</span>
+                    </div>
+                    <div class="chart-label">${day.date}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderTopProducts() {
+    const container = document.getElementById('top-products');
+    if (!container) return;
+    
+    // Count product sales
+    const productCounts = {};
+    
+    adminOrders.forEach(order => {
+        order.items.forEach(item => {
+            if (!productCounts[item.name]) {
+                productCounts[item.name] = {
+                    name: item.name,
+                    emoji: item.emoji,
+                    quantity: 0,
+                    revenue: 0
+                };
+            }
+            productCounts[item.name].quantity += item.quantity;
+            productCounts[item.name].revenue += item.price * item.quantity;
+        });
+    });
+    
+    const topProducts = Object.values(productCounts)
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5);
+    
+    if (topProducts.length === 0) {
+        container.innerHTML = '<p class="empty-message">No sales data yet</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty Sold</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${topProducts.map(product => `
+                    <tr>
+                        <td>${product.emoji} ${product.name}</td>
+                        <td>${product.quantity}</td>
+                        <td>$${product.revenue.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderDriverPerformance() {
+    const container = document.getElementById('driver-performance');
+    if (!container) return;
+    
+    const driverStats = drivers.map(driver => {
+        const driverName = `${driver.firstName} ${driver.lastName[0]}.`;
+        const driverOrders = adminOrders.filter(o => o.driver === driverName);
+        const deliveredOrders = driverOrders.filter(o => o.status === 'delivered');
+        
+        return {
+            name: `${driver.firstName} ${driver.lastName}`,
+            deliveries: deliveredOrders.length,
+            rating: driver.rating,
+            earnings: deliveredOrders.length * 4 // $4 per delivery
+        };
+    }).sort((a, b) => b.deliveries - a.deliveries);
+    
+    container.innerHTML = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Driver</th>
+                    <th>Deliveries</th>
+                    <th>Rating</th>
+                    <th>Earnings</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${driverStats.map(driver => `
+                    <tr>
+                        <td>${driver.name}</td>
+                        <td>${driver.deliveries}</td>
+                        <td>${driver.rating}★</td>
+                        <td>$${driver.earnings.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// ============ PHONE ORDER (NEW ORDER MODAL) ============
+
+function openNewOrderModal() {
+    document.getElementById('phone-order-form').reset();
+    populateItemSelects();
+    updatePhoneOrderTotal();
+    openModal('new-order-modal');
+}
+
+function populateItemSelects() {
+    const selects = document.querySelectorAll('.item-select');
+    const optionsHTML = '<option value="">Select item...</option>' +
+        groceries.map(item => `
+            <option value="${item.id}" data-price="${item.price}">
+                ${item.emoji} ${item.name} - $${item.price.toFixed(2)}
+            </option>
+        `).join('');
+    
+    selects.forEach(select => {
+        select.innerHTML = optionsHTML;
+        select.addEventListener('change', updatePhoneOrderTotal);
+    });
+}
+
+function addItemRow() {
+    const builder = document.getElementById('order-items-builder');
+    const newRow = document.createElement('div');
+    newRow.className = 'item-row';
+    newRow.innerHTML = `
+        <select class="form-input item-select">
+            <option value="">Select item...</option>
+            ${groceries.map(item => `
+                <option value="${item.id}" data-price="${item.price}">
+                    ${item.emoji} ${item.name} - $${item.price.toFixed(2)}
+                </option>
+            `).join('')}
+        </select>
+        <input type="number" class="form-input item-qty" value="1" min="1">
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)">×</button>
+    `;
+    builder.appendChild(newRow);
+    
+    // Add event listeners
+    newRow.querySelector('.item-select').addEventListener('change', updatePhoneOrderTotal);
+    newRow.querySelector('.item-qty').addEventListener('change', updatePhoneOrderTotal);
+}
+
+function removeItemRow(btn) {
+    const row = btn.closest('.item-row');
+    const builder = document.getElementById('order-items-builder');
+    
+    // Keep at least one row
+    if (builder.querySelectorAll('.item-row').length > 1) {
+        row.remove();
+        updatePhoneOrderTotal();
+    }
+}
+
+function updatePhoneOrderTotal() {
+    const rows = document.querySelectorAll('.item-row');
+    let subtotal = 0;
+    
+    rows.forEach(row => {
+        const select = row.querySelector('.item-select');
+        const qtyInput = row.querySelector('.item-qty');
+        
+        if (select.value) {
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.dataset.price) || 0;
+            const qty = parseInt(qtyInput.value) || 1;
+            subtotal += price * qty;
+        }
+    });
+    
+    const delivery = 6.99;
+    const total = subtotal + delivery;
+    
+    setElementText('po-subtotal', '$' + subtotal.toFixed(2));
+    setElementText('po-total', '$' + total.toFixed(2));
+}
+
+function submitPhoneOrder() {
+    const name = document.getElementById('po-name').value.trim();
+    const phone = document.getElementById('po-phone').value.trim();
+    const address = document.getElementById('po-address').value.trim();
+    const deliveryTime = document.getElementById('po-time').value;
+    const payment = document.getElementById('po-payment').value;
+    const notes = document.getElementById('po-notes').value.trim();
+    
+    // Validate
+    if (!name || !phone || !address) {
+        showAdminToast('Please fill in customer name, phone, and address', 'error');
+        return;
+    }
+    
+    // Collect items
+    const items = [];
+    const rows = document.querySelectorAll('.item-row');
+    
+    rows.forEach(row => {
+        const select = row.querySelector('.item-select');
+        const qtyInput = row.querySelector('.item-qty');
+        
+        if (select.value) {
+            const product = groceries.find(p => p.id === parseInt(select.value));
+            if (product) {
+                items.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    emoji: product.emoji,
+                    quantity: parseInt(qtyInput.value) || 1
+                });
+            }
+        }
+    });
+    
+    if (items.length === 0) {
+        showAdminToast('Please add at least one item to the order', 'error');
+        return;
+    }
+    
+    // Calculate totals
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const delivery = 6.99;
+    const total = subtotal + delivery;
+    
+    // Create order
+    const orderId = 'ORD-' + Date.now().toString().slice(-6);
+    
+    const newOrder = {
+        id: orderId,
+        name,
+        phone,
+        address,
+        email: '',
+        items,
+        subtotal,
+        delivery,
+        total: total.toFixed(2),
+        status: 'confirmed', // Phone orders are pre-confirmed
+        payment,
+        deliveryTime,
+        notes: notes + ' [Phone Order]',
+        timestamp: Date.now(),
+        driver: null,
+        shopper: null
+    };
+    
+    adminOrders.unshift(newOrder);
+    saveAdminOrders();
+    
+    showAdminToast(`Order ${orderId} created successfully!`, 'success');
+    closeModal('new-order-modal');
+    
+    // Refresh page content
+    if (document.getElementById('orders-table-body')) {
+        renderOrdersTable();
+        updateOrderCounts();
+    }
+    if (document.getElementById('recent-orders-list')) {
+        initDashboard();
+    }
+    
+    updatePendingOrdersCount();
+}
+
+// ============ EXPORT FUNCTIONS ============
+
+function exportOrders() {
+    const orders = getFilteredOrders();
+    
+    if (orders.length === 0) {
+        showAdminToast('No orders to export', 'warning');
+        return;
+    }
+    
+    // Create CSV content
+    const headers = ['Order ID', 'Customer', 'Phone', 'Address', 'Items', 'Total', 'Status', 'Driver', 'Date'];
+    
+    const rows = orders.map(order => [
+        order.id,
+        order.name,
+        order.phone,
+        `"${order.address.replace(/"/g, '""')}"`,
+        order.items.length + ' items',
+        '$' + order.total,
+        order.status,
+        order.driver || '',
+        formatDateTime(order.timestamp)
+    ]);
+    
+    const csvContent = [headers, ...rows]
+        .map(row => row.join(','))
+        .join('\n');
+    
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `orders_${formatDateForFile(new Date())}.csv`;
+    link.click();
+    
+    showAdminToast(`Exported ${orders.length} orders`, 'success');
+}
+
+// ============ MODAL FUNCTIONS ============
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Close modal when clicking overlay
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+    }
+});
+
+// ============ SIDEBAR TOGGLE ============
+
+function toggleAdminSidebar() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    sidebar.classList.toggle('active');
+    
+    // Create overlay if doesn't exist
+    if (!overlay) {
+        const newOverlay = document.createElement('div');
+        newOverlay.className = 'sidebar-overlay';
+        newOverlay.onclick = toggleAdminSidebar;
+        document.body.appendChild(newOverlay);
+    }
+    
+    document.querySelector('.sidebar-overlay')?.classList.toggle('active');
+}
+
+// ============ ADMIN LOGOUT ============
+
+function adminLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // In production, clear auth tokens
+        localStorage.removeItem('adminLoggedIn');
+        window.location.href = 'index.html';
+    }
+}
+
+// ============ TOAST NOTIFICATIONS ============
+
+function showAdminToast(message, type = 'success') {
+    // Remove existing toast
+    const existingToast = document.querySelector('.admin-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create new toast
+    const toast = document.createElement('div');
+    toast.className = `admin-toast ${type}`;
+    toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Auto hide
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ============ UTILITY FUNCTIONS ============
+
+function setElementText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
+function formatStatus(status) {
+    const statusMap = {
+        'placed': '🆕 New',
+        'confirmed': '✅ Confirmed',
+        'shopping': '🛒 Shopping',
+        'delivering': '🚗 Delivering',
+        'delivered': '✔️ Delivered',
+        'cancelled': '❌ Cancelled'
+    };
+    return statusMap[status] || status;
+}
+
+function formatTime(timestamp) {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+function formatDate(timestamp) {
+    if (!timestamp) return '—';
+    return new Date(timestamp).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function formatDateTime(timestamp) {
+    return new Date(timestamp).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+function formatDateForFile(date) {
+    return date.toISOString().split('T')[0];
+}
+
+function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+function getInitials(name) {
+    if (!name) return '??';
+    return name.split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+}
+
+// ============ URL PARAMETERS ============
+
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return Object.fromEntries(params);
+}
+
+// Check URL params on orders page
+if (window.location.pathname.includes('admin-orders.html')) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = getUrlParams();
+        if (params.search) {
+            const searchInput = document.getElementById('filter-search');
+            if (searchInput) {
+                searchInput.value = params.search;
+                filterOrders();
+            }
+        }
+    });
+}
