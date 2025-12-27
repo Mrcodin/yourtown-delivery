@@ -1,1 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- ADMIN SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link active">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+                <span class="sidebar-count" id="pending-orders-count">3</span>
+            </a>
+            <a href="admin-products.html" class="sidebar-link">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+            <a href="#" class="sidebar-link" onclick="adminLogout()">
+                <span class="sidebar-icon">🚪</span>
+                Logout
+            </a>
+        </div>
+    </aside>
 
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <!-- TOP BAR -->
+        <header class="admin-topbar">
+            <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+            <h2 class="topbar-title">Dashboard</h2>
+            <div class="topbar-right">
+                <span class="topbar-date" id="current-date"></span>
+                <div class="topbar-user">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTENT -->
+        <div class="admin-content">
+            <!-- STATS CARDS -->
+            <div class="stats-row">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-orders-today">0</div>
+                        <div class="stat-label">Orders Today</div>
+                    </div>
+                    <div class="stat-change positive">+12%</div>
+                </div>
+                
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-revenue-today">$0</div>
+                        <div class="stat-label">Revenue Today</div>
+                    </div>
+                    <div class="stat-change positive">+8%</div>
+                </div>
+                
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Pending Orders</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">🚗</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-active-drivers">0</div>
+                        <div class="stat-label">Active Drivers</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS -->
+            <div class="dashboard-section">
+                <h3 class="section-header">Quick Actions</h3>
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="openNewOrderModal()">
+                        <span class="action-icon">➕</span>
+                        <span>New Phone Order</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="window.location.href='admin-products.html'">
+                        <span class="action-icon">🛍️</span>
+                        <span>Add Product</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="window.location.href='admin-drivers.html'">
+                        <span class="action-icon">🚗</span>
+                        <span>Manage Drivers</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="exportOrders()">
+                        <span class="action-icon">📄</span>
+                        <span>Export Orders</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TWO COLUMN LAYOUT -->
+            <div class="dashboard-grid">
+                <!-- RECENT ORDERS -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Recent Orders</h3>
+                        <a href="admin-orders.html" class="card-link">View All →</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="orders-list" id="recent-orders-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIVE DELIVERIES -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Active Deliveries</h3>
+                        <span class="card-badge" id="active-deliveries-count">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="deliveries-list" id="active-deliveries-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIVER STATUS -->
+            <div class="dashboard-section">
+                <div class="card-header">
+                    <h3>Driver Status</h3>
+                    <a href="admin-drivers.html" class="card-link">Manage Drivers →</a>
+                </div>
+                <div class="drivers-status-grid" id="drivers-status-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- TODAY'S TIMELINE -->
+            <div class="dashboard-card full-width">
+                <div class="card-header">
+                    <h3>Today's Activity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="activity-timeline" id="activity-timeline">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW ORDER MODAL -->
+    <div class="modal-overlay" id="new-order-modal">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>📞 New Phone Order</h2>
+                <button class="modal-close" onclick="closeModal('new-order-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="phone-order-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Customer Name *</label>
+                            <input type="text" class="form-input" id="po-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-input" id="po-phone" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Delivery Address *</label>
+                        <textarea class="form-input form-textarea" id="po-address" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Order Items</label>
+                        <div class="order-items-builder" id="order-items-builder">
+                            <div class="item-row">
+                                <select class="form-input item-select">
+                                    <option value="">Select item...</option>
+                                </select>
+                                <input type="number" class="form-input item-qty" value="1" min="1">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addItemRow()">+ Add Item</button>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Delivery Time</label>
+                            <select class="form-input" id="po-time">
+                                <option value="asap">ASAP</option>
+                                <option value="morning">Morning (9am-12pm)</option>
+                                <option value="afternoon">Afternoon (12pm-4pm)</option>
+                                <option value="evening">Evening (4pm-7pm)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-input" id="po-payment">
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="card">Card</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Special Instructions</label>
+                        <textarea class="form-input form-textarea" id="po-notes"></textarea>
+                    </div>
+                    
+                    <div class="order-summary-box">
+                        <div class="summary-line">
+                            <span>Subtotal:</span>
+                            <span id="po-subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Delivery:</span>
+                            <span>$6.99</span>
+                        </div>
+                        <div class="summary-line total">
+                            <span>Total:</span>
+                            <span id="po-total">$6.99</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('new-order-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitPhoneOrder()">Create Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
