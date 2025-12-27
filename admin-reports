@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .simple-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            padding: 20px;
+            gap: 15px;
+        }
+        
+        .chart-bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .chart-bar {
+            width: 100%;
+            max-width: 60px;
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10px;
+            min-height: 20px;
+            transition: height 0.3s ease;
+        }
+        
+        .chart-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .chart-label {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        @media (max-width: 992px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+            </a>
+            <a href="admin-products.html" class="sidebar-link">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link active">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+            <h2 class="topbar-title">Reports & Analytics</h2>
+            <div class="topbar-right">
+                <select class="form-input" id="report-period" onchange="updateReports()">
+                    <option value="week">Last 7 Days</option>
+                    <option value="month" selected>This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- SUMMARY STATS -->
+            <div class="stats-row">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="report-month-orders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="report-month-revenue">$0</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">🛒</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="report-avg-order">$0</div>
+                        <div class="stat-label">Avg Order Value</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="report-delivery-rate">0%</div>
+                        <div class="stat-label">Delivery Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORT GRID -->
+            <div class="report-grid">
+                <!-- SALES CHART -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">📊 Daily Revenue</h3>
+                    </div>
+                    <div id="sales-chart">
+                        <div class="chart-placeholder">Loading chart...</div>
+                    </div>
+                </div>
+
+                <!-- TOP PRODUCTS -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">🏆 Top Selling Products</h3>
+                    </div>
+                    <div id="top-products">
+                        <div class="chart-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- DRIVER PERFORMANCE -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">🚗 Driver Performance</h3>
+                    </div>
+                    <div id="driver-performance">
+                        <div class="chart-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- ORDER STATUS BREAKDOWN -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">📋 Order Status Breakdown</h3>
+                    </div>
+                    <div id="order-status-breakdown">
+                        <div class="chart-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- PAYMENT METHODS -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">💳 Payment Methods</h3>
+                    </div>
+                    <div id="payment-methods">
+                        <div class="chart-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- PEAK HOURS -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3 class="report-title">⏰ Peak Order Times</h3>
+                    </div>
+                    <div id="peak-hours">
+                        <div class="chart-placeholder">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="main.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initReportsPage();
+            renderOrderStatusBreakdown();
+            renderPaymentMethods();
+            renderPeakHours();
+        });
+        
+        function updateReports() {
+            initReportsPage();
+            renderOrderStatusBreakdown();
+            renderPaymentMethods();
+            renderPeakHours();
+        }
+        
+        function renderOrderStatusBreakdown() {
+            const container = document.getElementById('order-status-breakdown');
+            if (!container) return;
+            
+            const statusCounts = {
+                placed: 0,
+                confirmed: 0,
+                shopping: 0,
+                delivering: 0,
+                delivered: 0,
+                cancelled: 0
+            };
+            
+            adminOrders.forEach(order => {
+                if (statusCounts.hasOwnProperty(order.status)) {
+                    statusCounts[order.status]++;
+                }
+            });
+            
+            const total = adminOrders.length || 1;
+            
+            container.innerHTML = `
+                <div style="padding: 20px;">
+                    ${Object.entries(statusCounts).map(([status, count]) => `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>${formatStatus(status)}</span>
+                                <span>${count} (${(count/total*100).toFixed(0)}%)</span>
+                            </div>
+                            <div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden;">
+                                <div style="background: ${getStatusColor(status)}; height: 100%; width: ${count/total*100}%;"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function renderPaymentMethods() {
+            const container = document.getElementById('payment-methods');
+            if (!container) return;
+            
+            const paymentCounts = { cash: 0, card: 0, check: 0 };
+            
+            adminOrders.forEach(order => {
+                if (paymentCounts.hasOwnProperty(order.payment)) {
+                    paymentCounts[order.payment]++;
+                }
+            });
+            
+            const total = adminOrders.length || 1;
+            
+            container.innerHTML = `
+                <div style="padding: 20px; display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 40px;">💵</div>
+                        <div style="font-size: 24px; font-weight: 700;">${paymentCounts.cash}</div>
+                        <div style="color: #64748b;">Cash</div>
+                        <div style="font-size: 14px; color: #64748b;">${(paymentCounts.cash/total*100).toFixed(0)}%</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 40px;">💳</div>
+                        <div style="font-size: 24px; font-weight: 700;">${paymentCounts.card}</div>
+                        <div style="color: #64748b;">Card</div>
+                        <div style="font-size: 14px; color: #64748b;">${(paymentCounts.card/total*100).toFixed(0)}%</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 40px;">📝</div>
+                        <div style="font-size: 24px; font-weight: 700;">${paymentCounts.check}</div>
+                        <div style="color: #64748b;">Check</div>
+                        <div style="font-size: 14px; color: #64748b;">${(paymentCounts.check/total*100).toFixed(0)}%</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderPeakHours() {
+            const container = document.getElementById('peak-hours');
+            if (!container) return;
+            
+            const hourCounts = {};
+            for (let i = 8; i <= 19; i++) {
+                hourCounts[i] = 0;
+            }
+            
+            adminOrders.forEach(order => {
+                const hour = new Date(order.timestamp).getHours();
+                if (hourCounts.hasOwnProperty(hour)) {
+                    hourCounts[hour]++;
+                }
+            });
+            
+            const maxCount = Math.max(...Object.values(hourCounts), 1);
+            
+            container.innerHTML = `
+                <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 150px; padding: 20px; gap: 5px;">
+                    ${Object.entries(hourCounts).map(([hour, count]) => `
+                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+                            <div style="
+                                width: 100%;
+                                max-width: 30px;
+                                height: ${(count/maxCount*100)}px;
+                                background: ${count === maxCount ? '#f59e0b' : '#3b82f6'};
+                                border-radius: 4px 4px 0 0;
+                                min-height: 5px;
+                            "></div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">${formatHour(hour)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function getStatusColor(status) {
+            const colors = {
+                placed: '#f59e0b',
+                confirmed: '#3b82f6',
+                shopping: '#8b5cf6',
+                delivering: '#ec4899',
+                delivered: '#16a34a',
+                cancelled: '#dc2626'
+            };
+            return colors[status] || '#64748b';
+        }
+        
+        function formatHour(hour) {
+            const h = parseInt(hour);
+            if (h === 12) return '12p';
+            if (h > 12) return (h - 12) + 'p';
+            return h + 'a';
+        }
+    </script>
+</body>
+</html>
