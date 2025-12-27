@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- PHONE BAR -->
+    <div class="phone-bar">
+        <div class="container">
+            📞 Questions? Call <a href="tel:555-123-4567">555-123-4567</a>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="shop.html" class="nav-link">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </a>
+                <a href="track.html" class="nav-link active">Track Order</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="container">
+            <div class="track-container">
+                <h1 class="page-title center">Track Your Order</h1>
+                <p class="page-subtitle center">
+                    Enter your phone number to see your order status
+                </p>
+
+                <!-- SEARCH FORM -->
+                <div class="track-search">
+                    <input 
+                        type="tel" 
+                        id="track-phone" 
+                        class="form-input form-input-lg" 
+                        placeholder="Enter your phone number (555-123-4567)"
+                    >
+                    <button onclick="trackOrder()" class="btn btn-primary btn-lg">
+                        🔍 Track Order
+                    </button>
+                </div>
+
+                <!-- ORDER STATUS -->
+                <div id="order-status" class="order-status-container" style="display: none;">
+                    
+                    <!-- ORDER INFO -->
+                    <div class="order-info-card">
+                        <div class="order-header">
+                            <div>
+                                <h2>Order #<span id="order-id">---</span></h2>
+                                <p>Placed on <span id="order-date">---</span></p>
+                            </div>
+                            <div class="order-total-badge">
+                                $<span id="order-total">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATUS TIMELINE -->
+                    <div class="status-timeline">
+                        <div class="timeline-item completed" id="status-placed">
+                            <div class="timeline-marker">✓</div>
+                            <div class="timeline-content">
+                                <h3>Order Placed</h3>
+                                <p id="placed-time">---</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item" id="status-confirmed">
+                            <div class="timeline-marker">2</div>
+                            <div class="timeline-content">
+                                <h3>Order Confirmed</h3>
+                                <p>We called to confirm your items</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item" id="status-shopping">
+                            <div class="timeline-marker">3</div>
+                            <div class="timeline-content">
+                                <h3>Shopping</h3>
+                                <p><span id="shopper-name">Your shopper</span> is getting your items</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item" id="status-delivering">
+                            <div class="timeline-marker">4</div>
+                            <div class="timeline-content">
+                                <h3>Out for Delivery</h3>
+                                <p>Driver: <span id="driver-name">---</span></p>
+                                <p class="eta">ETA: <span id="eta-time">---</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item" id="status-delivered">
+                            <div class="timeline-marker">5</div>
+                            <div class="timeline-content">
+                                <h3>Delivered</h3>
+                                <p id="delivered-time">---</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DRIVER INFO -->
+                    <div class="driver-info-card" id="driver-info" style="display: none;">
+                        <h3>Your Driver</h3>
+                        <div class="driver-details">
+                            <div class="driver-avatar">🚗</div>
+                            <div>
+                                <strong id="driver-full-name">Tom R.</strong>
+                                <p id="driver-vehicle">Blue Honda Civic</p>
+                            </div>
+                        </div>
+                        <a href="tel:555-123-4567" class="btn btn-outline btn-block">
+                            📞 Contact Driver
+                        </a>
+                    </div>
+                </div>
+
+                <!-- NO ORDER FOUND -->
+                <div id="no-order" class="no-order-message" style="display: none;">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No Order Found</h3>
+                    <p>We couldn't find an order with that phone number.</p>
+                    <p>Need help? Call us at <a href="tel:555-123-4567">555-123-4567</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer footer-simple">
+        <div class="container">
+            <p>&copy; 2024 Hometown Grocery Delivery | 📞 <a href="tel:555-123-4567">555-123-4567</a></p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
