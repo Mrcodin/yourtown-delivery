@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Groceries - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="phone-bar">
+        📞 Need Help? <a href="tel:555-LOCAL-01">555-LOCAL-01</a>
+    </div>
+
+    <header class="site-header">
+        <div class="container">
+            <h1 class="logo">🛒 Hometown Delivery</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="shop.html" class="active">Shop Groceries</a>
+                <a href="cart.html">My Cart (<span id="cart-count">0</span>)</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Shop for Groceries</h2>
+            <button onclick="loadUsualOrder()" class="btn btn-secondary">🔁 Load My Usual Order</button>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="categories">
+            <button class="category-btn active" onclick="filterCategory('all')">All Items</button>
+            <button class="category-btn" onclick="filterCategory('produce')">🥬 Produce</button>
+            <button class="category-btn" onclick="filterCategory('dairy')">🥛 Dairy</button>
+            <button class="category-btn" onclick="filterCategory('bakery')">🍞 Bakery</button>
+            <button class="category-btn" onclick="filterCategory('pantry')">🥫 Pantry</button>
+        </div>
+
+        <!-- GROCERY GRID -->
+        <div class="grocery-grid" id="grocery-grid">
+            <!-- Items will be populated by JavaScript -->
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Hometown Grocery Delivery</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

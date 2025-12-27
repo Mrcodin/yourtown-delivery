@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="phone-bar">
+        📞 Questions? <a href="tel:555-LOCAL-01">555-LOCAL-01</a>
+    </div>
+
+    <header class="site-header">
+        <div class="container">
+            <h1 class="logo">🛒 Hometown Delivery</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop Groceries</a>
+                <a href="cart.html" class="active">My Cart (<span id="cart-count">0</span>)</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2>Your Shopping Cart</h2>
+        
+        <div id="cart-items">
+            <p style="font-size: 1.2rem; color: #666;">Your cart is empty. <a href="shop.html">Start shopping!</a></p>
+        </div>
+
+        <div id="cart-summary" style="display: none;">
+            <div class="summary-box">
+                <h3>Order Summary</h3>
+                <p>Items: <span id="summary-items">0</span></p>
+                <p>Subtotal: $<span id="summary-subtotal">0.00</span></p>
+                <p>Delivery Fee: $<span id="summary-delivery">6.99</span></p>
+                <hr>
+                <p class="total"><strong>Total: $<span id="summary-total">0.00</span></strong></p>
+
+                <h3>Delivery Details</h3>
+                <form id="checkout-form">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" required placeholder="John Smith">
+                    
+                    <label for="address">Delivery Address *</label>
+                    <textarea id="address" required placeholder="123 Main St, Apartment 4B"></textarea>
+                    
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" required placeholder="555-123-4567">
+                    
+                    <label for="email">Email (optional)</label>
+                    <input type="email" id="email" placeholder="john@email.com">
+                    
+                    <label for="notes">Special Instructions</label>
+                    <textarea id="notes" placeholder="Ring doorbell, leave on porch, etc."></textarea>
+
+                    <h3>Payment Method</h3>
+                    <label class="radio-large">
+                        <input type="radio" name="payment" value="cash" checked>
+                        💵 Cash on Delivery
+                    </label>
+                    <label class="radio-large">
+                        <input type="radio" name="payment" value="card">
+                        💳 Pay Online (Stripe)
+                    </label>
+
+                    <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 20px;">
+                        🚚 Place Order & Pay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Hometown Grocery Delivery</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
