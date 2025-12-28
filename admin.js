@@ -1748,13 +1748,29 @@ function toggleAdminSidebar() {
     document.querySelector('.sidebar-overlay')?.classList.toggle('active');
 }
 
-// ============ ADMIN LOGOUT ============
+// ============ ADMIN LOGOUT - FIXED ============
 
 function adminLogout() {
     if (confirm('Are you sure you want to logout?')) {
-        // In production, clear auth tokens
+        // Clear ALL session data
+        localStorage.removeItem('adminSession');
         localStorage.removeItem('adminLoggedIn');
-        window.location.href = 'index.html';
+        
+        // Optionally clear remembered username (uncomment if you want full logout)
+        // localStorage.removeItem('rememberedUser');
+        
+        // Log the logout activity (before clearing session)
+        const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+        activities.unshift({
+            type: 'logout',
+            message: 'User logged out',
+            user: 'admin',
+            timestamp: Date.now()
+        });
+        localStorage.setItem('adminActivities', JSON.stringify(activities));
+        
+        // Redirect to login page
+        window.location.href = 'admin-login.html';
     }
 }
 
