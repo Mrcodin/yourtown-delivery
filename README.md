@@ -247,6 +247,12 @@ This project is licensed under the MIT License.
 - Deployed on Render
 - Real-time updates powered by Socket.io
 
+Your live URLs:
+
+Customer Shop: https://yourtown-deliveryfront.onrender.com
+Admin Panel: https://yourtown-deliveryfront.onrender.com/admin-login.html
+API: https://yourtown-delivery-api.onrender.com/api
+
 ## 📧 Contact
 
 Project Link: [https://github.com/Mrcodin/yourtown-delivery](https://github.com/Mrcodin/yourtown-delivery)
