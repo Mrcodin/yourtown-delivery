@@ -387,25 +387,47 @@
         const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
         const REMEMBER_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-        // ============ CHECK EXISTING SESSION ============
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if already logged in
-            if (isLoggedIn()) {
-                window.location.href = 'admin.html';
-                return;
-            }
+       // ============ CHECK EXISTING SESSION - FIXED ============
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Login page loaded');
+    
+    // Check if already logged in with VALID session
+    const sessionData = localStorage.getItem('adminSession');
+    
+    if (sessionData) {
+        try {
+            const session = JSON.parse(sessionData);
             
-            // Check for remembered username
-            const rememberedUser = localStorage.getItem('rememberedUser');
-            if (rememberedUser) {
-                document.getElementById('username').value = rememberedUser;
-                document.getElementById('remember-me').checked = true;
-                document.getElementById('password').focus();
+            // Verify session is valid and not expired
+            if (session && session.username && session.expiresAt && Date.now() < session.expiresAt) {
+                console.log('Valid session found, redirecting to admin');
+                window.location.replace('admin.html');
+                return;
             } else {
-                document.getElementById('username').focus();
+                // Invalid or expired session - clear it
+                console.log('Invalid/expired session found, clearing');
+                localStorage.removeItem('adminSession');
             }
-        });
+        } catch (e) {
+            // Corrupted session data - clear it
+            console.log('Corrupted session data, clearing');
+            localStorage.removeItem('adminSession');
+        }
+    }
+    
+    console.log('No valid session, showing login form');
+    
+    // Check for remembered username
+    const rememberedUser = localStorage.getItem('rememberedUser');
+    if (rememberedUser) {
+        document.getElementById('username').value = rememberedUser;
+        document.getElementById('remember-me').checked = true;
+        document.getElementById('password').focus();
+    } else {
+        document.getElementById('username').focus();
+    }
+});
 
         // ============ LOGIN HANDLER ============
         
