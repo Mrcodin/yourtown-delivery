@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ACCESSIBILITY TOOLBAR -->
+    <div class="accessibility-bar">
+        <div class="container accessibility-container">
+            <span>Accessibility:</span>
+            <button onclick="toggleLargeText()" id="text-size-btn" class="access-btn">🔤 Larger Text</button>
+            <button onclick="toggleContrast()" id="contrast-btn" class="access-btn">🌓 High Contrast</button>
+            <button onclick="speakPage()" id="speak-btn" class="access-btn">🔊 Read Aloud</button>
+        </div>
+    </div>
+
+    <!-- PHONE BAR -->
+    <div class="phone-bar">
+        <div class="container">
+            📞 <strong>Questions?</strong> Call us anytime: <a href="tel:555-123-4567">555-123-4567</a>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="shop.html" class="nav-link">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </a>
+                <a href="track.html" class="nav-link">Track Order</a>
+                <a href="about.html" class="nav-link active">About Us</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="container">
+            <!-- PAGE HEADER -->
+            <div class="page-header" style="text-align: center; margin-bottom: 40px;">
+                <h1 class="page-title">About Hometown Delivery</h1>
+                <p class="page-subtitle" style="font-size: 22px; max-width: 700px; margin: 0 auto;">
+                    Your neighbors helping neighbors with simple, friendly grocery delivery
+                </p>
+            </div>
+
+            <!-- OUR STORY SECTION -->
+            <section class="about-section" style="margin-bottom: 60px;">
+                <div class="about-card">
+                    <div class="about-icon" style="font-size: 64px; text-align: center; margin-bottom: 20px;">
+                        🏡
+                    </div>
+                    <h2 style="font-size: 32px; margin-bottom: 20px; text-align: center; color: var(--primary);">
+                        Our Story
+                    </h2>
+                    <div style="font-size: 20px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                        <p style="margin-bottom: 20px;">
+                            Hometown Delivery started with a simple idea: seniors in our community shouldn't have to struggle with grocery shopping. We know that navigating busy stores, carrying heavy bags, and dealing with complicated technology can be overwhelming.
+                        </p>
+                        <p style="margin-bottom: 20px;">
+                            That's why we created a service that's different. No confusing apps. No strangers from far away. Just friendly, local people you can trust bringing groceries right to your door.
+                        </p>
+                        <p>
+                            We're your neighbors, and we're here to help.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHAT MAKES US DIFFERENT -->
+            <section class="about-section" style="margin-bottom: 60px;">
+                <h2 style="font-size: 36px; margin-bottom: 40px; text-align: center; color: var(--text);">
+                    What Makes Us Different
+                </h2>
+                <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                    <!-- Feature 1 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">👥</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Local Drivers</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            All our delivery drivers live right here in town. They're your neighbors - people you might see at church, the library, or the local coffee shop.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">📞</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Call to Order</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            No smartphone required! Call us at <strong>555-123-4567</strong> and speak with a real person who will take your order and answer any questions.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">💵</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Cash Accepted</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            Pay however you're comfortable - cash, check, or card. No need for online payments if you prefer traditional methods.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">🏪</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Local Stores</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            We shop at the same local stores you know and trust. Fresh produce, quality meats, and all your favorite brands.
+                        </p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">⏰</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Flexible Delivery</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            Choose same-day delivery or schedule for a time that works for you. We'll even place items inside your home if you'd like.
+                        </p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="feature-card" style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 20px;">🤝</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Personal Service</h3>
+                        <p style="font-size: 19px; line-height: 1.7; color: var(--text-light);">
+                            We remember your preferences, check expiration dates, and take the time to get your order just right. It's the small things that matter.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW IT WORKS -->
+            <section class="about-section" style="margin-bottom: 60px; background: var(--primary-light); padding: 50px 30px; border-radius: var(--radius-xl);">
+                <h2 style="font-size: 36px; margin-bottom: 40px; text-align: center; color: var(--text);">
+                    How It Works - It's Simple!
+                </h2>
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <div class="step" style="display: flex; gap: 30px; margin-bottom: 40px; align-items: flex-start;">
+                        <div style="background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0;">1</div>
+                        <div>
+                            <h3 style="font-size: 26px; margin-bottom: 10px; color: var(--primary);">Place Your Order</h3>
+                            <p style="font-size: 20px; line-height: 1.7; color: var(--text);">
+                                Call us at <strong>555-123-4567</strong> or use our simple website. Tell us what you need, and we'll take care of the rest.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="step" style="display: flex; gap: 30px; margin-bottom: 40px; align-items: flex-start;">
+                        <div style="background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0;">2</div>
+                        <div>
+                            <h3 style="font-size: 26px; margin-bottom: 10px; color: var(--primary);">We Shop for You</h3>
+                            <p style="font-size: 20px; line-height: 1.7; color: var(--text);">
+                                Our local shoppers carefully select your items, checking quality and expiration dates. If something isn't available, we'll call to ask about substitutes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="step" style="display: flex; gap: 30px; align-items: flex-start;">
+                        <div style="background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0;">3</div>
+                        <div>
+                            <h3 style="font-size: 26px; margin-bottom: 10px; color: var(--primary);">We Deliver to Your Door</h3>
+                            <p style="font-size: 20px; line-height: 1.7; color: var(--text);">
+                                A friendly local driver brings your groceries right to your door. We can even help put them away if you need assistance.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MEET OUR TEAM -->
+            <section class="about-section" style="margin-bottom: 60px;">
+                <h2 style="font-size: 36px; margin-bottom: 40px; text-align: center; color: var(--text);">
+                    Meet Our Team
+                </h2>
+                <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                    <p style="font-size: 20px; line-height: 1.8; margin-bottom: 30px;">
+                        Our team is made up of caring local residents who understand the importance of personal service. Many of our drivers are retirees themselves, who enjoy staying active and helping their neighbors.
+                    </p>
+                    <div style="background: var(--success-light); padding: 30px; border-radius: var(--radius-lg); border-left: 5px solid var(--success);">
+                        <p style="font-size: 22px; line-height: 1.8; color: var(--text); font-style: italic;">
+                            "Every member of our team is background-checked, trained, and committed to treating you with respect and kindness. We're not just delivery drivers - we're neighbors who care."
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OUR COMMITMENT -->
+            <section class="about-section" style="margin-bottom: 60px;">
+                <h2 style="font-size: 36px; margin-bottom: 40px; text-align: center; color: var(--text);">
+                    Our Commitment to Seniors
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1000px; margin: 0 auto;">
+                    <div style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border-top: 4px solid var(--primary);">
+                        <h4 style="font-size: 22px; margin-bottom: 15px; color: var(--primary);">✓ Patience & Understanding</h4>
+                        <p style="font-size: 18px; line-height: 1.7; color: var(--text-light);">
+                            We take the time to listen and make sure we get your order exactly right.
+                        </p>
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border-top: 4px solid var(--primary);">
+                        <h4 style="font-size: 22px; margin-bottom: 15px; color: var(--primary);">✓ Clear Communication</h4>
+                        <p style="font-size: 18px; line-height: 1.7; color: var(--text-light);">
+                            Large print receipts, friendly phone calls, and no confusing jargon.
+                        </p>
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border-top: 4px solid var(--primary);">
+                        <h4 style="font-size: 22px; margin-bottom: 15px; color: var(--primary);">✓ Affordable Pricing</h4>
+                        <p style="font-size: 18px; line-height: 1.7; color: var(--text-light);">
+                            Fair delivery fees with no hidden charges. Senior discounts available.
+                        </p>
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border-top: 4px solid var(--primary);">
+                        <h4 style="font-size: 22px; margin-bottom: 15px; color: var(--primary);">✓ Safety First</h4>
+                        <p style="font-size: 18px; line-height: 1.7; color: var(--text-light);">
+                            All drivers wear ID badges and follow strict safety protocols.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TESTIMONIALS -->
+            <section class="about-section" style="margin-bottom: 60px;">
+                <h2 style="font-size: 36px; margin-bottom: 40px; text-align: center; color: var(--text);">
+                    What Our Customers Say
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto;">
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                        <div style="font-size: 40px; color: var(--accent); margin-bottom: 15px;">⭐⭐⭐⭐⭐</div>
+                        <p style="font-size: 19px; line-height: 1.7; margin-bottom: 20px; color: var(--text);">
+                            "Such a blessing! The drivers are always so kind and patient. They remember my preferences and even helped me put groceries in my pantry when I asked."
+                        </p>
+                        <p style="font-size: 18px; font-weight: 600; color: var(--text-light);">— Margaret T., Age 78</p>
+                    </div>
+
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                        <div style="font-size: 40px; color: var(--accent); margin-bottom: 15px;">⭐⭐⭐⭐⭐</div>
+                        <p style="font-size: 19px; line-height: 1.7; margin-bottom: 20px; color: var(--text);">
+                            "I don't have a computer, so I just call. The person on the phone is always friendly and makes sure I get everything I need. It's wonderful!"
+                        </p>
+                        <p style="font-size: 18px; font-weight: 600; color: var(--text-light);">— Robert H., Age 82</p>
+                    </div>
+
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                        <div style="font-size: 40px; color: var(--accent); margin-bottom: 15px;">⭐⭐⭐⭐⭐</div>
+                        <p style="font-size: 19px; line-height: 1.7; margin-bottom: 20px; color: var(--text);">
+                            "After my hip surgery, this service was a lifesaver. Same-day delivery, and they were so careful with my items. Highly recommend!"
+                        </p>
+                        <p style="font-size: 18px; font-weight: 600; color: var(--text-light);">— Dorothy L., Age 71</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTACT SECTION -->
+            <section class="about-section" style="margin-bottom: 60px; background: var(--primary); color: white; padding: 60px 30px; border-radius: var(--radius-xl); text-align: center;">
+                <h2 style="font-size: 36px; margin-bottom: 25px;">
+                    Ready to Get Started?
+                </h2>
+                <p style="font-size: 22px; margin-bottom: 35px; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7;">
+                    We're here to make your life easier. Give us a call or place your first order online - we can't wait to serve you!
+                </p>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <a href="tel:555-123-4567" class="btn btn-white btn-xl">
+                        📞 Call 555-123-4567
+                    </a>
+                    <a href="shop.html" class="btn btn-outline-white btn-xl">
+                        🛍️ Start Shopping
+                    </a>
+                </div>
+            </section>
+
+            <!-- HOURS & CONTACT INFO -->
+            <section class="about-section" style="margin-bottom: 40px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 900px; margin: 0 auto;">
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📞</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Phone</h3>
+                        <p style="font-size: 22px; font-weight: 600; color: var(--text);">
+                            <a href="tel:555-123-4567" style="color: var(--primary);">555-123-4567</a>
+                        </p>
+                        <p style="font-size: 18px; color: var(--text-light); margin-top: 10px;">
+                            Call anytime during business hours
+                        </p>
+                    </div>
+
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⏰</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Hours</h3>
+                        <p style="font-size: 19px; color: var(--text); line-height: 1.8;">
+                            <strong>Monday - Friday:</strong> 8am - 6pm<br>
+                            <strong>Saturday:</strong> 9am - 3pm<br>
+                            <strong>Sunday:</strong> Closed
+                        </p>
+                    </div>
+
+                    <div style="background: white; padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">💵</div>
+                        <h3 style="font-size: 24px; margin-bottom: 15px; color: var(--primary);">Delivery Fee</h3>
+                        <p style="font-size: 19px; color: var(--text); line-height: 1.8;">
+                            <strong>$5.99</strong> standard delivery<br>
+                            <strong>FREE</strong> on orders over $50<br>
+                            <em style="font-size: 17px;">Senior discounts available</em>
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">Hometown Delivery</h3>
+                    <p class="footer-text">
+                        Local groceries delivered by local neighbors.
+                        Serving seniors with care since 2024.
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-subtitle">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="shop.html">Shop Groceries</a></li>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-subtitle">Contact Us</h4>
+                    <ul class="footer-links">
+                        <li>📞 <a href="tel:555-123-4567">555-123-4567</a></li>
+                        <li>📧 <a href="mailto:hello@hometowndelivery.com">hello@hometowndelivery.com</a></li>
+                        <li>⏰ Mon-Fri 8am-6pm, Sat 9am-3pm</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-subtitle">We Accept</h4>
+                    <p class="footer-text">
+                        💵 Cash | 💳 Cards | ✅ Checks<br>
+                        🏆 Senior Discounts Available
+                    </p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Hometown Delivery. Proudly serving our local community.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="main.js"></script>
+    <script>
+        // Update cart count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+        });
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartCountEl = document.getElementById('cart-count');
+            if (cartCountEl) {
+                cartCountEl.textContent = count;
+            }
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('active');
+        }
+
+        // Accessibility functions
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            const btn = document.getElementById('text-size-btn');
+            if (document.body.classList.contains('large-text')) {
+                btn.textContent = '🔤 Normal Text';
+                localStorage.setItem('large-text', 'true');
+            } else {
+                btn.textContent = '🔤 Larger Text';
+                localStorage.removeItem('large-text');
+            }
+        }
+
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+            const btn = document.getElementById('contrast-btn');
+            if (document.body.classList.contains('high-contrast')) {
+                btn.textContent = '🌓 Normal Contrast';
+                localStorage.setItem('high-contrast', 'true');
+            } else {
+                btn.textContent = '🌓 High Contrast';
+                localStorage.removeItem('high-contrast');
+            }
+        }
+
+        function speakPage() {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                // Get main content
+                const mainContent = document.querySelector('main');
+                const text = mainContent.innerText;
+                
+                // Create utterance
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower for seniors
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // Speak
+                window.speechSynthesis.speak(utterance);
+                
+                const btn = document.getElementById('speak-btn');
+                btn.textContent = '⏸️ Stop Reading';
+                
+                utterance.onend = function() {
+                    btn.textContent = '🔊 Read Aloud';
+                };
+            } else {
+                alert('Sorry, your browser does not support text-to-speech.');
+            }
+        }
+
+        // Load accessibility preferences
+        if (localStorage.getItem('large-text')) {
+            document.body.classList.add('large-text');
+            document.getElementById('text-size-btn').textContent = '🔤 Normal Text';
+        }
+        if (localStorage.getItem('high-contrast')) {
+            document.body.classList.add('high-contrast');
+            document.getElementById('contrast-btn').textContent = '🌓 Normal Contrast';
+        }
+    </script>
+</body>
+</html>
