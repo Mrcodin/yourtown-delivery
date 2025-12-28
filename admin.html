@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="auth.js"></script>
 </head>
 <body class="admin-body">
     <!-- ADMIN SIDEBAR -->
@@ -58,18 +59,27 @@
 
     <!-- MAIN CONTENT -->
     <main class="admin-main">
-        <!-- TOP BAR -->
-        <header class="admin-topbar">
-            <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
-            <h2 class="topbar-title">Dashboard</h2>
-            <div class="topbar-right">
-                <span class="topbar-date" id="current-date"></span>
-                <div class="topbar-user">
-                    <span class="user-avatar">👤</span>
-                    <span class="user-name">Admin</span>
-                </div>
-            </div>
-        </header>
+        <!-- In admin-topbar -->
+<div class="topbar-user" onclick="toggleUserMenu()">
+    <span class="user-avatar">
+        <span class="user-avatar-initials">AD</span>
+    </span>
+    <span class="user-name">Admin</span>
+    <span style="margin-left: 5px;">▼</span>
+</div>
+
+<!-- Add user dropdown menu -->
+<div class="user-menu" id="user-menu">
+    <div class="user-menu-header">
+        <strong class="user-name">Admin</strong>
+        <span class="user-role-badge">admin</span>
+    </div>
+    <a href="#" onclick="viewProfile()">👤 My Profile</a>
+    <a href="#" onclick="viewActivityLog()">📋 Activity Log</a>
+    <a href="#" onclick="changePassword()">🔑 Change Password</a>
+    <hr>
+    <a href="#" onclick="adminLogout()" class="logout-link">🚪 Logout</a>
+</div>
 
         <!-- DASHBOARD CONTENT -->
         <div class="admin-content">
