@@ -1,3 +1,40 @@
-# Build configuration for Render
-buildCommand: cd server && npm install && npm run seed
-startCommand: cd server && npm start
+services:
+  # Backend API Service
+  - type: web
+    name: yourtown-delivery-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 8h
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://yourtown-delivery.onrender.com
+    healthCheckPath: /api/health
+
+  # Frontend Static Site
+  - type: static
+    name: yourtown-delivery-frontend
+    env: static
+    region: oregon
+    buildCommand: echo "No build needed"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: API_URL
+        value: https://yourtown-delivery-api.onrender.com
