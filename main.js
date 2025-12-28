@@ -1,67 +1,57 @@
 /* ===================================
    HOMETOWN DELIVERY - COMPLETE JS
-   Version 3.0
+   Version 4.0 - API Integration
    =================================== */
 
-// ============ GROCERY DATABASE ============
-const groceries = [
-    // BAKERY
-    { id: 1, name: "White Bread (Loaf)", price: 2.99, category: "bakery", emoji: "🍞" },
-    { id: 2, name: "Whole Wheat Bread", price: 3.49, category: "bakery", emoji: "🍞" },
-    { id: 3, name: "Dinner Rolls (12 pack)", price: 3.99, category: "bakery", emoji: "🥖" },
-    { id: 4, name: "Bagels (6 pack)", price: 4.49, category: "bakery", emoji: "🥯" },
-    
-    // DAIRY & EGGS
-    { id: 5, name: "Whole Milk (1 gallon)", price: 3.49, category: "dairy", emoji: "🥛" },
-    { id: 6, name: "2% Milk (1 gallon)", price: 3.49, category: "dairy", emoji: "🥛" },
-    { id: 7, name: "Large Eggs (1 dozen)", price: 3.29, category: "dairy", emoji: "🥚" },
-    { id: 8, name: "Butter (1 lb)", price: 4.99, category: "dairy", emoji: "🧈" },
-    { id: 9, name: "Cheddar Cheese (8 oz)", price: 4.49, category: "dairy", emoji: "🧀" },
-    { id: 10, name: "Orange Juice (64 oz)", price: 4.99, category: "dairy", emoji: "🍊" },
-    { id: 11, name: "Yogurt (32 oz)", price: 5.49, category: "dairy", emoji: "🥛" },
-    
-    // PRODUCE
-    { id: 12, name: "Bananas (1 lb)", price: 0.69, category: "produce", emoji: "🍌" },
-    { id: 13, name: "Apples (3 lb bag)", price: 4.99, category: "produce", emoji: "🍎" },
-    { id: 14, name: "Oranges (4 lb bag)", price: 5.99, category: "produce", emoji: "🍊" },
-    { id: 15, name: "Lettuce (Head)", price: 1.99, category: "produce", emoji: "🥬" },
-    { id: 16, name: "Tomatoes (1 lb)", price: 2.49, category: "produce", emoji: "🍅" },
-    { id: 17, name: "Potatoes (5 lb bag)", price: 4.99, category: "produce", emoji: "🥔" },
-    { id: 18, name: "Onions (3 lb bag)", price: 2.99, category: "produce", emoji: "🧅" },
-    { id: 19, name: "Carrots (2 lb bag)", price: 2.49, category: "produce", emoji: "🥕" },
-    
-    // MEAT
-    { id: 20, name: "Chicken Breast (1 lb)", price: 5.99, category: "meat", emoji: "🍗" },
-    { id: 21, name: "Ground Beef (1 lb)", price: 6.99, category: "meat", emoji: "🥩" },
-    { id: 22, name: "Bacon (16 oz)", price: 7.99, category: "meat", emoji: "🥓" },
-    { id: 23, name: "Deli Turkey (1 lb)", price: 8.99, category: "meat", emoji: "🦃" },
-    { id: 24, name: "Deli Ham (1 lb)", price: 7.99, category: "meat", emoji: "🍖" },
-    
-    // PANTRY
-    { id: 25, name: "Peanut Butter (16 oz)", price: 3.99, category: "pantry", emoji: "🥜" },
-    { id: 26, name: "Grape Jelly (18 oz)", price: 2.99, category: "pantry", emoji: "🍇" },
-    { id: 27, name: "Canned Soup (10 oz)", price: 1.99, category: "pantry", emoji: "🥫" },
-    { id: 28, name: "Pasta (16 oz)", price: 1.49, category: "pantry", emoji: "🍝" },
-    { id: 29, name: "Pasta Sauce (24 oz)", price: 2.99, category: "pantry", emoji: "🍅" },
-    { id: 30, name: "Rice (2 lb bag)", price: 3.99, category: "pantry", emoji: "🍚" },
-    { id: 31, name: "Coffee (12 oz)", price: 8.99, category: "pantry", emoji: "☕" },
-    { id: 32, name: "Sugar (4 lb)", price: 3.49, category: "pantry", emoji: "🍬" },
-    
-    // FROZEN
-    { id: 33, name: "Frozen Pizza", price: 5.99, category: "frozen", emoji: "🍕" },
-    { id: 34, name: "Ice Cream (1.5 qt)", price: 4.99, category: "frozen", emoji: "🍨" },
-    { id: 35, name: "Frozen Vegetables (16 oz)", price: 2.49, category: "frozen", emoji: "🥦" },
-    { id: 36, name: "Frozen Dinners", price: 3.99, category: "frozen", emoji: "🍱" },
-    
-    // BEVERAGES
-    { id: 37, name: "Bottled Water (24 pack)", price: 4.99, category: "beverages", emoji: "💧" },
-    { id: 38, name: "Soda (12 pack)", price: 5.99, category: "beverages", emoji: "🥤" },
-    { id: 39, name: "Apple Juice (64 oz)", price: 3.99, category: "beverages", emoji: "🧃" },
-    { id: 40, name: "Tea Bags (100 count)", price: 4.99, category: "beverages", emoji: "🍵" },
-];
+// ============ GROCERY DATABASE (Loaded from API) ============
+let groceries = [];
+let USUAL_ORDER_IDS = [];
 
-// Usual order items (for seniors)
-const USUAL_ORDER_IDS = [1, 5, 7, 12, 17, 27];
+// Load products from API
+async function loadProducts() {
+    try {
+        console.log('Loading products from API...');
+        const response = await api.getProducts();
+        
+        if (response.success && response.products) {
+            groceries = response.products.map(p => ({
+                id: p._id,
+                name: p.name,
+                price: p.price,
+                category: p.category,
+                emoji: p.emoji || '📦'
+            }));
+            
+            console.log(`✅ Loaded ${groceries.length} products from API`);
+            
+            // Set usual order IDs (first 6 products)
+            USUAL_ORDER_IDS = groceries.slice(0, 6).map(p => p.id);
+            
+            // Render products if on shop page
+            if (document.getElementById('grocery-grid')) {
+                renderGroceryGrid();
+            }
+        } else {
+            console.error('Failed to load products:', response);
+            showError('Failed to load products. Please refresh the page.');
+        }
+    } catch (error) {
+        console.error('Error loading products:', error);
+        showError('Error connecting to server. Please check your connection.');
+    }
+}
+
+// Call loadProducts when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadProducts);
+} else {
+    loadProducts();
+}
+
+// Show error message
+function showError(message) {
+    showToast(message, 'error');
+}
 
 // ============ CART MANAGEMENT ============
 let cart = [];
@@ -216,7 +206,7 @@ function renderGroceryGrid(items = groceries) {
             <div class="item-content">
                 <h3 class="item-name">${item.name}</h3>
                 <div class="item-price">$${item.price.toFixed(2)}</div>
-                <button class="add-btn" onclick="addToCart(${item.id})">
+                <button class="add-btn" onclick="addToCart('${item.id}')">
                     Add to Cart
                 </button>
             </div>
@@ -315,7 +305,7 @@ function updateOrderSummary() {
 }
 
 // ============ CHECKOUT ============
-function handleCheckout(e) {
+async function handleCheckout(e) {
     e.preventDefault();
     
     const name = document.getElementById('name').value.trim();
@@ -332,42 +322,61 @@ function handleCheckout(e) {
         return;
     }
     
-    // Create order
-    const order = {
-        id: 'ORD-' + Date.now().toString().slice(-6),
-        name,
-        phone,
-        address,
-        email,
-        deliveryTime,
-        notes,
-        payment,
-        items: cart,
-        subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        delivery: 6.99,
-        total: (cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 6.99).toFixed(2),
-        timestamp: Date.now(),
-        status: 'placed',
-        shopper: 'Mary J.',
-        driver: 'Tom R.'
-    };
+    // Show loading
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Placing Order...';
     
-    // Save order
-    const orders = JSON.parse(localStorage.getItem('hometownOrders') || '[]');
-    orders.push(order);
-    localStorage.setItem('hometownOrders', JSON.stringify(orders));
-    
-    // Show confirmation
-    alert(`🎉 Order Placed Successfully!\n\nOrder #${order.id}\nTotal: $${order.total}\n\nWe'll call ${phone} within 30 minutes to confirm your order.\n\nThank you for using Hometown Delivery!`);
-    
-    // Clear cart and redirect
-    cart = [];
-    saveCart();
-    window.location.href = 'track.html';
+    try {
+        // Prepare order data
+        const orderData = {
+            customerInfo: {
+                name,
+                phone,
+                email,
+                address
+            },
+            items: cart.map(item => ({
+                productId: item.id,
+                quantity: item.quantity
+            })),
+            delivery: {
+                timePreference: deliveryTime,
+                instructions: notes
+            },
+            payment: {
+                method: payment
+            },
+            notes
+        };
+        
+        // Call API to create order
+        const response = await api.createOrder(orderData);
+        
+        if (response.success && response.order) {
+            const order = response.order;
+            
+            // Show confirmation
+            alert(`🎉 Order Placed Successfully!\n\nOrder #${order.orderId}\nTotal: $${order.pricing.total.toFixed(2)}\n\nWe'll call ${phone} within 30 minutes to confirm your order.\n\nThank you for using Hometown Delivery!`);
+            
+            // Clear cart and redirect
+            cart = [];
+            saveCart();
+            window.location.href = `track.html?phone=${encodeURIComponent(phone)}`;
+        } else {
+            throw new Error(response.message || 'Failed to place order');
+        }
+    } catch (error) {
+        console.error('Checkout error:', error);
+        showToast('Failed to place order. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
 }
 
 // ============ ORDER TRACKING ============
-function trackOrder() {
+async function trackOrder() {
     const phone = document.getElementById('track-phone').value.trim();
     
     if (!phone) {
@@ -375,63 +384,112 @@ function trackOrder() {
         return;
     }
     
-    const orders = JSON.parse(localStorage.getItem('hometownOrders') || '[]');
-    const order = orders.find(o => o.phone === phone);
-    
     const statusContainer = document.getElementById('order-status');
     const noOrderMessage = document.getElementById('no-order');
     
-    if (!order) {
-        if (statusContainer) statusContainer.style.display = 'none';
-        if (noOrderMessage) noOrderMessage.style.display = 'block';
-        return;
-    }
-    
-    if (noOrderMessage) noOrderMessage.style.display = 'none';
-    if (statusContainer) statusContainer.style.display = 'block';
-    
-    // Fill in order details
-    document.getElementById('order-id').textContent = order.id;
-    document.getElementById('order-date').textContent = new Date(order.timestamp).toLocaleDateString();
-    document.getElementById('order-total').textContent = order.total;
-    document.getElementById('placed-time').textContent = new Date(order.timestamp).toLocaleTimeString();
-    document.getElementById('shopper-name').textContent = order.shopper || 'Your shopper';
-    document.getElementById('driver-name').textContent = order.driver || 'Your driver';
-    
-    // Simulate status progression
-    simulateOrderProgress(order);
-}
-
-function simulateOrderProgress(order) {
-    const statuses = ['status-confirmed', 'status-shopping', 'status-delivering', 'status-delivered'];
-    
-    statuses.forEach((statusId, index) => {
-        setTimeout(() => {
-            const statusEl = document.getElementById(statusId);
-            if (statusEl) {
-                statusEl.classList.add('completed');
-                statusEl.querySelector('.timeline-marker').textContent = '✓';
-            }
+    try {
+        // Call API to track order
+        const response = await api.trackOrder(phone);
+        
+        if (!response.success || !response.order) {
+            if (statusContainer) statusContainer.style.display = 'none';
+            if (noOrderMessage) noOrderMessage.style.display = 'block';
+            return;
+        }
+        
+        const order = response.order;
+        
+        if (noOrderMessage) noOrderMessage.style.display = 'none';
+        if (statusContainer) statusContainer.style.display = 'block';
+        
+        // Fill in order details
+        document.getElementById('order-id').textContent = order.orderId;
+        document.getElementById('order-date').textContent = new Date(order.createdAt).toLocaleDateString();
+        document.getElementById('order-total').textContent = `$${order.total.toFixed(2)}`;
+        document.getElementById('placed-time').textContent = new Date(order.createdAt).toLocaleTimeString();
+        
+        // Display assigned staff if available
+        if (order.assignedShopper) {
+            document.getElementById('shopper-name').textContent = order.assignedShopper.name || 'Your shopper';
+        }
+        if (order.assignedDriver) {
+            document.getElementById('driver-name').textContent = order.assignedDriver.name || 'Your driver';
             
-            // Show driver info when out for delivery
-            if (statusId === 'status-delivering') {
+            // Show driver info if out for delivery
+            if (order.status === 'out_for_delivery' || order.status === 'delivered') {
                 const driverInfo = document.getElementById('driver-info');
                 if (driverInfo) {
                     driverInfo.style.display = 'block';
-                    document.getElementById('driver-full-name').textContent = order.driver;
-                    document.getElementById('driver-vehicle').textContent = 'Blue Honda Civic';
+                    document.getElementById('driver-full-name').textContent = order.assignedDriver.name;
+                    document.getElementById('driver-vehicle').textContent = order.assignedDriver.vehicle || 'Vehicle';
+                    
+                    // Calculate ETA
+                    const eta = new Date(Date.now() + 15 * 60000);
+                    document.getElementById('eta-time').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
                 }
-                
-                // Set ETA
-                const eta = new Date(Date.now() + 15 * 60000);
-                document.getElementById('eta-time').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
             }
+        }
+        
+        // Update status timeline
+        updateStatusTimeline(order.status);
+        
+        // Connect to Socket.io for real-time updates
+        if (window.socketManager) {
+            socketManager.connect();
+            socketManager.joinTracking(phone);
             
-            if (statusId === 'status-delivered') {
-                document.getElementById('delivered-time').textContent = 'Just now!';
-            }
-        }, (index + 1) * 1500);
+            // Listen for status updates
+            socketManager.on('order-status-changed', (data) => {
+                if (data.orderId === order.orderId) {
+                    updateStatusTimeline(data.status);
+                    showToast(`Order status updated: ${formatStatus(data.status)}`, 'success');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Track order error:', error);
+        showToast('Failed to track order. Please try again.', 'error');
+    }
+}
+
+function updateStatusTimeline(status) {
+    // Map API status to timeline elements
+    const statusMapping = {
+        'placed': ['status-confirmed'],
+        'confirmed': ['status-confirmed'],
+        'in_progress': ['status-confirmed', 'status-shopping'],
+        'ready': ['status-confirmed', 'status-shopping'],
+        'out_for_delivery': ['status-confirmed', 'status-shopping', 'status-delivering'],
+        'delivered': ['status-confirmed', 'status-shopping', 'status-delivering', 'status-delivered']
+    };
+    
+    const completedStatuses = statusMapping[status] || [];
+    
+    completedStatuses.forEach(statusId => {
+        const statusEl = document.getElementById(statusId);
+        if (statusEl) {
+            statusEl.classList.add('completed');
+            const marker = statusEl.querySelector('.timeline-marker');
+            if (marker) marker.textContent = '✓';
+        }
     });
+    
+    if (status === 'delivered') {
+        document.getElementById('delivered-time').textContent = 'Just now!';
+    }
+}
+
+function formatStatus(status) {
+    const statusLabels = {
+        'placed': 'Order Placed',
+        'confirmed': 'Order Confirmed',
+        'in_progress': 'Being Prepared',
+        'ready': 'Ready for Pickup',
+        'out_for_delivery': 'Out for Delivery',
+        'delivered': 'Delivered',
+        'cancelled': 'Cancelled'
+    };
+    return statusLabels[status] || status;
 }
 
 // ============ ACCESSIBILITY ============

@@ -123,91 +123,10 @@
         </div>
     </main>
 
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
     <script src="main.js"></script>
     <script src="admin.js"></script>
-    <script>
-        // Initialize customers page
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCustomersGrid();
-            updateCustomerStats();
-        });
-        
-        function updateCustomerStats() {
-            const customerMap = getCustomerMap();
-            const customers = Array.from(customerMap.values());
-            
-            const totalCustomers = customers.length;
-            const repeatCustomers = customers.filter(c => c.orders.length > 1).length;
-            const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-            const avgOrderValue = totalCustomers > 0 ? totalRevenue / customers.reduce((sum, c) => sum + c.orders.length, 0) : 0;
-            
-            // Find top customer
-            const topCustomer = customers.sort((a, b) => b.totalSpent - a.totalSpent)[0];
-            
-            setElementText('stat-total-customers', totalCustomers);
-            setElementText('stat-repeat-customers', repeatCustomers);
-            setElementText('stat-avg-order-value', '$' + avgOrderValue.toFixed(2));
-            setElementText('stat-top-customer', topCustomer ? topCustomer.name.split(' ')[0] : '—');
-        }
-        
-        function getCustomerMap() {
-            const customerMap = new Map();
-            
-            adminOrders.forEach(order => {
-                if (!customerMap.has(order.phone)) {
-                    customerMap.set(order.phone, {
-                        name: order.name,
-                        phone: order.phone,
-                        email: order.email,
-                        address: order.address,
-                        orders: [],
-                        totalSpent: 0
-                    });
-                }
-                
-                const customer = customerMap.get(order.phone);
-                customer.orders.push(order);
-                customer.totalSpent += parseFloat(order.total);
-            });
-            
-            return customerMap;
-        }
-        
-        function filterCustomers() {
-            renderCustomersGrid();
-        }
-        
-        function exportCustomers() {
-            const customerMap = getCustomerMap();
-            const customers = Array.from(customerMap.values());
-            
-            if (customers.length === 0) {
-                showAdminToast('No customers to export', 'warning');
-                return;
-            }
-            
-            const headers = ['Name', 'Phone', 'Email', 'Address', 'Total Orders', 'Total Spent'];
-            const rows = customers.map(c => [
-                c.name,
-                c.phone,
-                c.email || '',
-                `"${c.address.replace(/"/g, '""')}"`,
-                c.orders.length,
-                '$' + c.totalSpent.toFixed(2)
-            ]);
-            
-            const csvContent = [headers, ...rows]
-                .map(row => row.join(','))
-                .join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'customers.csv';
-            link.click();
-            
-            showAdminToast(`Exported ${customers.length} customers`, 'success');
-        }
-    </script>
 </body>
 </html>

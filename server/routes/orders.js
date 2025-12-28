@@ -1,0 +1,26 @@
+const express = require('express');
+const router = express.Router();
+const rateLimit = require('express-rate-limit');
+const orderController = require('../controllers/orderController');
+const { protect, authorize } = require('../middleware/auth');
+const { orderValidation, validate } = require('../middleware/validation');
+
+// Rate limiter for tracking endpoint
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: 'Too many tracking requests, please try again later'
+});
+
+// Public routes
+router.get('/track/:phone', trackLimiter, orderController.trackOrder);
+router.post('/', orderValidation, validate, orderController.createOrder);
+
+// Protected routes
+router.get('/', protect, authorize('admin', 'manager'), orderController.getOrders);
+router.get('/:id', protect, orderController.getOrder);
+router.put('/:id/status', protect, authorize('admin', 'manager'), orderController.updateOrderStatus);
+router.put('/:id/assign-driver', protect, authorize('admin', 'manager'), orderController.assignDriver);
+router.delete('/:id', protect, authorize('admin', 'manager'), orderController.cancelOrder);
+
+module.exports = router;

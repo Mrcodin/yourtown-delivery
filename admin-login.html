@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Hometown Delivery</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="api.js"></script>
     <style>
         * {
             margin: 0;
@@ -431,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // ============ LOGIN HANDLER ============
         
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             
             const username = document.getElementById('username').value.trim().toLowerCase();
@@ -450,27 +452,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show loading state
             setLoading(true);
             
-            // Simulate API call delay (remove in production)
-            setTimeout(() => {
-                // Find matching credentials
-                const user = VALID_CREDENTIALS.find(
-                    cred => cred.username.toLowerCase() === username && cred.password === password
-                );
+            try {
+                // Call API login
+                const response = await api.login(username, password);
                 
-                if (user) {
+                if (response.success && response.token) {
                     // Successful login
-                    loginSuccess(user, rememberMe);
+                    loginSuccess(response.user, response.token, rememberMe);
                 } else {
                     // Failed login
-                    loginFailed();
+                    loginFailed(response.message || 'Invalid username or password');
                 }
-            }, 1000);
+            } catch (error) {
+                console.error('Login error:', error);
+                loginFailed('Connection error. Please try again.');
+            }
         }
 
-        function loginSuccess(user, rememberMe) {
-            // Create session
+        function loginSuccess(user, token, rememberMe) {
+            // Create session for UI compatibility
             const session = {
-                userId: user.username,
+                userId: user._id,
                 username: user.username,
                 name: user.name,
                 role: user.role,
@@ -500,9 +502,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         }
 
-        function loginFailed() {
+        function loginFailed(message) {
             setLoading(false);
-            showError('Invalid username or password');
+            showError(message || 'Invalid username or password');
             
             // Shake animation on inputs
             document.getElementById('username').classList.add('error');

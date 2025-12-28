@@ -1,12 +1,115 @@
 /* ===================================
    ADMIN DASHBOARD - JAVASCRIPT
-   Version 1.0
+   Version 2.0 - API Integration
    =================================== */
 
-// ============ SAMPLE DATA ============
+// ============ STATE MANAGEMENT ============
+let drivers = [];
+let customers = [];
+let adminOrders = [];
+let products = [];
+let dashboardStats = {};
 
-// Sample Drivers
-const drivers = [
+// Socket.io connection
+let socket = null;
+
+// ============ INITIALIZATION ============
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Connect to Socket.io for real-time updates
+    initializeSocketIO();
+    
+    // Load initial data from API
+    await loadInitialData();
+    
+    // Initialize page-specific content
+    initializePage();
+    
+    // Set current date
+    setCurrentDate();
+    
+    // Start auto-refresh
+    setInterval(refreshDashboard, 60000); // Refresh every minute
+});
+
+async function initializeSocketIO() {
+    try {
+        if (window.socketManager) {
+            socket = socketManager.connect();
+            socketManager.joinAdmin();
+            
+            // Listen for real-time events
+            socketManager.on('new-order', (order) => {
+                console.log('New order received:', order);
+                showNotification('New Order', `Order ${order.orderId} placed`);
+                adminOrders.unshift(order);
+                refreshCurrentPage();
+            });
+            
+            socketManager.on('order-updated', (order) => {
+                console.log('Order updated:', order);
+                const index = adminOrders.findIndex(o => o._id === order._id);
+                if (index !== -1) {
+                    adminOrders[index] = order;
+                }
+                refreshCurrentPage();
+            });
+            
+            socketManager.on('driver-status-changed', (data) => {
+                console.log('Driver status changed:', data);
+                const driver = drivers.find(d => d._id === data.driverId);
+                if (driver) {
+                    driver.status = data.status;
+                    refreshCurrentPage();
+                }
+            });
+            
+            console.log('✅ Socket.io connected for admin');
+        }
+    } catch (error) {
+        console.error('Socket.io connection failed:', error);
+    }
+}
+
+async function loadInitialData() {
+    try {
+        // Load all data in parallel
+        const [ordersRes, driversRes, customersRes, productsRes] = await Promise.all([
+            api.getOrders(),
+            api.getDrivers(),
+            api.getCustomers(),
+            api.getProducts()
+        ]);
+        
+        if (ordersRes.success) {
+            adminOrders = ordersRes.orders || [];
+            console.log(`✅ Loaded ${adminOrders.length} orders from API`);
+        }
+        
+        if (driversRes.success) {
+            drivers = driversRes.drivers || [];
+            console.log(`✅ Loaded ${drivers.length} drivers from API`);
+        }
+        
+        if (customersRes.success) {
+            customers = customersRes.customers || [];
+            console.log(`✅ Loaded ${customers.length} customers from API`);
+        }
+        
+        if (productsRes.success) {
+            products = productsRes.products || [];
+            console.log(`✅ Loaded ${products.length} products from API`);
+        }
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showNotification('Error', 'Failed to load data from server', 'error');
+    }
+}
+
+// ============ SAMPLE DATA (LEGACY - Keeping for backward compatibility) ============
+
+// Sample Drivers (replaced by API)
+const sampleDrivers = [
     {
         id: 1,
         firstName: 'Mary',
@@ -69,8 +172,8 @@ const drivers = [
     }
 ];
 
-// Sample Customers
-const customers = [
+// Sample Customers (replaced by API)
+const sampleCustomers = [
     {
         id: 1,
         name: 'Margaret Roberts',
@@ -106,27 +209,7 @@ const customers = [
     }
 ];
 
-// Sample Orders (will also load from localStorage)
-let adminOrders = [];
-
-// Activity Log
-const activityLog = [];
-
-// ============ INITIALIZATION ============
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Load orders from localStorage
-    loadAdminOrders();
-    
-    // Initialize page-specific content
-    initializePage();
-    
-    // Set current date
-    setCurrentDate();
-    
-    // Start auto-refresh
-    setInterval(refreshDashboard, 30000); // Refresh every 30 seconds
-});
+// Sample Orders (Legacy - replaced by API data)
 
 function initializePage() {
     const path = window.location.pathname;
@@ -154,23 +237,43 @@ function setCurrentDate() {
     }
 }
 
-// ============ LOAD DATA ============
-
-function loadAdminOrders() {
-    const savedOrders = localStorage.getItem('hometownOrders');
-    if (savedOrders) {
-        adminOrders = JSON.parse(savedOrders);
-    }
+function refreshCurrentPage() {
+    const path = window.location.pathname;
     
-    // Add sample orders if none exist
-    if (adminOrders.length === 0) {
-        adminOrders = generateSampleOrders();
-        saveAdminOrders();
+    if (path.includes('admin.html') || path.endsWith('/admin/')) {
+        updateDashboardStats();
+        renderRecentOrders();
+        renderActiveDeliveries();
+        renderDriversStatus();
+        renderActivityTimeline();
+    } else if (path.includes('admin-orders.html')) {
+        renderOrdersTable();
+    } else if (path.includes('admin-drivers.html')) {
+        renderDriversTable();
+    } else if (path.includes('admin-customers.html')) {
+        renderCustomersTable();
+    } else if (path.includes('admin-products.html')) {
+        renderProductsGrid();
+        updateProductCounts();
     }
 }
 
+// ============ LOAD DATA (Updated for API) ============
+
+async function refreshDashboard() {
+    await loadInitialData();
+    refreshCurrentPage();
+}
+
+// Legacy function for compatibility
+function loadAdminOrders() {
+    // Now handled by loadInitialData()
+    console.log('loadAdminOrders() is deprecated - using API');
+}
+
 function saveAdminOrders() {
-    localStorage.setItem('hometownOrders', JSON.stringify(adminOrders));
+    // No longer saving to localStorage
+    console.log('saveAdminOrders() is deprecated - data saved to API');
 }
 
 function generateSampleOrders() {
@@ -286,7 +389,7 @@ function generateSampleOrders() {
     ];
 }
 
-// ============ DASHBOARD ============
+// ============ DASHBOARD (Updated for API) ============
 
 function initDashboard() {
     updateDashboardStats();
@@ -300,11 +403,11 @@ function initDashboard() {
 function updateDashboardStats() {
     const today = new Date().setHours(0, 0, 0, 0);
     
-    const todayOrders = adminOrders.filter(o => new Date(o.timestamp).setHours(0, 0, 0, 0) === today);
+    const todayOrders = adminOrders.filter(o => new Date(o.createdAt).setHours(0, 0, 0, 0) === today);
     const pendingOrders = adminOrders.filter(o => ['placed', 'confirmed'].includes(o.status));
-    const activeDrivers = drivers.filter(d => d.status === 'online' || d.status === 'busy');
+    const activeDrivers = drivers.filter(d => d.status === 'available' || d.status === 'busy');
     
-    const todayRevenue = todayOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.pricing?.total || o.total || 0), 0);
     
     setElementText('stat-orders-today', todayOrders.length);
     setElementText('stat-revenue-today', '$' + todayRevenue.toFixed(2));
@@ -324,13 +427,13 @@ function renderRecentOrders() {
     }
     
     container.innerHTML = recentOrders.map(order => `
-        <div class="order-item" onclick="viewOrderDetail('${order.id}')">
-            <div class="order-id">${order.id}</div>
+        <div class="order-item" onclick="viewOrderDetail('${order._id}')">
+            <div class="order-id">${order.orderId}</div>
             <div class="order-customer">
-                <div class="order-customer-name">${order.name}</div>
-                <div class="order-customer-address">${truncateText(order.address, 30)}</div>
+                <div class="order-customer-name">${order.customerInfo?.name || order.customer?.name || 'Unknown'}</div>
+                <div class="order-customer-address">${truncateText(order.customerInfo?.address || order.customer?.address || '', 30)}</div>
             </div>
-            <div class="order-amount">$${order.total}</div>
+            <div class="order-amount">$${(order.pricing?.total || order.total || 0).toFixed(2)}</div>
             <div class="order-status ${order.status}">${formatStatus(order.status)}</div>
         </div>
     `).join('');
@@ -341,7 +444,7 @@ function renderActiveDeliveries() {
     const countBadge = document.getElementById('active-deliveries-count');
     if (!container) return;
     
-    const activeDeliveries = adminOrders.filter(o => ['shopping', 'delivering'].includes(o.status));
+    const activeDeliveries = adminOrders.filter(o => ['in_progress', 'ready', 'out_for_delivery'].includes(o.status));
     
     if (countBadge) countBadge.textContent = activeDeliveries.length;
     
@@ -351,13 +454,13 @@ function renderActiveDeliveries() {
     }
     
     container.innerHTML = activeDeliveries.map(order => `
-        <div class="order-item" onclick="viewOrderDetail('${order.id}')">
+        <div class="order-item" onclick="viewOrderDetail('${order._id}')">
             <div class="order-status ${order.status}">${formatStatus(order.status)}</div>
             <div class="order-customer">
-                <div class="order-customer-name">${order.name}</div>
-                <div class="order-customer-address">Driver: ${order.driver || 'Unassigned'}</div>
+                <div class="order-customer-name">${order.customerInfo?.name || order.customer?.name || 'Unknown'}</div>
+                <div class="order-customer-address">Driver: ${order.delivery?.driverName || order.assignedDriver?.name || 'Unassigned'}</div>
             </div>
-            <div class="order-amount">$${order.total}</div>
+            <div class="order-amount">$${(order.pricing?.total || order.total || 0).toFixed(2)}</div>
         </div>
     `).join('');
 }
@@ -366,18 +469,35 @@ function renderDriversStatus() {
     const container = document.getElementById('drivers-status-grid');
     if (!container) return;
     
-    container.innerHTML = drivers.map(driver => `
-        <div class="driver-status-card">
-            <div class="driver-avatar">${driver.firstName[0]}${driver.lastName[0]}</div>
-            <div class="driver-info">
-                <div class="driver-name">${driver.firstName} ${driver.lastName[0]}.</div>
-                <div class="driver-status ${driver.status}">
-                    <span class="status-dot"></span>
-                    ${capitalizeFirst(driver.status)}
+    if (drivers.length === 0) {
+        container.innerHTML = '<p class="empty-message">No drivers available</p>';
+        return;
+    }
+    
+    container.innerHTML = drivers.map(driver => {
+        const driverName = `${driver.firstName} ${driver.lastName}`;
+        return `
+            <div class="driver-status-card">
+                <div class="driver-avatar">${getInitials(driverName)}</div>
+                <div class="driver-info">
+                    <div class="driver-name">${driverName}</div>
+                    <div class="driver-status ${driver.status}">
+                        <span class="status-dot"></span>
+                        ${capitalizeFirst(driver.status)}
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function getInitials(name) {
+    if (!name) return '??';
+    return name.split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
 }
 
 function renderActivityTimeline() {
@@ -386,9 +506,9 @@ function renderActivityTimeline() {
     
     // Generate activity from orders
     const activities = adminOrders.slice(0, 6).map(order => ({
-        time: formatTime(order.timestamp),
-        title: `Order ${order.id}`,
-        description: `${order.name} - ${formatStatus(order.status)}`
+        time: formatTime(order.createdAt),
+        title: `Order ${order.orderId}`,
+        description: `${order.customerInfo?.name || order.customer?.name || 'Unknown'} - ${formatStatus(order.status)}`
     }));
     
     if (activities.length === 0) {
@@ -607,26 +727,37 @@ function renderOrdersTable() {
     
     if (emptyState) emptyState.style.display = 'none';
     
-    tbody.innerHTML = filteredOrders.map(order => `
-        <tr>
-            <td><strong>${order.id}</strong></td>
-            <td>
-                <div>${order.name}</div>
-                <small style="color: #64748b;">${order.phone}</small>
-            </td>
-            <td>${order.items.length} items</td>
-            <td><strong>$${order.total}</strong></td>
-            <td><span class="order-status ${order.status}">${formatStatus(order.status)}</span></td>
-            <td>${order.driver || '—'}</td>
-            <td>${formatTime(order.timestamp)}</td>
-            <td>
-                <div class="table-actions">
-                    <button class="table-btn view" onclick="viewOrderDetail('${order.id}')">View</button>
-                    <button class="table-btn edit" onclick="quickUpdateStatus('${order.id}')">Update</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = filteredOrders.map(order => {
+        const orderId = order.orderId || order.id;
+        const customerName = order.customerInfo?.name || order.customer?.name || order.name || 'Unknown';
+        const customerPhone = order.customerInfo?.phone || order.customer?.phone || order.phone || '';
+        const itemCount = order.items?.length || 0;
+        const total = order.pricing?.total || order.total || 0;
+        const driver = order.delivery?.driverName || order.assignedDriver?.name || order.driver || '—';
+        const timestamp = order.createdAt || order.timestamp;
+        const id = order._id || order.id;
+        
+        return `
+            <tr>
+                <td><strong>${orderId}</strong></td>
+                <td>
+                    <div>${customerName}</div>
+                    <small style="color: #64748b;">${customerPhone}</small>
+                </td>
+                <td>${itemCount} items</td>
+                <td><strong>$${total.toFixed(2)}</strong></td>
+                <td><span class="order-status ${order.status}">${formatStatus(order.status)}</span></td>
+                <td>${driver}</td>
+                <td>${formatTime(timestamp)}</td>
+                <td>
+                    <div class="table-actions">
+                        <button class="table-btn view" onclick="viewOrderDetail('${id}')">View</button>
+                        <button class="table-btn edit" onclick="quickUpdateStatus('${id}')">Update</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function getFilteredOrders() {
@@ -647,7 +778,7 @@ function getFilteredOrders() {
         const today = new Date(now.setHours(0, 0, 0, 0));
         
         filtered = filtered.filter(o => {
-            const orderDate = new Date(o.timestamp);
+            const orderDate = new Date(o.createdAt || o.timestamp);
             
             switch (dateFilter) {
                 case 'today':
@@ -673,15 +804,19 @@ function getFilteredOrders() {
     // Search filter
     if (searchFilter) {
         filtered = filtered.filter(o => 
-            o.id.toLowerCase().includes(searchFilter) ||
-            o.name.toLowerCase().includes(searchFilter) ||
-            o.phone.includes(searchFilter) ||
-            o.address.toLowerCase().includes(searchFilter)
+            (o.orderId || o.id || '').toLowerCase().includes(searchFilter) ||
+            (o.customerInfo?.name || o.name || '').toLowerCase().includes(searchFilter) ||
+            (o.customerInfo?.phone || o.phone || '').includes(searchFilter) ||
+            (o.customerInfo?.address || o.address || '').toLowerCase().includes(searchFilter)
         );
     }
     
     // Sort by most recent
-    filtered.sort((a, b) => b.timestamp - a.timestamp);
+    filtered.sort((a, b) => {
+        const aTime = new Date(a.createdAt || a.timestamp || 0).getTime();
+        const bTime = new Date(b.createdAt || b.timestamp || 0).getTime();
+        return bTime - aTime;
+    });
     
     return filtered;
 }
@@ -692,9 +827,14 @@ function filterOrders() {
 }
 
 function resetFilters() {
-    document.getElementById('filter-status').value = 'all';
-    document.getElementById('filter-date').value = 'today';
-    document.getElementById('filter-search').value = '';
+    const statusFilter = document.getElementById('filter-status');
+    const dateFilter = document.getElementById('filter-date');
+    const searchFilter = document.getElementById('filter-search');
+    
+    if (statusFilter) statusFilter.value = 'all';
+    if (dateFilter) dateFilter.value = 'today';
+    if (searchFilter) searchFilter.value = '';
+    
     filterOrders();
 }
 
@@ -723,42 +863,53 @@ function updatePendingOrdersCount() {
 let currentOrderId = null;
 
 function viewOrderDetail(orderId) {
-    const order = adminOrders.find(o => o.id === orderId);
+    const order = adminOrders.find(o => o._id === orderId || o.id === orderId);
     if (!order) return;
     
-    currentOrderId = orderId;
+    currentOrderId = order._id || orderId;
     
     // Populate modal
-    setElementText('modal-order-id', order.id);
-    setElementText('detail-name', order.name);
-    setElementText('detail-address', order.address);
-    setElementText('detail-email', order.email || '—');
-    setElementText('detail-time', formatDateTime(order.timestamp));
-    setElementText('detail-delivery-time', capitalizeFirst(order.deliveryTime));
-    setElementText('detail-payment', capitalizeFirst(order.payment));
+    setElementText('modal-order-id', order.orderId || order.id);
+    setElementText('detail-name', order.customerInfo?.name || order.customer?.name || order.name || '—');
+    setElementText('detail-address', order.customerInfo?.address || order.customer?.address || order.address || '—');
+    setElementText('detail-email', order.customerInfo?.email || order.customer?.email || order.email || '—');
+    setElementText('detail-time', formatDateTime(order.createdAt || order.timestamp));
+    setElementText('detail-delivery-time', capitalizeFirst(order.delivery?.timePreference || order.deliveryTime || 'ASAP'));
+    setElementText('detail-payment', capitalizeFirst(order.payment?.method || order.paymentMethod || order.payment || 'cash'));
     setElementText('detail-notes', order.notes || '—');
     
     const phoneLink = document.getElementById('detail-phone-link');
     if (phoneLink) {
-        phoneLink.textContent = order.phone;
-        phoneLink.href = 'tel:' + order.phone;
+        const phone = order.customerInfo?.phone || order.customer?.phone || order.phone || '';
+        phoneLink.textContent = phone;
+        phoneLink.href = 'tel:' + phone;
     }
     
     // Populate items
     const itemsContainer = document.getElementById('detail-items');
     if (itemsContainer) {
-        itemsContainer.innerHTML = order.items.map(item => `
-            <tr>
-                <td>${item.emoji} ${item.name}</td>
-                <td>$${item.price.toFixed(2)}</td>
-                <td>${item.quantity}</td>
-                <td>$${(item.price * item.quantity).toFixed(2)}</td>
-            </tr>
-        `).join('');
+        const items = order.items || [];
+        itemsContainer.innerHTML = items.map(item => {
+            const name = item.name || 'Unknown Item';
+            const emoji = item.emoji || '📦';
+            const price = item.price || 0;
+            const quantity = item.quantity || 1;
+            
+            return `
+                <tr>
+                    <td>${emoji} ${name}</td>
+                    <td>$${price.toFixed(2)}</td>
+                    <td>${quantity}</td>
+                    <td>$${(price * quantity).toFixed(2)}</td>
+                </tr>
+            `;
+        }).join('');
     }
     
-    setElementText('detail-subtotal', '$' + order.subtotal.toFixed(2));
-    setElementText('detail-total', '$' + order.total);
+    const subtotal = order.pricing?.subtotal || order.subtotal || (order.pricing?.total - 6.99) || 0;
+    const total = order.pricing?.total || order.total || 0;
+    setElementText('detail-subtotal', '$' + subtotal.toFixed(2));
+    setElementText('detail-total', '$' + total.toFixed(2));
     
     // Set current status in dropdown
     const statusSelect = document.getElementById('update-status');
@@ -766,74 +917,84 @@ function viewOrderDetail(orderId) {
     
     // Set current driver
     const driverSelect = document.getElementById('assign-driver');
-    if (driverSelect && order.driver) {
-        // Try to find matching driver
-        const driverOption = Array.from(driverSelect.options).find(opt => 
-            opt.textContent.includes(order.driver.split(' ')[0])
-        );
-        if (driverOption) driverSelect.value = driverOption.value;
+    if (driverSelect && order.delivery?.driverId) {
+        driverSelect.value = order.delivery.driverId;
     }
     
     openModal('order-detail-modal');
 }
 
-function updateOrderStatus() {
+async function updateOrderStatus() {
     if (!currentOrderId) return;
     
-    const order = adminOrders.find(o => o.id === currentOrderId);
+    const order = adminOrders.find(o => o._id === currentOrderId || o.id === currentOrderId);
     if (!order) return;
     
     const newStatus = document.getElementById('update-status').value;
     const driverSelect = document.getElementById('assign-driver');
     const driverId = driverSelect?.value;
     
-    order.status = newStatus;
-    
-    if (driverId) {
-        const driver = drivers.find(d => d.id === parseInt(driverId));
-        if (driver) {
-            order.driver = `${driver.firstName} ${driver.lastName[0]}.`;
-            order.shopper = order.shopper || order.driver;
+    try {
+        // Update order status
+        const statusResponse = await api.updateOrderStatus(order._id, newStatus);
+        
+        if (!statusResponse.success) {
+            throw new Error(statusResponse.message || 'Failed to update status');
         }
+        
+        // If driver is selected and different from current, update that separately
+        if (driverId && driverId !== '' && driverId !== 'none' && driverId !== order.delivery?.driverId) {
+            try {
+                const driverResponse = await api.assignDriver(order._id, driverId);
+                if (!driverResponse.success) {
+                    console.warn('Failed to assign driver:', driverResponse.message);
+                    showAdminToast('Status updated but driver assignment failed', 'warning');
+                }
+            } catch (driverError) {
+                console.error('Error assigning driver:', driverError);
+                // Don't fail the whole operation if just driver assignment fails
+            }
+        }
+        
+        showAdminToast('Order updated successfully!', 'success');
+        closeModal('order-detail-modal');
+        
+        // Refresh the page content
+        await loadInitialData();
+        refreshCurrentPage();
+        updatePendingOrdersCount();
+    } catch (error) {
+        console.error('Error updating order:', error);
+        showAdminToast('Failed to update order: ' + (error.message || 'Unknown error'), 'error');
     }
-    
-    saveAdminOrders();
-    
-    showAdminToast('Order status updated!', 'success');
-    closeModal('order-detail-modal');
-    
-    // Refresh the page content
-    if (document.getElementById('orders-table-body')) {
-        renderOrdersTable();
-        updateOrderCounts();
-    }
-    if (document.getElementById('recent-orders-list')) {
-        initDashboard();
-    }
-    
-    updatePendingOrdersCount();
 }
 
 function quickUpdateStatus(orderId) {
     viewOrderDetail(orderId);
 }
 
-function cancelOrder() {
+async function cancelOrder() {
     if (!currentOrderId) return;
     
     if (!confirm('Are you sure you want to cancel this order?')) return;
     
-    const order = adminOrders.find(o => o.id === currentOrderId);
-    if (order) {
-        order.status = 'cancelled';
-        saveAdminOrders();
-        showAdminToast('Order cancelled', 'warning');
-        closeModal('order-detail-modal');
+    try {
+        const response = await api.updateOrderStatus(currentOrderId, 'cancelled');
         
-        if (document.getElementById('orders-table-body')) {
-            renderOrdersTable();
-            updateOrderCounts();
+        if (response.success) {
+            showAdminToast('Order cancelled', 'warning');
+            closeModal('order-detail-modal');
+            
+            // Refresh data and page
+            await loadInitialData();
+            refreshCurrentPage();
+            updatePendingOrdersCount();
+        } else {
+            throw new Error(response.message || 'Failed to cancel order');
         }
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showAdminToast('Failed to cancel order: ' + (error.message || 'Unknown error'), 'error');
     }
 }
 
@@ -842,9 +1003,12 @@ function printOrder() {
 }
 
 function callCustomer() {
-    const order = adminOrders.find(o => o.id === currentOrderId);
+    const order = adminOrders.find(o => o._id === currentOrderId);
     if (order) {
-        window.location.href = 'tel:' + order.phone;
+        const phone = order.customerInfo?.phone || order.phone;
+        if (phone) {
+            window.location.href = 'tel:' + phone;
+        }
     }
 }
 
@@ -863,15 +1027,25 @@ function populateDriverSelect() {
 // ============ PRODUCTS PAGE ============
 
 function initProductsPage() {
+    console.log('Initializing products page, products count:', products.length);
     renderProductsGrid();
     updateProductCounts();
 }
 
 function renderProductsGrid() {
     const container = document.getElementById('products-grid');
-    if (!container) return;
+    if (!container) {
+        console.error('Products grid container not found!');
+        return;
+    }
     
     let filteredProducts = getFilteredProducts();
+    console.log('Rendering products grid, filtered products:', filteredProducts.length);
+    
+    if (filteredProducts.length === 0) {
+        container.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">No products found</div>';
+        return;
+    }
     
     container.innerHTML = filteredProducts.map(product => `
         <div class="product-admin-card">
@@ -882,8 +1056,8 @@ function renderProductsGrid() {
                 <div class="product-admin-price">$${product.price.toFixed(2)}</div>
                 <div class="product-admin-status ${product.status || 'active'}">${formatProductStatus(product.status || 'active')}</div>
                 <div class="product-admin-actions">
-                    <button class="btn btn-outline btn-sm" onclick="editProduct(${product.id})">✏️ Edit</button>
-                    <button class="btn btn-outline btn-sm" onclick="toggleProductStatus(${product.id})">👁️</button>
+                    <button class="btn btn-outline btn-sm" onclick="editProduct('${product._id}')">✏️ Edit</button>
+                    <button class="btn btn-outline btn-sm" onclick="toggleProductStatus('${product._id}')">👁️</button>
                 </div>
             </div>
         </div>
@@ -891,7 +1065,7 @@ function renderProductsGrid() {
 }
 
 function getFilteredProducts() {
-    let filtered = [...groceries];
+    let filtered = [...products];
     
     const categoryFilter = document.getElementById('filter-category')?.value;
     const statusFilter = document.getElementById('filter-product-status')?.value;
@@ -920,12 +1094,13 @@ function filterProducts() {
 }
 
 function updateProductCounts() {
-    setElementText('count-total-products', groceries.length);
-    setElementText('count-active-products', groceries.filter(p => (p.status || 'active') === 'active').length);
-    setElementText('count-out-of-stock', groceries.filter(p => p.status === 'out-of-stock').length);
+    setElementText('count-total-products', products.length);
+    setElementText('count-active-products', products.filter(p => (p.status || 'active') === 'active').length);
+    setElementText('count-out-of-stock', products.filter(p => p.status === 'out-of-stock').length);
 }
 
 function openAddProductModal() {
+    console.log('Opening add product modal');
     document.getElementById('product-modal-title').textContent = 'Add New Product';
     document.getElementById('product-form').reset();
     document.getElementById('product-id').value = '';
@@ -933,11 +1108,11 @@ function openAddProductModal() {
 }
 
 function editProduct(productId) {
-    const product = groceries.find(p => p.id === productId);
+    const product = products.find(p => p._id === productId);
     if (!product) return;
     
     document.getElementById('product-modal-title').textContent = 'Edit Product';
-    document.getElementById('product-id').value = product.id;
+    document.getElementById('product-id').value = product._id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price;
     document.getElementById('product-category').value = product.category;
@@ -947,7 +1122,7 @@ function editProduct(productId) {
     openModal('product-modal');
 }
 
-function saveProduct() {
+async function saveProduct() {
     const id = document.getElementById('product-id').value;
     const name = document.getElementById('product-name').value;
     const price = parseFloat(document.getElementById('product-price').value);
@@ -960,45 +1135,79 @@ function saveProduct() {
         return;
     }
     
-    if (id) {
-        // Edit existing
-        const product = groceries.find(p => p.id === parseInt(id));
-        if (product) {
-            product.name = name;
-            product.price = price;
-            product.category = category;
-            product.emoji = emoji;
-            product.status = status;
+    try {
+        const productData = { name, price, category, emoji, status };
+        
+        if (id) {
+            // Edit existing
+            const response = await api.updateProduct(id, productData);
+            if (response.success) {
+                const index = products.findIndex(p => p._id === id);
+                if (index !== -1) {
+                    products[index] = response.product;
+                }
+            } else {
+                throw new Error(response.message || 'Failed to update product');
+            }
+        } else {
+            // Add new
+            const response = await api.createProduct(productData);
+            if (response.success) {
+                products.push(response.product);
+            } else {
+                throw new Error(response.message || 'Failed to create product');
+            }
         }
-    } else {
-        // Add new
-        const newId = Math.max(...groceries.map(p => p.id)) + 1;
-        groceries.push({
-            id: newId,
-            name,
-            price,
-            category,
-            emoji,
-            status
-        });
+        
+        showAdminToast('Product saved successfully!', 'success');
+        closeModal('product-modal');
+        renderProductsGrid();
+        updateProductCounts();
+    } catch (error) {
+        console.error('Error saving product:', error);
+        showAdminToast('Failed to save product: ' + error.message, 'error');
     }
-    
-    showAdminToast('Product saved successfully!', 'success');
-    closeModal('product-modal');
-    renderProductsGrid();
-    updateProductCounts();
 }
 
-function toggleProductStatus(productId) {
-    const product = groceries.find(p => p.id === productId);
-    if (!product) return;
+async function toggleProductStatus(productId) {
+    const product = products.find(p => p._id === productId);
+    if (!product) {
+        console.error('Product not found:', productId);
+        showAdminToast('Product not found', 'error');
+        return;
+    }
     
-    const currentStatus = product.status || 'active';
-    product.status = currentStatus === 'active' ? 'hidden' : 'active';
-    
-    showAdminToast(`Product ${product.status === 'active' ? 'shown' : 'hidden'}`, 'success');
-    renderProductsGrid();
-    updateProductCounts();
+    try {
+        const currentStatus = product.status || 'active';
+        const newStatus = currentStatus === 'active' ? 'hidden' : 'active';
+        
+        console.log('Toggling product status:', productId, 'from', currentStatus, 'to', newStatus);
+        
+        // Send full product data to avoid validation errors
+        const updateData = {
+            name: product.name,
+            price: product.price,
+            category: product.category,
+            emoji: product.emoji,
+            status: newStatus
+        };
+        
+        const response = await api.updateProduct(productId, updateData);
+        
+        console.log('Toggle response:', response);
+        
+        if (response.success) {
+            product.status = newStatus;
+            showAdminToast(`Product ${newStatus === 'active' ? 'shown' : 'hidden'}`, 'success');
+            renderProductsGrid();
+            updateProductCounts();
+        } else {
+            throw new Error(response.message || 'Failed to update product status');
+        }
+    } catch (error) {
+        console.error('Error toggling product status:', error);
+        showAdminToast('Failed to update product status: ' + error.message, 'error');
+    }
 }
 
 function formatProductStatus(status) {
@@ -1021,61 +1230,81 @@ function renderDriversGrid() {
     const container = document.getElementById('drivers-grid');
     if (!container) return;
     
-    container.innerHTML = drivers.map(driver => `
-        <div class="driver-card">
-            <div class="driver-card-header">
-                <div class="driver-avatar-large">${driver.firstName[0]}${driver.lastName[0]}</div>
-                <div class="driver-card-info">
-                    <h3>${driver.firstName} ${driver.lastName}</h3>
-                    <span class="driver-status-badge ${driver.status}">${capitalizeFirst(driver.status)}</span>
+    if (drivers.length === 0) {
+        container.innerHTML = `
+            <div class="admin-empty-state">
+                <div class="empty-icon">🚗</div>
+                <h3>No Drivers Yet</h3>
+                <p>Add drivers to start managing deliveries.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = drivers.map(driver => {
+        const driverName = `${driver.firstName} ${driver.lastName}`;
+        const initials = getInitials(driverName);
+        const totalDeliveries = driver.totalDeliveries || 0;
+        const rating = driver.rating || 5.0;
+        const vehicleType = driver.vehicle?.type || 'car';
+        const vehicleDesc = driver.vehicle?.description || capitalizeFirst(vehicleType);
+        
+        return `
+            <div class="driver-card">
+                <div class="driver-card-header">
+                    <div class="driver-avatar-large">${initials}</div>
+                    <div class="driver-card-info">
+                        <h3>${driverName}</h3>
+                        <span class="driver-status-badge ${driver.status}">${capitalizeFirst(driver.status)}</span>
+                    </div>
+                </div>
+                
+                <div class="driver-card-stats">
+                    <div class="driver-stat">
+                        <div class="driver-stat-value">${totalDeliveries}</div>
+                        <div class="driver-stat-label">Deliveries</div>
+                    </div>
+                    <div class="driver-stat">
+                        <div class="driver-stat-value">${rating.toFixed(1)}★</div>
+                        <div class="driver-stat-label">Rating</div>
+                    </div>
+                    <div class="driver-stat">
+                        <div class="driver-stat-value">${vehicleDesc}</div>
+                        <div class="driver-stat-label">Vehicle</div>
+                    </div>
+                </div>
+                
+                <div class="driver-card-details">
+                    <div class="driver-detail-row">
+                        <span>Phone</span>
+                        <span>${driver.phone}</span>
+                    </div>
+                    <div class="driver-detail-row">
+                        <span>Email</span>
+                        <span>${driver.email || 'N/A'}</span>
+                    </div>
+                </div>
+                
+                <div class="driver-card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewDriverDetail('${driver._id}')">View</button>
+                    <button class="btn btn-outline btn-sm" onclick="editDriver('${driver._id}')">Edit</button>
+                    <button class="btn btn-outline btn-sm" onclick="callDriver('${driver.phone}')">📞</button>
                 </div>
             </div>
-            
-            <div class="driver-card-stats">
-                <div class="driver-stat">
-                    <div class="driver-stat-value">${driver.totalDeliveries}</div>
-                    <div class="driver-stat-label">Deliveries</div>
-                </div>
-                <div class="driver-stat">
-                    <div class="driver-stat-value">${driver.rating}★</div>
-                    <div class="driver-stat-label">Rating</div>
-                </div>
-                <div class="driver-stat">
-                    <div class="driver-stat-value">$${driver.earnings}</div>
-                    <div class="driver-stat-label">Earnings</div>
-                </div>
-            </div>
-            
-            <div class="driver-card-details">
-                <div class="driver-detail-row">
-                    <span>Phone</span>
-                    <span>${driver.phone}</span>
-                </div>
-                <div class="driver-detail-row">
-                    <span>Vehicle</span>
-                    <span>${driver.vehicle}</span>
-                </div>
-            </div>
-            
-            <div class="driver-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="viewDriverDetail(${driver.id})">View</button>
-                <button class="btn btn-outline btn-sm" onclick="editDriver(${driver.id})">Edit</button>
-                <button class="btn btn-outline btn-sm" onclick="callDriver(${driver.id})">📞</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function updateDriverStats() {
     const total = drivers.length;
-    const online = drivers.filter(d => d.status === 'online').length;
+    const online = drivers.filter(d => d.status === 'available').length;
     const busy = drivers.filter(d => d.status === 'busy').length;
-    const todayDeliveries = drivers.reduce((sum, d) => sum + Math.floor(d.totalDeliveries / 30), 0);
+    const offline = drivers.filter(d => d.status === 'offline').length;
     
     setElementText('stat-total-drivers', total);
     setElementText('stat-online-drivers', online);
     setElementText('stat-busy-drivers', busy);
-    setElementText('stat-today-deliveries', todayDeliveries);
+    setElementText('stat-offline-drivers', offline);
 }
 
 function openAddDriverModal() {
@@ -1086,32 +1315,32 @@ function openAddDriverModal() {
 }
 
 function editDriver(driverId) {
-    const driver = drivers.find(d => d.id === driverId);
+    const driver = drivers.find(d => d._id === driverId);
     if (!driver) return;
     
     document.getElementById('driver-modal-title').textContent = 'Edit Driver';
-    document.getElementById('driver-id').value = driver.id;
+    document.getElementById('driver-id').value = driver._id;
     document.getElementById('driver-first-name').value = driver.firstName;
     document.getElementById('driver-last-name').value = driver.lastName;
     document.getElementById('driver-phone').value = driver.phone;
-    document.getElementById('driver-email').value = driver.email;
-    document.getElementById('driver-vehicle-type').value = driver.vehicleType;
-    document.getElementById('driver-vehicle').value = driver.vehicle;
-    document.getElementById('driver-license').value = driver.licensePlate;
+    document.getElementById('driver-email').value = driver.email || '';
+    document.getElementById('driver-vehicle-type').value = driver.vehicle?.type || 'car';
+    document.getElementById('driver-vehicle').value = driver.vehicle?.description || '';
+    document.getElementById('driver-license').value = driver.vehicle?.licensePlate || '';
     document.getElementById('driver-status').value = driver.status;
     
     openModal('driver-modal');
 }
 
-function saveDriver() {
+async function saveDriver() {
     const id = document.getElementById('driver-id').value;
-    const firstName = document.getElementById('driver-first-name').value;
-    const lastName = document.getElementById('driver-last-name').value;
-    const phone = document.getElementById('driver-phone').value;
-    const email = document.getElementById('driver-email').value;
+    const firstName = document.getElementById('driver-first-name').value.trim();
+    const lastName = document.getElementById('driver-last-name').value.trim();
+    const phone = document.getElementById('driver-phone').value.trim();
+    const email = document.getElementById('driver-email').value.trim();
     const vehicleType = document.getElementById('driver-vehicle-type').value;
-    const vehicle = document.getElementById('driver-vehicle').value;
-    const licensePlate = document.getElementById('driver-license').value;
+    const vehicleDescription = document.getElementById('driver-vehicle').value.trim();
+    const licensePlate = document.getElementById('driver-license').value.trim();
     const status = document.getElementById('driver-status').value;
     
     if (!firstName || !lastName || !phone) {
@@ -1119,43 +1348,47 @@ function saveDriver() {
         return;
     }
     
-    if (id) {
-        // Edit existing
-        const driver = drivers.find(d => d.id === parseInt(id));
-        if (driver) {
-            Object.assign(driver, {
-                firstName, lastName, phone, email, vehicleType, vehicle, licensePlate, status
-            });
-        }
-    } else {
-        // Add new
-        const newId = Math.max(...drivers.map(d => d.id)) + 1;
-        drivers.push({
-            id: newId,
-            firstName,
-            lastName,
-            phone,
-            email,
-            vehicle,
-            vehicleType,
-            licensePlate,
-            status: status || 'pending',
-            rating: 5.0,
-            totalDeliveries: 0,
-            earnings: 0,
-            joinDate: new Date().toISOString().split('T')[0]
-        });
-    }
+    const driverData = {
+        firstName,
+        lastName,
+        phone,
+        email,
+        vehicle: {
+            type: vehicleType,
+            description: vehicleDescription,
+            licensePlate
+        },
+        status
+    };
     
-    showAdminToast('Driver saved successfully!', 'success');
-    closeModal('driver-modal');
-    renderDriversGrid();
-    updateDriverStats();
+    try {
+        if (id) {
+            // Edit existing
+            await api.updateDriver(id, driverData);
+            showAdminToast('Driver updated successfully!', 'success');
+        } else {
+            // Add new
+            await api.createDriver(driverData);
+            showAdminToast('Driver created successfully!', 'success');
+        }
+        
+        closeModal('driver-modal');
+        await loadDrivers();
+    } catch (error) {
+        console.error('Error saving driver:', error);
+        showAdminToast('Failed to save driver: ' + (error.message || 'Unknown error'), 'error');
+    }
 }
 
 function viewDriverDetail(driverId) {
-    const driver = drivers.find(d => d.id === driverId);
+    const driver = drivers.find(d => d._id === driverId);
     if (!driver) return;
+    
+    // Set driver ID for deactivate function
+    const driverIdField = document.getElementById('driver-id');
+    if (driverIdField) {
+        driverIdField.value = driver._id;
+    }
     
     document.getElementById('driver-detail-avatar').textContent = `${driver.firstName[0]}${driver.lastName[0]}`;
     document.getElementById('driver-detail-name').textContent = `${driver.firstName} ${driver.lastName}`;
@@ -1164,12 +1397,14 @@ function viewDriverDetail(driverId) {
     statusBadge.textContent = capitalizeFirst(driver.status);
     statusBadge.className = `driver-status-badge ${driver.status}`;
     
+    const vehicleDesc = driver.vehicle?.description || capitalizeFirst(driver.vehicle?.type || 'car');
+    
     setElementText('driver-total-deliveries', driver.totalDeliveries);
     setElementText('driver-rating', driver.rating + '★');
     setElementText('driver-earnings', '$' + driver.earnings);
     setElementText('driver-detail-phone', driver.phone);
     setElementText('driver-detail-email', driver.email || '—');
-    setElementText('driver-detail-vehicle', driver.vehicle);
+    setElementText('driver-detail-vehicle', vehicleDesc);
     
         // Recent deliveries
     const recentDeliveries = document.getElementById('driver-recent-deliveries');
@@ -1197,14 +1432,13 @@ function viewDriverDetail(driverId) {
     openModal('driver-detail-modal');
 }
 
-function callDriver(driverId) {
-    const driver = drivers.find(d => d.id === driverId);
-    if (driver) {
-        window.location.href = 'tel:' + driver.phone;
+function callDriver(phone) {
+    if (phone) {
+        window.location.href = 'tel:' + phone;
     }
 }
 
-function deactivateDriver() {
+async function deactivateDriver() {
     const driverId = document.getElementById('driver-id')?.value;
     if (!driverId) {
         showAdminToast('No driver selected', 'error');
@@ -1213,49 +1447,58 @@ function deactivateDriver() {
     
     if (!confirm('Are you sure you want to deactivate this driver?')) return;
     
-    const driver = drivers.find(d => d.id === parseInt(driverId));
-    if (driver) {
-        driver.status = 'inactive';
+    try {
+        await api.updateDriverStatus(driverId, 'inactive');
         showAdminToast('Driver deactivated', 'warning');
         closeModal('driver-detail-modal');
-        renderDriversGrid();
-        updateDriverStats();
+        await loadDrivers();
+    } catch (error) {
+        console.error('Error deactivating driver:', error);
+        showAdminToast('Failed to deactivate driver', 'error');
     }
 }
 
 // ============ CUSTOMERS PAGE ============
 
 function initCustomersPage() {
-    renderCustomersGrid();
+    updateCustomerStats();
+    renderCustomersTable();
 }
 
-function renderCustomersGrid() {
+function updateCustomerStats() {
+    const totalCustomers = customers.length;
+    
+    // Count repeat customers (those with more than 1 order)
+    const repeatCustomers = customers.filter(c => (c.totalOrders || 0) > 1).length;
+    
+    // Calculate average order value
+    const totalRevenue = customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0);
+    const totalOrders = customers.reduce((sum, c) => sum + (c.totalOrders || 0), 0);
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    
+    // Find top customer by total spent
+    const topCustomer = customers.length > 0 ? 
+        customers.reduce((max, c) => (c.totalSpent || 0) > (max.totalSpent || 0) ? c : max, customers[0]) : 
+        null;
+    const topCustomerName = topCustomer ? (topCustomer.name || 'Unknown').split(' ')[0] : '—';
+    
+    // Update DOM
+    setElementText('stat-total-customers', totalCustomers);
+    setElementText('stat-repeat-customers', repeatCustomers);
+    setElementText('stat-avg-order-value', '$' + avgOrderValue.toFixed(2));
+    setElementText('stat-top-customer', topCustomerName);
+}
+
+function renderCustomersTable() {
     const container = document.getElementById('customers-grid');
-    if (!container) return;
+    if (!container) {
+        console.error('customers-grid container not found!');
+        return;
+    }
     
-    // Generate customers from orders
-    const customerMap = new Map();
+    console.log(`Rendering ${customers.length} customers`);
     
-    adminOrders.forEach(order => {
-        if (!customerMap.has(order.phone)) {
-            customerMap.set(order.phone, {
-                name: order.name,
-                phone: order.phone,
-                email: order.email,
-                address: order.address,
-                orders: [],
-                totalSpent: 0
-            });
-        }
-        
-        const customer = customerMap.get(order.phone);
-        customer.orders.push(order);
-        customer.totalSpent += parseFloat(order.total);
-    });
-    
-    const customersArray = Array.from(customerMap.values());
-    
-    if (customersArray.length === 0) {
+    if (customers.length === 0) {
         container.innerHTML = `
             <div class="admin-empty-state">
                 <div class="empty-icon">👥</div>
@@ -1266,48 +1509,79 @@ function renderCustomersGrid() {
         return;
     }
     
-    container.innerHTML = customersArray.map(customer => `
-        <div class="customer-card">
-            <div class="customer-header">
-                <div class="customer-avatar">${getInitials(customer.name)}</div>
-                <div class="customer-info">
-                    <h3>${customer.name}</h3>
-                    <p>${customer.phone}</p>
-                </div>
-            </div>
+    container.innerHTML = customers.map(customer => {
+        try {
+            const orderCount = customer.totalOrders || 0;
+            const totalSpent = customer.totalSpent || 0;
+            const defaultAddress = customer.addresses?.find(a => a.isDefault) || customer.addresses?.[0];
+            const addressText = defaultAddress?.street || customer.address || '—';
             
-            <div class="customer-stats">
-                <div class="customer-stat">
-                    <div class="customer-stat-value">${customer.orders.length}</div>
-                    <div class="customer-stat-label">Orders</div>
-                </div>
-                <div class="customer-stat">
-                    <div class="customer-stat-value">$${customer.totalSpent.toFixed(2)}</div>
-                    <div class="customer-stat-label">Total Spent</div>
-                </div>
-            </div>
+            // Find last order for this customer
+            const customerOrders = adminOrders.filter(o => 
+                o.customerInfo?.phone === customer.phone || 
+                o.customerId?._id === customer._id ||
+                o.customerId === customer._id
+            ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
-            <div class="driver-card-details">
-                <div class="driver-detail-row">
-                    <span>Email</span>
-                    <span>${customer.email || '—'}</span>
-                </div>
-                <div class="driver-detail-row">
-                    <span>Address</span>
-                    <span>${truncateText(customer.address, 25)}</span>
-                </div>
-                <div class="driver-detail-row">
-                    <span>Last Order</span>
-                    <span>${formatDate(customer.orders[0]?.timestamp)}</span>
-                </div>
-            </div>
+            const lastOrderDate = customerOrders[0]?.createdAt || customer.createdAt;
             
-            <div class="driver-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="viewCustomerOrders('${customer.phone}')">View Orders</button>
-                <button class="btn btn-outline btn-sm" onclick="callCustomerDirect('${customer.phone}')">📞 Call</button>
-            </div>
-        </div>
-    `).join('');
+            return `
+                <div class="customer-card">
+                    <div class="customer-header">
+                        <div class="customer-avatar">${getInitials(customer.name || 'N/A')}</div>
+                        <div class="customer-info">
+                            <h3>${customer.name || 'Unknown'}</h3>
+                            <p>${customer.phone || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="customer-stats">
+                        <div class="customer-stat">
+                            <div class="customer-stat-value">${orderCount}</div>
+                            <div class="customer-stat-label">Orders</div>
+                        </div>
+                        <div class="customer-stat">
+                            <div class="customer-stat-value">$${totalSpent.toFixed(2)}</div>
+                            <div class="customer-stat-label">Total Spent</div>
+                        </div>
+                    </div>
+                    
+                    <div class="driver-card-details">
+                        <div class="driver-detail-row">
+                            <span>Email</span>
+                            <span>${customer.email || '—'}</span>
+                        </div>
+                        <div class="driver-detail-row">
+                            <span>Address</span>
+                            <span>${truncateText(addressText, 25)}</span>
+                        </div>
+                        <div class="driver-detail-row">
+                            <span>Last Order</span>
+                            <span>${formatDate(lastOrderDate)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="driver-card-actions">
+                        <button class="btn btn-outline btn-sm" onclick="viewCustomerOrders('${customer.phone}')">View Orders</button>
+                        <button class="btn btn-outline btn-sm" onclick="callCustomerDirect('${customer.phone}')">📞 Call</button>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error rendering customer:', customer, error);
+            return '';
+        }
+    }).join('');
+}
+
+function filterCustomers() {
+    renderCustomersTable();
+}
+
+function exportCustomers() {
+    // Use API export endpoint
+    api.exportCustomers();
+    showAdminToast('Exporting customers...', 'success');
 }
 
 function viewCustomerOrders(phone) {
@@ -1334,11 +1608,11 @@ function renderReportsSummary() {
     const thisYear = today.getFullYear();
     
     const monthOrders = adminOrders.filter(o => {
-        const d = new Date(o.timestamp);
+        const d = new Date(o.createdAt || o.timestamp);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     });
     
-    const monthRevenue = monthOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    const monthRevenue = monthOrders.reduce((sum, o) => sum + parseFloat(o.pricing?.total || o.total || 0), 0);
     const avgOrderValue = monthOrders.length > 0 ? monthRevenue / monthOrders.length : 0;
     const deliveredOrders = monthOrders.filter(o => o.status === 'delivered').length;
     const deliveryRate = monthOrders.length > 0 ? (deliveredOrders / monthOrders.length * 100) : 0;
@@ -1364,11 +1638,11 @@ function renderSalesChart() {
         nextDate.setDate(nextDate.getDate() + 1);
         
         const dayOrders = adminOrders.filter(o => {
-            const orderDate = new Date(o.timestamp);
+            const orderDate = new Date(o.createdAt || o.timestamp);
             return orderDate >= date && orderDate < nextDate;
         });
         
-        const dayRevenue = dayOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+        const dayRevenue = dayOrders.reduce((sum, o) => sum + parseFloat(o.pricing?.total || o.total || 0), 0);
         
         last7Days.push({
             date: date.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -1401,18 +1675,21 @@ function renderTopProducts() {
     const productCounts = {};
     
     adminOrders.forEach(order => {
-        order.items.forEach(item => {
-            if (!productCounts[item.name]) {
-                productCounts[item.name] = {
-                    name: item.name,
-                    emoji: item.emoji,
-                    quantity: 0,
-                    revenue: 0
-                };
-            }
-            productCounts[item.name].quantity += item.quantity;
-            productCounts[item.name].revenue += item.price * item.quantity;
-        });
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const itemName = item.name || 'Unknown';
+                if (!productCounts[itemName]) {
+                    productCounts[itemName] = {
+                        name: itemName,
+                        emoji: item.emoji || '📦',
+                        quantity: 0,
+                        revenue: 0
+                    };
+                }
+                productCounts[itemName].quantity += item.quantity || 0;
+                productCounts[itemName].revenue += (item.price || 0) * (item.quantity || 0);
+            });
+        }
     });
     
     const topProducts = Object.values(productCounts)
@@ -1451,15 +1728,22 @@ function renderDriverPerformance() {
     if (!container) return;
     
     const driverStats = drivers.map(driver => {
-        const driverName = `${driver.firstName} ${driver.lastName[0]}.`;
-        const driverOrders = adminOrders.filter(o => o.driver === driverName);
+        const driverFullName = `${driver.firstName} ${driver.lastName}`;
+        const driverShortName = `${driver.firstName} ${driver.lastName[0]}.`;
+        // Match against both full name and short name in delivery.driverName
+        const driverOrders = adminOrders.filter(o => 
+            o.delivery?.driverName === driverFullName || 
+            o.delivery?.driverName === driverShortName ||
+            o.driver === driverFullName ||
+            o.driver === driverShortName
+        );
         const deliveredOrders = driverOrders.filter(o => o.status === 'delivered');
         
         return {
-            name: `${driver.firstName} ${driver.lastName}`,
-            deliveries: deliveredOrders.length,
-            rating: driver.rating,
-            earnings: deliveredOrders.length * 4 // $4 per delivery
+            name: driverFullName,
+            deliveries: driver.totalDeliveries || deliveredOrders.length,
+            rating: driver.rating || 5.0,
+            earnings: driver.earnings || (deliveredOrders.length * 4) // $4 per delivery
         };
     }).sort((a, b) => b.deliveries - a.deliveries);
     
@@ -1490,10 +1774,11 @@ function renderDriverPerformance() {
 // ============ PHONE ORDER (NEW ORDER MODAL) ============
 
 function openNewOrderModal() {
-    document.getElementById('phone-order-form').reset();
-    populateItemSelects();
-    updatePhoneOrderTotal();
-    openModal('new-order-modal');
+    // Redirect to main website to place an order
+    showAdminToast('Redirecting to shop to place order...', 'success');
+    setTimeout(() => {
+        window.open('/shop.html', '_blank');
+    }, 500);
 }
 
 function populateItemSelects() {
@@ -1668,15 +1953,15 @@ function exportOrders() {
     const headers = ['Order ID', 'Customer', 'Phone', 'Address', 'Items', 'Total', 'Status', 'Driver', 'Date'];
     
     const rows = orders.map(order => [
-        order.id,
-        order.name,
-        order.phone,
-        `"${order.address.replace(/"/g, '""')}"`,
-        order.items.length + ' items',
-        '$' + order.total,
-        order.status,
-        order.driver || '',
-        formatDateTime(order.timestamp)
+        order.orderId || order.id,
+        order.customerInfo?.name || order.name || '',
+        order.customerInfo?.phone || order.phone || '',
+        `"${(order.customerInfo?.address || order.address || '').replace(/"/g, '""')}"`,
+        (order.items?.length || 0) + ' items',
+        '$' + (order.pricing?.total || order.total || 0).toFixed(2),
+        order.status || '',
+        order.delivery?.driverName || order.driver || '',
+        formatDateTime(order.createdAt || order.timestamp)
     ]);
     
     const csvContent = [headers, ...rows]
@@ -1802,6 +2087,19 @@ function showAdminToast(message, type = 'success') {
     }, 4000);
 }
 
+function showNotification(title, message, type = 'info') {
+    // Use browser notification if permitted
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: message,
+            icon: '/favicon.ico'
+        });
+    }
+    
+    // Also show admin toast
+    showAdminToast(`${title}: ${message}`, type);
+}
+
 // ============ UTILITY FUNCTIONS ============
 
 function setElementText(id, text) {
@@ -1813,12 +2111,16 @@ function formatStatus(status) {
     const statusMap = {
         'placed': '🆕 New',
         'confirmed': '✅ Confirmed',
-        'shopping': '🛒 Shopping',
-        'delivering': '🚗 Delivering',
+        'in_progress': '🛒 In Progress',
+        'ready': '📦 Ready',
+        'out_for_delivery': '🚗 Out for Delivery',
         'delivered': '✔️ Delivered',
-        'cancelled': '❌ Cancelled'
+        'cancelled': '❌ Cancelled',
+        // Legacy support
+        'shopping': '🛒 Shopping',
+        'delivering': '🚗 Delivering'
     };
-    return statusMap[status] || status;
+    return statusMap[status] || capitalizeFirst(status);
 }
 
 function formatTime(timestamp) {

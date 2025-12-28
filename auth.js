@@ -15,31 +15,32 @@ const Auth = {
     /**
      * Check if user is logged in with valid session
      */
-    isLoggedIn: function() {
-        const session = this.getSession();
+    isLoggedIn: async function() {
+        const token = api.getToken();
         
-        // No session exists
-        if (!session) {
-            console.log('Auth: No session found');
+        // No token exists
+        if (!token) {
+            console.log('Auth: No token found');
             return false;
         }
         
-        // Check if session has required fields
-        if (!session.username || !session.expiresAt) {
-            console.log('Auth: Invalid session data');
+        try {
+            // Verify token with API
+            const response = await api.verifyToken();
+            
+            if (response.success && response.user) {
+                console.log('Auth: Valid token for', response.user.username);
+                return true;
+            } else {
+                console.log('Auth: Token verification failed');
+                this.clearSession();
+                return false;
+            }
+        } catch (error) {
+            console.error('Auth: Error verifying token', error);
             this.clearSession();
             return false;
         }
-        
-        // Check if session expired
-        if (Date.now() > session.expiresAt) {
-            console.log('Auth: Session expired');
-            this.clearSession();
-            return false;
-        }
-        
-        console.log('Auth: Valid session for', session.username);
-        return true;
     },
     
     /**
@@ -76,17 +77,25 @@ const Auth = {
     clearSession: function() {
         console.log('Auth: Clearing session');
         localStorage.removeItem(this.SESSION_KEY);
+        api.clearToken(); // Clear API token
         // Don't clear rememberedUser - that's for convenience
     },
     
     /**
      * Full logout - clears everything and redirects
      */
-    logout: function() {
+    logout: async function() {
         // Log activity before clearing session
         const session = this.getSession();
         if (session) {
             this.logActivity('logout', `${session.name || session.username} logged out`);
+        }
+        
+        try {
+            // Call API logout
+            await api.logout();
+        } catch (error) {
+            console.error('Auth: Logout API error', error);
         }
         
         // Clear the session
@@ -133,8 +142,9 @@ const Auth = {
     /**
      * Require login - redirect if not logged in
      */
-    requireLogin: function() {
-        if (!this.isLoggedIn()) {
+    requireLogin: async function() {
+        const loggedIn = await this.isLoggedIn();
+        if (!loggedIn) {
             console.log('Auth: Login required, redirecting');
             // Save intended destination
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
@@ -147,8 +157,9 @@ const Auth = {
     /**
      * Require specific role
      */
-    requireRole: function(role) {
-        if (!this.requireLogin()) return false;
+    requireRole: async function(role) {
+        const loginCheck = await this.requireLogin();
+        if (!loginCheck) return false;
         
         if (!this.hasRole(role)) {
             alert('You do not have permission to access this page.');
@@ -239,7 +250,7 @@ const Auth = {
 
 // ============ AUTO-CHECK ON PAGE LOAD ============
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const currentPage = window.location.pathname;
     
     console.log('Auth: Page loaded -', currentPage);
@@ -258,7 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Require login for all admin pages
     console.log('Auth: Checking login status for admin page');
-    if (!Auth.requireLogin()) {
+    const loginCheck = await Auth.requireLogin();
+    if (!loginCheck) {
         return;
     }
     
@@ -279,8 +291,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('scroll', extendOnActivity);
     
     // Check session every minute
-    setInterval(() => {
-        if (!Auth.isLoggedIn()) {
+    setInterval(async () => {
+        const loggedIn = await Auth.isLoggedIn();
+        if (!loggedIn) {
             alert('Your session has expired. Please login again.');
             Auth.logout();
         }
