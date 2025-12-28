@@ -15,3 +15,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Your page initialization code...
 });
+
+Correct Script Loading Order
+Make sure your admin pages load scripts in this order:
+
+html
+<head>
+    <!-- ... other head content ... -->
+</head>
+<body>
+    <!-- ... page content ... -->
+    
+    <!-- Scripts in correct order -->
+    <script src="main.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
