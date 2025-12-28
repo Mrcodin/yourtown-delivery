@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Hometown Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-logo {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-left: 45px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: #64748b;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+        }
+
+        .remember-me span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .forgot-link {
+            font-size: 14px;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .login-btn .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success-message.show {
+            display: flex;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .login-footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-credentials {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .demo-credentials p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .demo-credentials code {
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 25px;
+            }
+            
+            .login-title {
+                font-size: 24px;
+            }
+            
+            .form-options {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="login-logo">🛒</div>
+                <h1 class="login-title">Hometown Delivery</h1>
+                <p class="login-subtitle">Admin Dashboard Login</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="error-message">
+                <span>⚠️</span>
+                <span id="error-text">Invalid username or password</span>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-message" id="success-message">
+                <span>✅</span>
+                <span>Login successful! Redirecting...</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <span id="toggle-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link" onclick="forgotPassword()">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="login-btn">
+                    <span id="btn-text">Sign In</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <a href="index.html">← Back to Website</a>
+            </div>
+
+            <!-- Demo Credentials -->
+            <div class="demo-credentials">
+                <p>Demo Credentials:</p>
+                <p><code>admin</code> / <code>hometown123</code></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ CONFIGURATION ============
+        
+        // In production, these would be verified against a secure backend
+        const VALID_CREDENTIALS = [
+            { username: 'admin', password: 'hometown123', role: 'admin', name: 'Administrator' },
+            { username: 'manager', password: 'manager456', role: 'manager', name: 'Store Manager' },
+            { username: 'driver', password: 'driver789', role: 'driver', name: 'Driver Portal' }
+        ];
+
+        const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+        const REMEMBER_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+        // ============ CHECK EXISTING SESSION ============
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            if (isLoggedIn()) {
+                window.location.href = 'admin.html';
+                return;
+            }
+            
+            // Check for remembered username
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            if (rememberedUser) {
+                document.getElementById('username').value = rememberedUser;
+                document.getElementById('remember-me').checked = true;
+                document.getElementById('password').focus();
+            } else {
+                document.getElementById('username').focus();
+            }
+        });
+
+        // ============ LOGIN HANDLER ============
+        
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+            
+            // Hide previous messages
+            hideMessages();
+            
+            // Validate inputs
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+            
+            // Show loading state
+            setLoading(true);
+            
+            // Simulate API call delay (remove in production)
+            setTimeout(() => {
+                // Find matching credentials
+                const user = VALID_CREDENTIALS.find(
+                    cred => cred.username.toLowerCase() === username && cred.password === password
+                );
+                
+                if (user) {
+                    // Successful login
+                    loginSuccess(user, rememberMe);
+                } else {
+                    // Failed login
+                    loginFailed();
+                }
+            }, 1000);
+        }
+
+        function loginSuccess(user, rememberMe) {
+            // Create session
+            const session = {
+                userId: user.username,
+                username: user.username,
+                name: user.name,
+                role: user.role,
+                loginTime: Date.now(),
+                expiresAt: Date.now() + (rememberMe ? REMEMBER_DURATION : SESSION_DURATION)
+            };
+            
+            // Store session
+            localStorage.setItem('adminSession', JSON.stringify(session));
+            
+            // Remember username if checked
+            if (rememberMe) {
+                localStorage.setItem('rememberedUser', user.username);
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+            
+            // Log activity
+            logActivity('login', `${user.name} logged in`);
+            
+            // Show success message
+            showSuccess();
+            
+            // Redirect after short delay
+            setTimeout(() => {
+                window.location.href = 'admin.html';
+            }, 1000);
+        }
+
+        function loginFailed() {
+            setLoading(false);
+            showError('Invalid username or password');
+            
+            // Shake animation on inputs
+            document.getElementById('username').classList.add('error');
+            document.getElementById('password').classList.add('error');
+            
+            // Clear password field
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+            
+            // Remove error styling after delay
+            setTimeout(() => {
+                document.getElementById('username').classList.remove('error');
+                document.getElementById('password').classList.remove('error');
+            }, 2000);
+            
+            // Track failed attempts (for rate limiting)
+            trackFailedAttempt();
+        }
+
+        // ============ SESSION MANAGEMENT ============
+        
+        function isLoggedIn() {
+            const session = getSession();
+            if (!session) return false;
+            
+            // Check if session expired
+            if (Date.now() > session.expiresAt) {
+                clearSession();
+                return false;
+            }
+            
+            return true;
+        }
+
+        function getSession() {
+            const sessionData = localStorage.getItem('adminSession');
+            if (!sessionData) return null;
+            
+            try {
+                return JSON.parse(sessionData);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('adminSession');
+        }
+
+        // ============ SECURITY ============
+        
+        let failedAttempts = 0;
+        let lockoutUntil = 0;
+
+        function trackFailedAttempt() {
+            failedAttempts++;
+            
+            // Lock out after 5 failed attempts
+            if (failedAttempts >= 5) {
+                lockoutUntil = Date.now() + (5 * 60 * 1000); // 5 minutes
+                showError('Too many failed attempts. Please try again in 5 minutes.');
+                document.getElementById('login-btn').disabled = true;
+                
+                // Re-enable after lockout
+                setTimeout(() => {
+                    failedAttempts = 0;
+                    document.getElementById('login-btn').disabled = false;
+                }, 5 * 60 * 1000);
+            }
+        }
+
+        // ============ UI HELPERS ============
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁️';
+            }
+        }
+
+        function setLoading(isLoading) {
+            const btn = document.getElementById('login-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.innerHTML = '<div class="spinner"></div> Signing in...';
+            } else {
+                btn.disabled = false;
+                btnText.textContent = 'Sign In';
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function showSuccess() {
+            document.getElementById('success-message').classList.add('show');
+            setLoading(false);
+        }
+
+        function hideMessages() {
+            document.getElementById('error-message').classList.remove('show');
+            document.getElementById('success-message').classList.remove('show');
+        }
+
+        function forgotPassword() {
+            alert('Please contact the system administrator to reset your password.\n\nEmail: admin@hometowndelivery.com\nPhone: 555-123-4567');
+        }
+
+        // ============ ACTIVITY LOGGING ============
+        
+        function logActivity(type, message) {
+            const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+            activities.unshift({
+                type,
+                message,
+                timestamp: Date.now(),
+                ip: 'local' // In production, get real IP
+            });
+            
+            // Keep last 100 activities
+            if (activities.length > 100) {
+                activities.pop();
+            }
+            
+            localStorage.setItem('adminActivities', JSON.stringify(activities));
+        }
+
+        // ============ KEYBOARD SHORTCUTS ============
+        
+        document.addEventListener('keydown', function(e) {
+            // Enter key submits form
+            if (e.key === 'Enter' && document.activeElement.tagName !== 'BUTTON') {
+                document.getElementById('login-form').requestSubmit();
+            }
+        });
+    </script>
+</body>
+</html>
