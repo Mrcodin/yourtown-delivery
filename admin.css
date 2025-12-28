@@ -345,6 +345,137 @@
     padding: 20px;
 }
 
+/* === USER MENU === */
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.topbar-user:hover {
+    background: #e2e8f0;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar-initials {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.user-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    min-width: 220px;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s;
+}
+
+.user-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-menu-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-role-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.user-menu a {
+    display: block;
+    padding: 12px 20px;
+    color: #334155;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.user-menu a:hover {
+    background: #f8fafc;
+}
+
+.user-menu hr {
+    margin: 5px 0;
+    border: none;
+    border-top: 1px solid #e2e8f0;
+}
+
+.user-menu .logout-link {
+    color: #dc2626;
+}
+
+.user-menu .logout-link:hover {
+    background: #fef2f2;
+}
+
+/* === SESSION WARNING === */
+.session-warning {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 3000;
+    display: none;
+}
+
+.session-warning.show {
+    display: flex;
+}
+
+.session-warning button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
 /* === ORDERS LIST === */
 .orders-list {
     display: flex;
