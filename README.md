@@ -31,3 +31,10 @@ html
     <script src="auth.js"></script>
     <script src="admin.js"></script>
 </body>
+
+
+Backend Integration - Connect to Node.js/Express + MongoDB
+SMS Notifications - Twilio integration for order updates
+Driver Mobile App - Simple interface for drivers
+Email Notifications - Order confirmations & updates
+Payment Integration - Stripe for card payments
