@@ -14,7 +14,7 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = socketIo(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5500',
+    origin: process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5500',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   }
@@ -29,7 +29,7 @@ connectDB();
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5500',
+  origin: process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5500',
   credentials: true
 }));
 app.use(express.json()); // Parse JSON bodies
