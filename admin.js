@@ -415,6 +415,174 @@ function refreshDashboard() {
     }
 }
 
+// ============ USER MENU ============
+
+function toggleUserMenu() {
+    const menu = document.getElementById('user-menu');
+    menu.classList.toggle('active');
+    
+    // Close when clicking outside
+    if (menu.classList.contains('active')) {
+        setTimeout(() => {
+            document.addEventListener('click', closeUserMenuOnClickOutside);
+        }, 0);
+    }
+}
+
+function closeUserMenuOnClickOutside(e) {
+    const menu = document.getElementById('user-menu');
+    const userBtn = document.querySelector('.topbar-user');
+    
+    if (!menu.contains(e.target) && !userBtn.contains(e.target)) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeUserMenuOnClickOutside);
+    }
+}
+
+// ============ PROFILE & PASSWORD ============
+
+function viewProfile() {
+    const user = Auth.getCurrentUser();
+    alert(`👤 Profile\n\nUsername: ${user.username}\nName: ${user.name}\nRole: ${user.role}`);
+}
+
+function changePassword() {
+    const currentPassword = prompt('Enter current password:');
+    if (!currentPassword) return;
+    
+    const newPassword = prompt('Enter new password (min 8 characters):');
+    if (!newPassword || newPassword.length < 8) {
+        alert('Password must be at least 8 characters');
+        return;
+    }
+    
+    const confirmPassword = prompt('Confirm new password:');
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    // In production, send to backend
+    alert('✅ Password changed successfully!\n\n(Note: In demo mode, password is not actually changed)');
+    Auth.logActivity('password_change', 'Password changed');
+}
+
+// ============ ACTIVITY LOG VIEWER ============
+
+function viewActivityLog() {
+    const activities = Auth.getActivities(20);
+    
+    let html = `
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8fafc;">
+                        <th style="padding: 10px; text-align: left;">Time</th>
+                        <th style="padding: 10px; text-align: left;">User</th>
+                        <th style="padding: 10px; text-align: left;">Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    activities.forEach(activity => {
+        const time = new Date(activity.timestamp).toLocaleString();
+        html += `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; font-size: 13px; color: #64748b;">${time}</td>
+                <td style="padding: 10px; font-size: 13px;">${activity.user}</td>
+                <td style="padding: 10px; font-size: 13px;">${activity.message}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay active';
+    modal.id = 'activity-log-modal';
+    modal.innerHTML = `
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>📋 Activity Log</h2>
+                <button class="modal-close" onclick="closeModal('activity-log-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                ${activities.length > 0 ? html : '<p class="empty-message">No activity recorded yet.</p>'}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="clearActivityLog()">Clear Log</button>
+                <button class="btn btn-primary" onclick="closeModal('activity-log-modal')">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function clearActivityLog() {
+    if (confirm('Are you sure you want to clear all activity history?')) {
+        localStorage.removeItem('adminActivities');
+        closeModal('activity-log-modal');
+        showAdminToast('Activity log cleared', 'success');
+    }
+}
+
+// ============ SESSION TIMEOUT WARNING ============
+
+let sessionWarningShown = false;
+
+function checkSessionTimeout() {
+    const session = Auth.getSession();
+    if (!session) return;
+    
+    const timeRemaining = session.expiresAt - Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    
+    if (timeRemaining < fiveMinutes && timeRemaining > 0 && !sessionWarningShown) {
+        showSessionWarning(Math.floor(timeRemaining / 60000));
+        sessionWarningShown = true;
+    }
+}
+
+function showSessionWarning(minutes) {
+    const warning = document.createElement('div');
+    warning.className = 'session-warning show';
+    warning.id = 'session-warning';
+    warning.innerHTML = `
+        <span>⚠️ Your session will expire in ${minutes} minutes</span>
+        <button onclick="extendSession()">Stay Logged In</button>
+        <button onclick="adminLogout()" style="background: #64748b;">Logout</button>
+    `;
+    document.body.appendChild(warning);
+}
+
+function extendSession() {
+    Auth.extendSession();
+    sessionWarningShown = false;
+    
+    const warning = document.getElementById('session-warning');
+    if (warning) warning.remove();
+    
+    showAdminToast('Session extended', 'success');
+}
+
+// Check session every minute
+setInterval(checkSessionTimeout, 60000);
+
+// ============ SECURE ACTIONS ============
+
+function secureAction(action, requiredRole = 'admin') {
+    if (!Auth.hasRole(requiredRole)) {
+        showAdminToast('You do not have permission for this action', 'error');
+        return false;
+    }
+    
+    Auth.logActivity(action.name || 'action', action.description || 'Performed action');
+    return true;
+}
+
 // ============ ORDERS PAGE ============
 
 function initOrdersPage() {
