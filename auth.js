@@ -1,5 +1,5 @@
 /* ===================================
-   AUTHENTICATION MODULE
+   AUTHENTICATION MODULE - FIXED
    Hometown Delivery Admin
    =================================== */
 
@@ -7,6 +7,7 @@ const Auth = {
     // ============ CONFIGURATION ============
     SESSION_KEY: 'adminSession',
     ACTIVITIES_KEY: 'adminActivities',
+    REMEMBERED_USER_KEY: 'rememberedUser',
     SESSION_DURATION: 8 * 60 * 60 * 1000, // 8 hours
     
     // ============ SESSION MANAGEMENT ============
@@ -16,14 +17,28 @@ const Auth = {
      */
     isLoggedIn: function() {
         const session = this.getSession();
-        if (!session) return false;
         
-        // Check if session expired
-        if (Date.now() > session.expiresAt) {
-            this.logout();
+        // No session exists
+        if (!session) {
+            console.log('Auth: No session found');
             return false;
         }
         
+        // Check if session has required fields
+        if (!session.username || !session.expiresAt) {
+            console.log('Auth: Invalid session data');
+            this.clearSession();
+            return false;
+        }
+        
+        // Check if session expired
+        if (Date.now() > session.expiresAt) {
+            console.log('Auth: Session expired');
+            this.clearSession();
+            return false;
+        }
+        
+        console.log('Auth: Valid session for', session.username);
         return true;
     },
     
@@ -31,12 +46,12 @@ const Auth = {
      * Get current session data
      */
     getSession: function() {
-        const sessionData = localStorage.getItem(this.SESSION_KEY);
-        if (!sessionData) return null;
-        
         try {
+            const sessionData = localStorage.getItem(this.SESSION_KEY);
+            if (!sessionData) return null;
             return JSON.parse(sessionData);
         } catch (e) {
+            console.error('Auth: Error parsing session', e);
             return null;
         }
     },
@@ -56,16 +71,31 @@ const Auth = {
     },
     
     /**
-     * Logout and clear session
+     * Clear all session data - FIXED
+     */
+    clearSession: function() {
+        console.log('Auth: Clearing session');
+        localStorage.removeItem(this.SESSION_KEY);
+        // Don't clear rememberedUser - that's for convenience
+    },
+    
+    /**
+     * Full logout - clears everything and redirects
      */
     logout: function() {
+        // Log activity before clearing session
         const session = this.getSession();
         if (session) {
-            this.logActivity('logout', `${session.name} logged out`);
+            this.logActivity('logout', `${session.name || session.username} logged out`);
         }
         
-        localStorage.removeItem(this.SESSION_KEY);
-        window.location.href = 'admin-login.html';
+        // Clear the session
+        this.clearSession();
+        
+        console.log('Auth: Logout complete, redirecting to login');
+        
+        // Force redirect to login page
+        window.location.replace('admin-login.html');
     },
     
     /**
@@ -105,9 +135,10 @@ const Auth = {
      */
     requireLogin: function() {
         if (!this.isLoggedIn()) {
+            console.log('Auth: Login required, redirecting');
             // Save intended destination
-            localStorage.setItem('redirectAfterLogin', window.location.href);
-            window.location.href = 'admin-login.html';
+            sessionStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.replace('admin-login.html');
             return false;
         }
         return true;
@@ -121,7 +152,7 @@ const Auth = {
         
         if (!this.hasRole(role)) {
             alert('You do not have permission to access this page.');
-            window.location.href = 'admin.html';
+            window.location.replace('admin.html');
             return false;
         }
         
@@ -134,30 +165,38 @@ const Auth = {
      * Log admin activity
      */
     logActivity: function(type, message) {
-        const activities = JSON.parse(localStorage.getItem(this.ACTIVITIES_KEY) || '[]');
-        const session = this.getSession();
-        
-        activities.unshift({
-            type: type,
-            message: message,
-            user: session?.username || 'unknown',
-            timestamp: Date.now()
-        });
-        
-        // Keep last 100 activities
-        if (activities.length > 100) {
-            activities.length = 100;
+        try {
+            const activities = JSON.parse(localStorage.getItem(this.ACTIVITIES_KEY) || '[]');
+            const session = this.getSession();
+            
+            activities.unshift({
+                type: type,
+                message: message,
+                user: session?.username || 'unknown',
+                timestamp: Date.now()
+            });
+            
+            // Keep last 100 activities
+            if (activities.length > 100) {
+                activities.length = 100;
+            }
+            
+            localStorage.setItem(this.ACTIVITIES_KEY, JSON.stringify(activities));
+        } catch (e) {
+            console.error('Auth: Error logging activity', e);
         }
-        
-        localStorage.setItem(this.ACTIVITIES_KEY, JSON.stringify(activities));
     },
     
     /**
      * Get activity log
      */
     getActivities: function(limit = 50) {
-        const activities = JSON.parse(localStorage.getItem(this.ACTIVITIES_KEY) || '[]');
-        return activities.slice(0, limit);
+        try {
+            const activities = JSON.parse(localStorage.getItem(this.ACTIVITIES_KEY) || '[]');
+            return activities.slice(0, limit);
+        } catch (e) {
+            return [];
+        }
     },
     
     // ============ UI HELPERS ============
@@ -171,7 +210,7 @@ const Auth = {
         
         // Update user name displays
         document.querySelectorAll('.user-name').forEach(el => {
-            el.textContent = user.name;
+            el.textContent = user.name || user.username;
         });
         
         // Update role badges
@@ -181,7 +220,7 @@ const Auth = {
         
         // Update avatar initials
         document.querySelectorAll('.user-avatar-initials').forEach(el => {
-            el.textContent = this.getInitials(user.name);
+            el.textContent = this.getInitials(user.name || user.username);
         });
     },
     
@@ -201,17 +240,24 @@ const Auth = {
 // ============ AUTO-CHECK ON PAGE LOAD ============
 
 document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname;
+    
+    console.log('Auth: Page loaded -', currentPage);
+    
     // Skip auth check on login page
-    if (window.location.pathname.includes('admin-login.html')) {
+    if (currentPage.includes('admin-login')) {
+        console.log('Auth: On login page, skipping auth check');
         return;
     }
     
     // Skip auth check on non-admin pages
-    if (!window.location.pathname.includes('admin')) {
+    if (!currentPage.includes('admin')) {
+        console.log('Auth: Not an admin page, skipping auth check');
         return;
     }
     
     // Require login for all admin pages
+    console.log('Auth: Checking login status for admin page');
     if (!Auth.requireLogin()) {
         return;
     }
@@ -220,8 +266,17 @@ document.addEventListener('DOMContentLoaded', function() {
     Auth.updateUserUI();
     
     // Extend session on activity
-    document.addEventListener('click', () => Auth.extendSession());
-    document.addEventListener('keypress', () => Auth.extendSession());
+    let activityTimeout;
+    const extendOnActivity = () => {
+        clearTimeout(activityTimeout);
+        activityTimeout = setTimeout(() => {
+            Auth.extendSession();
+        }, 1000);
+    };
+    
+    document.addEventListener('click', extendOnActivity);
+    document.addEventListener('keypress', extendOnActivity);
+    document.addEventListener('scroll', extendOnActivity);
     
     // Check session every minute
     setInterval(() => {
