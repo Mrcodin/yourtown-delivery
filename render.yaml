@@ -22,5 +22,5 @@ services:
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: CORS_ORIGIN
-        value: https://yourtown-delivery-frontend.onrender.com
+        value: https://yourtown-deliveryfront.onrender.com
     healthCheckPath: /api/health
