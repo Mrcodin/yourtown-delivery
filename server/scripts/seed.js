@@ -15,6 +15,15 @@ const connectDB = async () => {
   }
 };
 
+// Generate a secure random password
+const crypto = require('crypto');
+const generateSecurePassword = () => {
+  return crypto.randomBytes(16).toString('hex');
+};
+
+// Store generated password to display at the end
+let generatedAdminPassword = null;
+
 // Seed Users
 const seedUsers = async () => {
   try {
@@ -25,10 +34,13 @@ const seedUsers = async () => {
       await User.deleteMany({});
     }
 
+    // Generate secure password for admin
+    generatedAdminPassword = generateSecurePassword();
+
     const users = [
       {
         username: 'admin',
-        password: 'hometown123',
+        password: generatedAdminPassword,
         name: 'Admin User',
         role: 'admin',
         email: 'admin@hometowndelivery.com',
@@ -226,11 +238,17 @@ const seedAll = async () => {
   await seedDrivers();
   
   console.log('\n✅ Database seeding completed!');
-  console.log('\nDefault Login Credentials:');
-  console.log('----------------------------');
-  console.log('Admin:   username: admin    | password: hometown123');
+  console.log('\n📝 Default Login Credentials:');
+  console.log('==================================================');
+  console.log('⚠️  IMPORTANT: Save these credentials securely!');
+  console.log('==================================================');
+  console.log(`Admin:   username: admin    | password: ${generatedAdminPassword}`);
   console.log('Manager: username: manager  | password: manager456');
   console.log('Driver:  username: driver   | password: driver789');
+  console.log('==================================================');
+  console.log('\n⚠️  Store the admin password in a safe place!');
+  console.log('It will not be displayed again.');
+  console.log('==================================================\n');
   
   mongoose.connection.close();
   process.exit(0);

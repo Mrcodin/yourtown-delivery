@@ -136,7 +136,7 @@
    NODE_ENV=production
    PORT=10000
    MONGODB_URI=mongodb+srv://yourtown_admin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/yourtown-delivery
-   JWT_SECRET=generate-a-super-secret-random-string-min-32-chars
+   JWT_SECRET=USE_COMMAND_BELOW_TO_GENERATE_SECRET
    JWT_EXPIRES_IN=8h
    STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
    STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
@@ -161,7 +161,7 @@
    - This creates default users and products
 
    **Default Login Credentials:**
-   - Admin: `admin` / `hometown123`
+   - Admin: `admin` / (check seed script console output for generated password)
    - Manager: `manager` / `manager456`
    - Driver: `driver` / `driver789`
 

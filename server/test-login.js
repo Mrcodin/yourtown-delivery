@@ -7,6 +7,14 @@ async function testLogin() {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hometown_delivery');
     console.log('Connected to MongoDB');
     
+    // Get password from command line argument
+    const passwordToTest = process.argv[2];
+    if (!passwordToTest) {
+      console.log('Usage: node test-login.js <password>');
+      console.log('Example: node test-login.js mySecurePassword123');
+      process.exit(1);
+    }
+    
     // Must explicitly select password field since it has select: false
     const user = await User.findOne({ username: 'admin' }).select('+password');
     if (!user) {
@@ -18,8 +26,8 @@ async function testLogin() {
     console.log('User password field exists:', !!user.password);
     console.log('Password hash:', user.password.substring(0, 20) + '...');
     
-    const isMatch = await user.comparePassword('hometown123');
-    console.log('Password match for "hometown123":', isMatch);
+    const isMatch = await user.comparePassword(passwordToTest);
+    console.log(`Password match for "${passwordToTest}":`, isMatch);
     
     await mongoose.connection.close();
     process.exit(0);

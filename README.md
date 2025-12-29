@@ -95,9 +95,14 @@ python3 -m http.server 5500
 
 ## 🔑 Default Credentials
 
-| Role    | Username | Password     |
-|---------|----------|--------------|
-| Admin   | admin    | hometown123  |
+**IMPORTANT**: The admin password is randomly generated when you run the seed script.
+
+After running `npm run seed`, check the console output for your secure admin password.
+Store it securely - you'll need it to login to the admin panel.
+
+| Role    | Username | Password                                          |
+|---------|----------|---------------------------------------------------|
+| Admin   | admin    | (Generated during seeding - check console output) |
 | Manager | manager  | manager456   |
 | Driver  | driver   | driver789    |
 
@@ -228,6 +233,21 @@ curl -X POST https://yourtown-delivery-api.onrender.com/api/auth/login \
 - ✅ Rate limiting (100 requests per 15 minutes)
 - ✅ Input validation
 - ✅ MongoDB injection prevention
+- ✅ Secure password generation
+- ✅ JWT token authentication
+
+**📖 For detailed security information, see [SECURITY_GUIDE.md](SECURITY_GUIDE.md)**
+
+### Generate Secure Secrets
+
+```bash
+cd server
+npm run generate-secrets
+```
+
+This will generate:
+- Strong JWT secret for authentication
+- Secure random passwords
 
 ## 🤝 Contributing
 

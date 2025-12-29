@@ -154,7 +154,7 @@ Server runs at: `http://localhost:3000`
 ## 🔑 Default Credentials
 
 After seeding:
-- **Admin**: `admin` / `hometown123`
+- **Admin**: `admin` / (generated during seeding - check console)
 - **Manager**: `manager` / `manager456`
 - **Driver**: `driver` / `driver789`
 
@@ -330,7 +330,7 @@ curl http://localhost:3000/api/products
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"hometown123"}'
+  -d '{"username":"admin","password":"YOUR_GENERATED_PASSWORD"}'
 ```
 
 ### Test with Token

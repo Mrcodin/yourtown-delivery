@@ -85,7 +85,7 @@ A senior-friendly grocery delivery service with full-stack implementation includ
 4. **Test the Application**
    - Browse products at `/shop.html`
    - Login to admin at `/admin-login.html`
-   - Default credentials: `admin` / `hometown123`
+   - Default credentials: `admin` / (check seed output)
 
 ## 📁 Project Structure
 

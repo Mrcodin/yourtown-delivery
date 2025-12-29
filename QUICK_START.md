@@ -54,7 +54,7 @@ I can show you the server structure without connecting to MongoDB, but you won't
 ## 🔑 After MongoDB Setup
 
 **Default Login Credentials:**
-- Admin: `admin` / `hometown123`
+- Admin: `admin` / (check console output after running seed script)
 - Manager: `manager` / `manager456`
 - Driver: `driver` / `driver789`
 

@@ -756,7 +756,7 @@ Create `.env` file in server directory:
 PORT=3000
 NODE_ENV=development
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/yourtown-delivery
-JWT_SECRET=your-super-secret-key-min-32-characters-long
+JWT_SECRET=USE_COMMAND_TO_GENERATE_SECRET_SEE_DEPLOYMENT_GUIDE
 JWT_EXPIRES_IN=8h
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Settings - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- ADMIN SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+            </a>
+            <a href="admin-products.html" class="sidebar-link">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+            <a href="admin-settings.html" class="sidebar-link active">
+                <span class="sidebar-icon">⚙️</span>
+                Settings
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+            <a href="#" class="sidebar-link" onclick="adminLogout()">
+                <span class="sidebar-icon">🚪</span>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>⚙️ Business Settings</h1>
+            <div class="admin-user">
+                <span id="admin-username">Admin</span>
+            </div>
+        </header>
+
+            <div class="admin-content">
+                <!-- Success/Error Messages -->
+                <div id="message-container"></div>
+
+                <!-- Settings Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📝 Business Information</h2>
+                        <div>
+                            <button onclick="resetSettings()" class="btn btn-secondary">
+                                🔄 Reset to Defaults
+                            </button>
+                            <button onclick="saveSettings()" class="btn btn-primary">
+                                💾 Save Changes
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <form id="settings-form" class="settings-form">
+                        <!-- Business Name Section -->
+                        <div class="settings-section">
+                            <h3>🏪 Business Name</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="businessName">Full Business Name</label>
+                                    <input type="text" id="businessName" name="businessName" 
+                                           placeholder="Hometown Grocery Delivery" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shortName">Short Name</label>
+                                    <input type="text" id="shortName" name="shortName" 
+                                           placeholder="Hometown Delivery" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Section -->
+                        <div class="settings-section">
+                            <h3>📍 Location</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="townName">Town/City Name</label>
+                                    <input type="text" id="townName" name="townName" 
+                                           placeholder="Your Town" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="state">State</label>
+                                    <input type="text" id="state" name="state" 
+                                           placeholder="State" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="zipCode">Zip Code</label>
+                                    <input type="text" id="zipCode" name="zipCode" 
+                                           placeholder="12345" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fullAddress">Full Address</label>
+                                <input type="text" id="fullAddress" name="fullAddress" 
+                                       placeholder="123 Main Street, Your Town, State 12345" required>
+                            </div>
+                        </div>
+
+                        <!-- Contact Section -->
+                        <div class="settings-section">
+                            <h3>📞 Contact Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" 
+                                           placeholder="555-123-4567" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phoneDisplay">Phone Display Format</label>
+                                    <input type="text" id="phoneDisplay" name="phoneDisplay" 
+                                           placeholder="(555) 123-4567">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" 
+                                       placeholder="info@hometowndelivery.com" required>
+                            </div>
+                        </div>
+
+                        <!-- Store Information -->
+                        <div class="settings-section">
+                            <h3>🏬 Store Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="storeName">Store Name</label>
+                                    <input type="text" id="storeName" name="storeName" 
+                                           placeholder="Local Market" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="storePartner">Store Partner</label>
+                                    <input type="text" id="storePartner" name="storePartner" 
+                                           placeholder="Your Local Grocery Store">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Business Hours -->
+                        <div class="settings-section">
+                            <h3>⏰ Business Hours</h3>
+                            <div class="form-group">
+                                <label for="hoursWeekdayDisplay">Weekday Hours (Display)</label>
+                                <input type="text" id="hoursWeekdayDisplay" name="hours.weekday.display" 
+                                       placeholder="Mon-Fri 8am-6pm" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursWeekdayDetailed">Weekday Hours (Detailed)</label>
+                                <input type="text" id="hoursWeekdayDetailed" name="hours.weekday.detailed" 
+                                       placeholder="Monday - Friday: 8am - 6pm">
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursSaturdayDisplay">Saturday Hours (Display)</label>
+                                <input type="text" id="hoursSaturdayDisplay" name="hours.saturday.display" 
+                                       placeholder="Sat 9am-3pm">
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursSaturdayDetailed">Saturday Hours (Detailed)</label>
+                                <input type="text" id="hoursSaturdayDetailed" name="hours.saturday.detailed" 
+                                       placeholder="Saturday: 9am - 3pm">
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursSundayDisplay">Sunday Hours (Display)</label>
+                                <input type="text" id="hoursSundayDisplay" name="hours.sunday.display" 
+                                       placeholder="Closed or 9am-5pm">
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursSundayDetailed">Sunday Hours (Detailed)</label>
+                                <input type="text" id="hoursSundayDetailed" name="hours.sunday.detailed" 
+                                       placeholder="Sunday: Closed">
+                            </div>
+                            <div class="form-group">
+                                <label for="hoursFull">Full Hours (Combined)</label>
+                                <input type="text" id="hoursFull" name="hours.full" 
+                                       placeholder="Mon-Fri 8am-6pm, Sat 9am-3pm" required>
+                            </div>
+                        </div>
+
+                        <!-- Service Details -->
+                        <div class="settings-section">
+                            <h3>🚚 Service Details</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="deliveryFee">Delivery Fee ($)</label>
+                                    <input type="number" id="deliveryFee" name="deliveryFee" 
+                                           step="0.01" min="0" placeholder="5.00" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="minimumOrder">Minimum Order ($)</label>
+                                    <input type="number" id="minimumOrder" name="minimumOrder" 
+                                           step="0.01" min="0" placeholder="20.00" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="averageDeliveryTime">Average Delivery Time</label>
+                                    <input type="text" id="averageDeliveryTime" name="averageDeliveryTime" 
+                                           placeholder="2 hours" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="deliveryRadius">Delivery Radius</label>
+                                    <input type="text" id="deliveryRadius" name="deliveryRadius" 
+                                           placeholder="10 miles" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social Media -->
+                        <div class="settings-section">
+                            <h3>📱 Social Media (Optional)</h3>
+                            <div class="form-group">
+                                <label for="socialFacebook">Facebook URL</label>
+                                <input type="url" id="socialFacebook" name="social.facebook" 
+                                       placeholder="https://facebook.com/yourpage">
+                            </div>
+                            <div class="form-group">
+                                <label for="socialInstagram">Instagram URL</label>
+                                <input type="url" id="socialInstagram" name="social.instagram" 
+                                       placeholder="https://instagram.com/yourpage">
+                            </div>
+                            <div class="form-group">
+                                <label for="socialTwitter">Twitter URL</label>
+                                <input type="url" id="socialTwitter" name="social.twitter" 
+                                       placeholder="https://twitter.com/yourhandle">
+                            </div>
+                        </div>
+
+                        <!-- Features -->
+                        <div class="settings-section">
+                            <h3>✨ Features/Benefits</h3>
+                            <div class="form-group">
+                                <label for="features">Features (comma-separated)</label>
+                                <textarea id="features" name="features" rows="3" 
+                                          placeholder="Same Day Delivery, Cash Accepted, Local Drivers, Senior Friendly"></textarea>
+                                <small>Enter features separated by commas</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>👀 Preview</h2>
+                    </div>
+                    <div class="settings-preview">
+                        <p><strong>Business Name:</strong> <span id="preview-businessName">-</span></p>
+                        <p><strong>Location:</strong> <span id="preview-location">-</span></p>
+                        <p><strong>Phone:</strong> <span id="preview-phone">-</span></p>
+                        <p><strong>Email:</strong> <span id="preview-email">-</span></p>
+                        <p><strong>Hours:</strong> <span id="preview-hours">-</span></p>
+                        <p><strong>Delivery Fee:</strong> $<span id="preview-deliveryFee">-</span></p>
+                        <p><strong>Minimum Order:</strong> $<span id="preview-minimumOrder">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    <script src="api.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        let currentSettings = null;
+
+        // Load settings on page load
+        async function loadSettings() {
+            try {
+                showLoading();
+                const response = await fetch(`${API_CONFIG.BASE_URL}/settings`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSettings = data.data;
+                    populateForm(currentSettings);
+                    updatePreview();
+                    showSuccess('Settings loaded successfully');
+                } else {
+                    showError('Failed to load settings');
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showError('Error loading settings: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Populate form with settings
+        function populateForm(settings) {
+            // Basic fields
+            document.getElementById('businessName').value = settings.businessName || '';
+            document.getElementById('shortName').value = settings.shortName || '';
+            document.getElementById('townName').value = settings.townName || '';
+            document.getElementById('state').value = settings.state || '';
+            document.getElementById('zipCode').value = settings.zipCode || '';
+            document.getElementById('fullAddress').value = settings.fullAddress || '';
+            document.getElementById('phone').value = settings.phone || '';
+            document.getElementById('phoneDisplay').value = settings.phoneDisplay || '';
+            document.getElementById('email').value = settings.email || '';
+            document.getElementById('storeName').value = settings.storeName || '';
+            document.getElementById('storePartner').value = settings.storePartner || '';
+            
+            // Hours
+            if (settings.hours) {
+                document.getElementById('hoursWeekdayDisplay').value = settings.hours.weekday?.display || '';
+                document.getElementById('hoursWeekdayDetailed').value = settings.hours.weekday?.detailed || '';
+                document.getElementById('hoursSaturdayDisplay').value = settings.hours.saturday?.display || '';
+                document.getElementById('hoursSaturdayDetailed').value = settings.hours.saturday?.detailed || '';
+                document.getElementById('hoursSundayDisplay').value = settings.hours.sunday?.display || '';
+                document.getElementById('hoursSundayDetailed').value = settings.hours.sunday?.detailed || '';
+                document.getElementById('hoursFull').value = settings.hours.full || '';
+            }
+            
+            // Service details
+            document.getElementById('deliveryFee').value = settings.deliveryFee || 0;
+            document.getElementById('minimumOrder').value = settings.minimumOrder || 0;
+            document.getElementById('averageDeliveryTime').value = settings.averageDeliveryTime || '';
+            document.getElementById('deliveryRadius').value = settings.deliveryRadius || '';
+            
+            // Social
+            if (settings.social) {
+                document.getElementById('socialFacebook').value = settings.social.facebook || '';
+                document.getElementById('socialInstagram').value = settings.social.instagram || '';
+                document.getElementById('socialTwitter').value = settings.social.twitter || '';
+            }
+            
+            // Features
+            if (settings.features && Array.isArray(settings.features)) {
+                document.getElementById('features').value = settings.features.join(', ');
+            }
+        }
+
+        // Update preview
+        function updatePreview() {
+            const form = document.getElementById('settings-form');
+            const formData = new FormData(form);
+            
+            document.getElementById('preview-businessName').textContent = formData.get('businessName') || '-';
+            document.getElementById('preview-location').textContent = 
+                `${formData.get('townName')}, ${formData.get('state')} ${formData.get('zipCode')}`;
+            document.getElementById('preview-phone').textContent = formData.get('phoneDisplay') || formData.get('phone') || '-';
+            document.getElementById('preview-email').textContent = formData.get('email') || '-';
+            document.getElementById('preview-hours').textContent = formData.get('hours.full') || '-';
+            document.getElementById('preview-deliveryFee').textContent = formData.get('deliveryFee') || '-';
+            document.getElementById('preview-minimumOrder').textContent = formData.get('minimumOrder') || '-';
+        }
+
+        // Save settings
+        async function saveSettings() {
+            try {
+                if (!confirm('Save all changes to business settings?')) {
+                    return;
+                }
+                
+                showLoading();
+                
+                const form = document.getElementById('settings-form');
+                const formData = new FormData(form);
+                
+                // Build settings object
+                const settings = {
+                    businessName: formData.get('businessName'),
+                    shortName: formData.get('shortName'),
+                    townName: formData.get('townName'),
+                    state: formData.get('state'),
+                    zipCode: formData.get('zipCode'),
+                    fullAddress: formData.get('fullAddress'),
+                    phone: formData.get('phone'),
+                    phoneDisplay: formData.get('phoneDisplay'),
+                    email: formData.get('email'),
+                    storeName: formData.get('storeName'),
+                    storePartner: formData.get('storePartner'),
+                    hours: {
+                        weekday: {
+                            display: formData.get('hours.weekday.display'),
+                            detailed: formData.get('hours.weekday.detailed')
+                        },
+                        saturday: {
+                            display: formData.get('hours.saturday.display'),
+                            detailed: formData.get('hours.saturday.detailed')
+                        },
+                        sunday: {
+                            display: formData.get('hours.sunday.display'),
+                            detailed: formData.get('hours.sunday.detailed')
+                        },
+                        full: formData.get('hours.full')
+                    },
+                    deliveryFee: parseFloat(formData.get('deliveryFee')),
+                    minimumOrder: parseFloat(formData.get('minimumOrder')),
+                    averageDeliveryTime: formData.get('averageDeliveryTime'),
+                    deliveryRadius: formData.get('deliveryRadius'),
+                    social: {
+                        facebook: formData.get('social.facebook'),
+                        instagram: formData.get('social.instagram'),
+                        twitter: formData.get('social.twitter')
+                    },
+                    features: formData.get('features').split(',').map(f => f.trim()).filter(f => f)
+                };
+                
+                const response = await api.put('/settings', settings);
+                
+                if (response.success) {
+                    showSuccess('Settings saved successfully! Changes will appear on the website.');
+                    currentSettings = response.data;
+                } else {
+                    showError(response.message || 'Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showError('Error saving settings: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Reset settings
+        async function resetSettings() {
+            try {
+                if (!confirm('Reset all settings to defaults? This cannot be undone.')) {
+                    return;
+                }
+                
+                showLoading();
+                
+                const response = await api.post('/settings/reset', {});
+                
+                if (response.success) {
+                    showSuccess('Settings reset to defaults');
+                    currentSettings = response.data;
+                    populateForm(currentSettings);
+                    updatePreview();
+                } else {
+                    showError(response.message || 'Failed to reset settings');
+                }
+            } catch (error) {
+                console.error('Error resetting settings:', error);
+                showError('Error resetting settings: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Update preview on form changes
+        document.getElementById('settings-form').addEventListener('input', updatePreview);
+
+        // Show/hide loading
+        function showLoading() {
+            // Add loading indicator
+        }
+
+        function hideLoading() {
+            // Remove loading indicator
+        }
+
+        // Show messages
+        function showSuccess(message) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="alert alert-success">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        function showError(message) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="alert alert-error">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Load settings on page load
+        loadSettings();
+    </script>
+</body>
+</html>

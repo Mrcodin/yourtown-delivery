@@ -74,7 +74,7 @@ api.trackOrder("555-0123").then(r => console.log(r))
 **Expected Behavior:**
 1. Enter credentials:
    - Username: `admin`
-   - Password: `hometown123`
+   - Password: (check seed script output for generated password)
 2. Click "Sign In"
 3. Should call API and receive JWT token
 4. Session stored in localStorage
@@ -83,7 +83,7 @@ api.trackOrder("555-0123").then(r => console.log(r))
 **Test in Console:**
 ```javascript
 // Should return user object and token
-api.login("admin", "hometown123").then(r => console.log(r))
+api.login("admin", "YOUR_GENERATED_PASSWORD").then(r => console.log(r))
 
 // Check token
 api.getToken() // Should return JWT string
@@ -141,7 +141,7 @@ curl http://localhost:3000/api/orders/track/555-9999 | jq
 # 4. Login
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "hometown123"}' | jq
+  -d '{"username": "admin", "password": "YOUR_GENERATED_PASSWORD"}' | jq
 
 # 5. Verify token (replace TOKEN with actual JWT)
 curl http://localhost:3000/api/auth/verify \
@@ -218,7 +218,7 @@ localStorage.getItem('adminSession')
 ### Issue: 401 Unauthorized
 **Fix:** Login again to get fresh token
 ```javascript
-api.login("admin", "hometown123")
+api.login("admin", "YOUR_GENERATED_PASSWORD")
 ```
 
 ## Success Criteria ✅

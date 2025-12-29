@@ -62,7 +62,7 @@ Before deploying, make sure you have:
    NODE_ENV=production
    PORT=3000
    MONGODB_URI=mongodb+srv://yourtowndelivery:<password>@cluster0.xxxxx.mongodb.net/yourtown-delivery
-   JWT_SECRET=your-super-secret-jwt-key-min-32-chars-long-random-string
+   JWT_SECRET=USE_COMMAND_TO_GENERATE_SEE_BELOW
    JWT_EXPIRE=8h
    CORS_ORIGIN=https://yourtown-delivery.onrender.com
    ```
