@@ -18,7 +18,7 @@ async function loadProducts() {
     }
     
     try {
-        console.log('Loading products from API...');
+        // console.log('Loading products from API...');
         const response = await api.getProducts({ showLoading: false }); // We handle loading manually
         
         if (response.success && response.products) {
@@ -30,7 +30,7 @@ async function loadProducts() {
                 emoji: p.emoji || '📦'
             }));
             
-            console.log(`✅ Loaded ${groceries.length} products from API`);
+            // console.log(`✅ Loaded ${groceries.length} products from API`);
             
             // Set usual order IDs (first 6 products)
             USUAL_ORDER_IDS = groceries.slice(0, 6).map(p => p.id);

@@ -8,7 +8,7 @@
     
     // Wait for DOM and config to load
     if (typeof BUSINESS_CONFIG === 'undefined') {
-        console.warn('BUSINESS_CONFIG not loaded. Make sure config.js is included before this script.');
+        // console.warn('BUSINESS_CONFIG not loaded. Make sure config.js is included before this script.');
         return;
     }
 
@@ -128,7 +128,7 @@
                 }
             }
         } catch (error) {
-            console.log('Using static stats (API not available)');
+            // console.log('Using static stats (API not available)');
             // Keep static values if API fails
         }
     }

@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop Groceries - Hometown Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="loading.css">
+    <link rel="stylesheet" href="breadcrumb.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- ACCESSIBILITY TOOLBAR -->
+    <div class="accessibility-bar">
+        <div class="container accessibility-container">
+            <span>Accessibility:</span>
+            <button onclick="toggleLargeText()" id="text-size-btn" class="access-btn">🔤 Larger Text</button>
+            <button onclick="toggleContrast()" id="contrast-btn" class="access-btn">🌓 High Contrast</button>
+            <button onclick="speakPage()" id="speak-btn" class="access-btn">🔊 Read Aloud</button>
+        </div>
+    </div>
+
     <!-- PHONE BAR -->
     <div class="phone-bar">
         <div class="container">
@@ -35,6 +47,11 @@
             </nav>
         </div>
     </header>
+
+    <!-- BREADCRUMB -->
+    <div class="container">
+        <div id="breadcrumb-container"></div>
+    </div>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -132,6 +149,7 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="api.js"></script>
     <script src="loading.js"></script>
+    <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
     <script src="main.js"></script>

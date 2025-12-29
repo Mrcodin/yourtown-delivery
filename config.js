@@ -90,7 +90,7 @@ async function loadBusinessConfig() {
                     hours: { ...DEFAULT_CONFIG.hours, ...data.data.hours },
                     social: { ...DEFAULT_CONFIG.social, ...data.data.social }
                 };
-                console.log('✅ Business configuration loaded from database');
+                // console.log('✅ Business configuration loaded from database');
                 
                 // Trigger event for page-config.js to re-run replacements
                 document.dispatchEvent(new CustomEvent('configLoaded', { detail: BUSINESS_CONFIG }));
@@ -98,7 +98,7 @@ async function loadBusinessConfig() {
             }
         }
     } catch (error) {
-        console.log('Using default configuration (API not available)');
+        // console.log('Using default configuration (API not available)');
     }
     return DEFAULT_CONFIG;
 }

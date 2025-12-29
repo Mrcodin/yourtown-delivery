@@ -20,7 +20,7 @@ const Auth = {
         
         // No token exists
         if (!token) {
-            console.log('Auth: No token found');
+            // console.log('Auth: No token found');
             return false;
         }
         
@@ -29,10 +29,10 @@ const Auth = {
             const response = await api.verifyToken();
             
             if (response.success && response.user) {
-                console.log('Auth: Valid token for', response.user.username);
+                // console.log('Auth: Valid token for', response.user.username);
                 return true;
             } else {
-                console.log('Auth: Token verification failed');
+                // console.log('Auth: Token verification failed');
                 this.clearSession();
                 return false;
             }
@@ -75,7 +75,7 @@ const Auth = {
      * Clear all session data - FIXED
      */
     clearSession: function() {
-        console.log('Auth: Clearing session');
+        // console.log('Auth: Clearing session');
         localStorage.removeItem(this.SESSION_KEY);
         api.clearToken(); // Clear API token
         // Don't clear rememberedUser - that's for convenience
@@ -101,7 +101,7 @@ const Auth = {
         // Clear the session
         this.clearSession();
         
-        console.log('Auth: Logout complete, redirecting to login');
+        // console.log('Auth: Logout complete, redirecting to login');
         
         // Force redirect to login page
         window.location.replace('admin-login.html');
@@ -145,7 +145,7 @@ const Auth = {
     requireLogin: async function() {
         const loggedIn = await this.isLoggedIn();
         if (!loggedIn) {
-            console.log('Auth: Login required, redirecting');
+            // console.log('Auth: Login required, redirecting');
             // Save intended destination
             sessionStorage.setItem('redirectAfterLogin', window.location.href);
             window.location.replace('admin-login.html');
@@ -253,22 +253,22 @@ const Auth = {
 document.addEventListener('DOMContentLoaded', async function() {
     const currentPage = window.location.pathname;
     
-    console.log('Auth: Page loaded -', currentPage);
+    // console.log('Auth: Page loaded -', currentPage);
     
     // Skip auth check on login page
     if (currentPage.includes('admin-login')) {
-        console.log('Auth: On login page, skipping auth check');
+        // console.log('Auth: On login page, skipping auth check');
         return;
     }
     
     // Skip auth check on non-admin pages
     if (!currentPage.includes('admin')) {
-        console.log('Auth: Not an admin page, skipping auth check');
+        // console.log('Auth: Not an admin page, skipping auth check');
         return;
     }
     
     // Require login for all admin pages
-    console.log('Auth: Checking login status for admin page');
+    // console.log('Auth: Checking login status for admin page');
     const loginCheck = await Auth.requireLogin();
     if (!loginCheck) {
         return;

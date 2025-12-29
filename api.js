@@ -378,12 +378,12 @@ class SocketManager {
         });
 
         this.socket.on('connect', () => {
-            console.log('✅ Socket.io connected');
+            // console.log('✅ Socket.io connected');
             this.connected = true;
         });
 
         this.socket.on('disconnect', () => {
-            console.log('❌ Socket.io disconnected');
+            // console.log('❌ Socket.io disconnected');
             this.connected = false;
         });
 

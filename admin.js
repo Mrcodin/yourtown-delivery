@@ -40,14 +40,14 @@ async function initializeSocketIO() {
             
             // Listen for real-time events
             socketManager.on('new-order', (order) => {
-                console.log('New order received:', order);
+                // console.log('New order received:', order);
                 showNotification('New Order', `Order ${order.orderId} placed`);
                 adminOrders.unshift(order);
                 refreshCurrentPage();
             });
             
             socketManager.on('order-updated', (order) => {
-                console.log('Order updated:', order);
+                // console.log('Order updated:', order);
                 const index = adminOrders.findIndex(o => o._id === order._id);
                 if (index !== -1) {
                     adminOrders[index] = order;
@@ -56,7 +56,7 @@ async function initializeSocketIO() {
             });
             
             socketManager.on('driver-status-changed', (data) => {
-                console.log('Driver status changed:', data);
+                // console.log('Driver status changed:', data);
                 const driver = drivers.find(d => d._id === data.driverId);
                 if (driver) {
                     driver.status = data.status;
@@ -64,7 +64,7 @@ async function initializeSocketIO() {
                 }
             });
             
-            console.log('✅ Socket.io connected for admin');
+            // console.log('✅ Socket.io connected for admin');
         }
     } catch (error) {
         console.error('Socket.io connection failed:', error);
@@ -86,28 +86,28 @@ async function loadInitialData() {
         
         if (ordersRes.success) {
             adminOrders = ordersRes.orders || [];
-            console.log(`✅ Loaded ${adminOrders.length} orders from API`);
+            // console.log(`✅ Loaded ${adminOrders.length} orders from API`);
         } else {
             message.showWarning('Failed to load orders data.', 'Data Loading');
         }
         
         if (driversRes.success) {
             drivers = driversRes.drivers || [];
-            console.log(`✅ Loaded ${drivers.length} drivers from API`);
+            // console.log(`✅ Loaded ${drivers.length} drivers from API`);
         } else {
             message.showWarning('Failed to load drivers data.', 'Data Loading');
         }
         
         if (customersRes.success) {
             customers = customersRes.customers || [];
-            console.log(`✅ Loaded ${customers.length} customers from API`);
+            // console.log(`✅ Loaded ${customers.length} customers from API`);
         } else {
             message.showWarning('Failed to load customers data.', 'Data Loading');
         }
         
         if (productsRes.success) {
             products = productsRes.products || [];
-            console.log(`✅ Loaded ${products.length} products from API`);
+            // console.log(`✅ Loaded ${products.length} products from API`);
         } else {
             message.showWarning('Failed to load products data.', 'Data Loading');
         }
@@ -285,12 +285,12 @@ async function refreshDashboard() {
 // Legacy function for compatibility
 function loadAdminOrders() {
     // Now handled by loadInitialData()
-    console.log('loadAdminOrders() is deprecated - using API');
+    // console.log('loadAdminOrders() is deprecated - using API');
 }
 
 function saveAdminOrders() {
     // No longer saving to localStorage
-    console.log('saveAdminOrders() is deprecated - data saved to API');
+    // console.log('saveAdminOrders() is deprecated - data saved to API');
 }
 
 function generateSampleOrders() {
@@ -964,7 +964,7 @@ async function updateOrderStatus() {
             try {
                 const driverResponse = await api.assignDriver(order._id, driverId);
                 if (!driverResponse.success) {
-                    console.warn('Failed to assign driver:', driverResponse.message);
+                    // console.warn('Failed to assign driver:', driverResponse.message);
                     showAdminToast('Status updated but driver assignment failed', 'warning');
                 }
             } catch (driverError) {
@@ -1044,7 +1044,7 @@ function populateDriverSelect() {
 // ============ PRODUCTS PAGE ============
 
 function initProductsPage() {
-    console.log('Initializing products page, products count:', products.length);
+    // console.log('Initializing products page, products count:', products.length);
     renderProductsGrid();
     updateProductCounts();
 }
@@ -1057,7 +1057,7 @@ function renderProductsGrid() {
     }
     
     let filteredProducts = getFilteredProducts();
-    console.log('Rendering products grid, filtered products:', filteredProducts.length);
+    // console.log('Rendering products grid, filtered products:', filteredProducts.length);
     
     if (filteredProducts.length === 0) {
         container.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">No products found</div>';
@@ -1117,7 +1117,7 @@ function updateProductCounts() {
 }
 
 function openAddProductModal() {
-    console.log('Opening add product modal');
+    // console.log('Opening add product modal');
     document.getElementById('product-modal-title').textContent = 'Add New Product';
     document.getElementById('product-form').reset();
     document.getElementById('product-id').value = '';
@@ -1198,7 +1198,7 @@ async function toggleProductStatus(productId) {
         const currentStatus = product.status || 'active';
         const newStatus = currentStatus === 'active' ? 'hidden' : 'active';
         
-        console.log('Toggling product status:', productId, 'from', currentStatus, 'to', newStatus);
+        // console.log('Toggling product status:', productId, 'from', currentStatus, 'to', newStatus);
         
         // Send full product data to avoid validation errors
         const updateData = {
@@ -1211,7 +1211,7 @@ async function toggleProductStatus(productId) {
         
         const response = await api.updateProduct(productId, updateData);
         
-        console.log('Toggle response:', response);
+        // console.log('Toggle response:', response);
         
         if (response.success) {
             product.status = newStatus;
@@ -1513,7 +1513,7 @@ function renderCustomersTable() {
         return;
     }
     
-    console.log(`Rendering ${customers.length} customers`);
+    // console.log(`Rendering ${customers.length} customers`);
     
     if (customers.length === 0) {
         container.innerHTML = `
