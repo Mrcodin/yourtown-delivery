@@ -72,37 +72,54 @@ async function initializeSocketIO() {
 }
 
 async function loadInitialData() {
+    // Show loading overlay
+    loading.showOverlay('Loading dashboard data...');
+    
     try {
         // Load all data in parallel
         const [ordersRes, driversRes, customersRes, productsRes] = await Promise.all([
-            api.getOrders(),
-            api.getDrivers(),
-            api.getCustomers(),
-            api.getProducts()
+            api.getOrders({ showLoading: false }),
+            api.getDrivers({ showLoading: false }),
+            api.getCustomers({ showLoading: false }),
+            api.getProducts({ showLoading: false })
         ]);
         
         if (ordersRes.success) {
             adminOrders = ordersRes.orders || [];
             console.log(`✅ Loaded ${adminOrders.length} orders from API`);
+        } else {
+            message.showWarning('Failed to load orders data.', 'Data Loading');
         }
         
         if (driversRes.success) {
             drivers = driversRes.drivers || [];
             console.log(`✅ Loaded ${drivers.length} drivers from API`);
+        } else {
+            message.showWarning('Failed to load drivers data.', 'Data Loading');
         }
         
         if (customersRes.success) {
             customers = customersRes.customers || [];
             console.log(`✅ Loaded ${customers.length} customers from API`);
+        } else {
+            message.showWarning('Failed to load customers data.', 'Data Loading');
         }
         
         if (productsRes.success) {
             products = productsRes.products || [];
             console.log(`✅ Loaded ${products.length} products from API`);
+        } else {
+            message.showWarning('Failed to load products data.', 'Data Loading');
         }
     } catch (error) {
         console.error('Error loading initial data:', error);
-        showNotification('Error', 'Failed to load data from server', 'error');
+        message.showError(
+            message.getUserFriendlyError(error),
+            'Failed to Load Data'
+        );
+    } finally {
+        // Always hide loading overlay
+        loading.hideOverlay();
     }
 }
 

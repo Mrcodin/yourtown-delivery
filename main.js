@@ -9,9 +9,17 @@ let USUAL_ORDER_IDS = [];
 
 // Load products from API
 async function loadProducts() {
+    const gridContainer = document.getElementById('grocery-grid');
+    const emptyState = document.getElementById('empty-state');
+    
+    // Show skeleton loading if on shop page
+    if (gridContainer) {
+        loading.showSkeleton(gridContainer, 'product', 6);
+    }
+    
     try {
         console.log('Loading products from API...');
-        const response = await api.getProducts();
+        const response = await api.getProducts({ showLoading: false }); // We handle loading manually
         
         if (response.success && response.products) {
             groceries = response.products.map(p => ({
@@ -28,16 +36,36 @@ async function loadProducts() {
             USUAL_ORDER_IDS = groceries.slice(0, 6).map(p => p.id);
             
             // Render products if on shop page
-            if (document.getElementById('grocery-grid')) {
-                renderGroceryGrid();
+            if (gridContainer) {
+                if (groceries.length === 0) {
+                    gridContainer.innerHTML = '';
+                    emptyState && emptyState.removeAttribute('style');
+                } else {
+                    emptyState && (emptyState.style.display = 'none');
+                    renderGroceryGrid();
+                }
             }
         } else {
             console.error('Failed to load products:', response);
-            showError('Failed to load products. Please refresh the page.');
+            if (gridContainer) {
+                gridContainer.innerHTML = '';
+            }
+            message.showError(
+                'Unable to load products from the server. Please refresh the page to try again.',
+                'Failed to Load Products',
+                gridContainer
+            );
         }
     } catch (error) {
         console.error('Error loading products:', error);
-        showError('Error connecting to server. Please check your connection.');
+        if (gridContainer) {
+            gridContainer.innerHTML = '';
+        }
+        message.showError(
+            message.getUserFriendlyError(error),
+            'Connection Error',
+            gridContainer
+        );
     }
 }
 
@@ -314,21 +342,47 @@ async function handleCheckout(e) {
     const email = document.getElementById('email').value.trim();
     const deliveryTime = document.getElementById('delivery-time').value;
     const notes = document.getElementById('notes').value.trim();
-    const payment = document.querySelector('input[name="payment"]:checked').value;
+    const paymentMethod = document.querySelector('input[name="payment"]:checked');
     
     // Validate
     if (!name || !phone || !address) {
-        showToast('Please fill in all required fields', 'error');
+        message.showError('Please fill in all required fields (name, phone, and address).', 'Missing Information');
         return;
     }
     
-    // Show loading
+    if (!paymentMethod) {
+        message.showError('Please select a payment method.', 'Payment Method Required');
+        return;
+    }
+    
+    // Show loading on button
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Placing Order...';
+    loading.buttonLoading(submitBtn, true);
+    
+    // Show progress indicator
+    const progressContainer = document.getElementById('checkout-progress');
+    if (progressContainer) {
+        progress.createStepProgress(progressContainer, [
+            'Validating',
+            'Processing',
+            'Confirming',
+            'Complete'
+        ], 0);
+    }
     
     try {
+        // Step 1: Validating
+        if (progressContainer) {
+            progress.updateStepProgress(progressContainer, 0);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
+        
+        // Step 2: Processing
+        if (progressContainer) {
+            progress.updateStepProgress(progressContainer, 1);
+        }
+        
         // Prepare order data
         const orderData = {
             customerInfo: {
@@ -346,30 +400,65 @@ async function handleCheckout(e) {
                 instructions: notes
             },
             payment: {
-                method: payment
+                method: paymentMethod.value
             },
             notes
         };
         
         // Call API to create order
-        const response = await api.createOrder(orderData);
+        const response = await api.createOrder(orderData, { showLoading: false });
+        
+        // Step 3: Confirming
+        if (progressContainer) {
+            progress.updateStepProgress(progressContainer, 2);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         if (response.success && response.order) {
             const order = response.order;
             
-            // Show confirmation
-            alert(`🎉 Order Placed Successfully!\n\nOrder #${order.orderId}\nTotal: $${order.pricing.total.toFixed(2)}\n\nWe'll call ${phone} within 30 minutes to confirm your order.\n\nThank you for using Hometown Delivery!`);
+            // Step 4: Complete
+            if (progressContainer) {
+                progress.updateStepProgress(progressContainer, 3);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Show success message
+            message.showSuccess(
+                `Your order #${order.orderId} has been placed successfully! Total: $${order.pricing.total.toFixed(2)}. We'll call ${phone} within 30 minutes to confirm.`,
+                'Order Placed! 🎉',
+                null,
+                8000
+            );
             
             // Clear cart and redirect
             cart = [];
             saveCart();
-            window.location.href = `track.html?phone=${encodeURIComponent(phone)}`;
+            
+            setTimeout(() => {
+                window.location.href = `track.html?phone=${encodeURIComponent(phone)}`;
+            }, 2000);
         } else {
             throw new Error(response.message || 'Failed to place order');
         }
     } catch (error) {
         console.error('Checkout error:', error);
-        showToast('Failed to place order. Please try again.', 'error');
+        
+        // Hide progress on error
+        if (progressContainer) {
+            progressContainer.innerHTML = '';
+        }
+        
+        message.showError(
+            message.getUserFriendlyError(error),
+            'Order Failed'
+        );
+        
+        loading.buttonLoading(submitBtn, false);
+    }
+}
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
@@ -378,22 +467,38 @@ async function handleCheckout(e) {
 // ============ ORDER TRACKING ============
 async function trackOrder() {
     const phone = document.getElementById('track-phone').value.trim();
+    const trackBtn = document.querySelector('.track-form button[type="submit"]');
     
     if (!phone) {
-        showToast('Please enter your phone number', 'error');
+        message.showError('Please enter your phone number to track your order.', 'Phone Number Required');
         return;
     }
     
     const statusContainer = document.getElementById('order-status');
     const noOrderMessage = document.getElementById('no-order');
     
+    // Show loading state
+    if (trackBtn) {
+        loading.buttonLoading(trackBtn, true);
+    }
+    
+    // Clear previous messages
+    message.clearMessages();
+    
     try {
         // Call API to track order
-        const response = await api.trackOrder(phone);
+        const response = await api.trackOrder(phone, { showLoading: false });
         
         if (!response.success || !response.order) {
             if (statusContainer) statusContainer.style.display = 'none';
-            if (noOrderMessage) noOrderMessage.style.display = 'block';
+            if (noOrderMessage) {
+                noOrderMessage.style.display = 'block';
+            } else {
+                message.showInfo(
+                    'We couldn\'t find any recent orders for this phone number. Please check the number and try again.',
+                    'No Orders Found'
+                );
+            }
             return;
         }
         
@@ -442,13 +547,21 @@ async function trackOrder() {
             socketManager.on('order-status-changed', (data) => {
                 if (data.orderId === order.orderId) {
                     updateStatusTimeline(data.status);
-                    showToast(`Order status updated: ${formatStatus(data.status)}`, 'success');
+                    message.showSuccess(`Your order status has been updated to: ${formatStatus(data.status)}`, 'Order Updated');
                 }
             });
         }
     } catch (error) {
         console.error('Track order error:', error);
-        showToast('Failed to track order. Please try again.', 'error');
+        message.showError(
+            message.getUserFriendlyError(error),
+            'Tracking Error'
+        );
+    } finally {
+        // Always remove loading state
+        if (trackBtn) {
+            loading.buttonLoading(trackBtn, false);
+        }
     }
 }
 

@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Hometown Delivery</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="loading.css">
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="api.js"></script>
+    <script src="loading.js"></script>
     <style>
         * {
             margin: 0;
@@ -439,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
+            const submitBtn = document.getElementById('login-btn');
             
             // Hide previous messages
             hideMessages();
@@ -449,12 +452,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Show loading state
-            setLoading(true);
+            // Show loading state on button
+            loading.buttonLoading(submitBtn, true);
             
             try {
                 // Call API login
-                const response = await api.login(username, password);
+                const response = await api.login(username, password, { showLoading: false });
                 
                 if (response.success && response.token) {
                     // Successful login
@@ -462,10 +465,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Failed login
                     loginFailed(response.message || 'Invalid username or password');
+                    loading.buttonLoading(submitBtn, false);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                loginFailed('Connection error. Please try again.');
+                const errorMsg = message.getUserFriendlyError(error);
+                loginFailed(errorMsg);
+                loading.buttonLoading(submitBtn, false);
             }
         }
 

@@ -56,7 +56,7 @@ class API {
         return headers;
     }
 
-    // Generic fetch wrapper
+    // Generic fetch wrapper with loading state management
     async request(endpoint, options = {}) {
         const config = {
             ...options,
@@ -66,9 +66,33 @@ class API {
             }
         };
 
+        // Generate request ID for tracking
+        const requestId = `${endpoint}-${Date.now()}`;
+        
+        // Show loading if enabled (default true)
+        const showLoading = options.showLoading !== false;
+        const showOverlay = options.showOverlay === true;
+        const loadingMessage = options.loadingMessage || 'Loading...';
+
         try {
+            // Track request start
+            if (typeof loading !== 'undefined' && showLoading) {
+                loading.startRequest(requestId);
+                if (showOverlay) {
+                    loading.showOverlay(loadingMessage);
+                }
+            }
+
             const response = await fetch(`${this.baseURL}${endpoint}`, config);
-            const data = await response.json();
+            
+            // Try to parse response
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                data = { success: response.ok };
+            }
 
             if (!response.ok) {
                 // Handle token expiration
@@ -78,13 +102,33 @@ class API {
                         window.location.href = '/admin-login.html';
                     }
                 }
-                throw new Error(data.message || 'Request failed');
+                
+                // Create error object with status
+                const error = new Error(data.message || 'Request failed');
+                error.status = response.status;
+                error.statusCode = response.status;
+                error.data = data;
+                throw error;
             }
 
             return data;
         } catch (error) {
+            // Add status code if network error
+            if (!error.status && !error.statusCode) {
+                error.status = 0;
+                error.statusCode = 0;
+            }
+            
             console.error('API Error:', error);
             throw error;
+        } finally {
+            // Track request end and hide loading
+            if (typeof loading !== 'undefined' && showLoading) {
+                loading.endRequest(requestId);
+                if (showOverlay) {
+                    loading.hideOverlay();
+                }
+            }
         }
     }
 

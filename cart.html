@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart - Hometown Delivery</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="loading.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -186,8 +187,11 @@
                                 </label>
                             </div>
 
+                            <!-- Progress Indicator (shown during checkout) -->
+                            <div id="checkout-progress" style="margin: 30px 0;"></div>
+
                             <button type="submit" class="btn btn-primary btn-xl btn-block">
-                                🚚 Place Order
+                                <span class="btn-text">🚚 Place Order</span>
                             </button>
                             
                             <p class="form-note">
@@ -209,6 +213,7 @@
 
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="api.js"></script>
+    <script src="loading.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
     <script src="main.js"></script>
