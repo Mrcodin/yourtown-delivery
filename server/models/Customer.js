@@ -9,16 +9,14 @@ const customerSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
-    unique: true,
     trim: true,
     lowercase: true,
     index: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
+    sparse: true // Allow multiple documents without email (guest orders)
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
     minlength: 6,
     select: false // Don't return password by default
   },
@@ -108,7 +106,8 @@ customerSchema.index({ name: 'text', email: 'text' });
 
 // Hash password before saving
 customerSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
+  // Skip hashing if password is not modified or undefined (guest customers)
+  if (!this.isModified('password') || !this.password) {
     return next();
   }
   

@@ -102,6 +102,42 @@ exports.protectCustomer = async (req, res, next) => {
   }
 };
 
+// Optional customer authentication (doesn't fail if not authenticated)
+exports.optionalCustomerAuth = async (req, res, next) => {
+  try {
+    let token;
+
+    // Check for token in Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      // No token, continue without authentication
+      return next();
+    }
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Check if it's a customer token
+      if (decoded.type === 'customer') {
+        // Get customer from token
+        req.customer = await Customer.findById(decoded.id);
+      }
+    } catch (error) {
+      // Token invalid, continue without authentication
+      // Don't fail the request
+    }
+
+    next();
+  } catch (error) {
+    // Error in middleware, continue without authentication
+    next();
+  }
+};
+
 // Authorize based on role
 exports.authorize = (...roles) => {
   return (req, res, next) => {

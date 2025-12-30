@@ -135,6 +135,9 @@ exports.trackOrder = async (req, res) => {
 // @access  Public
 exports.createOrder = async (req, res) => {
   try {
+    console.log('📦 Creating order - Request received');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    
     const { customerInfo, items, payment, delivery, notes } = req.body;
 
     // Validate products and calculate pricing
@@ -172,7 +175,8 @@ exports.createOrder = async (req, res) => {
       customer = await Customer.create({
         name: customerInfo.name,
         phone: customerInfo.phone,
-        email: customerInfo.email,
+        email: customerInfo.email || undefined, // Make email optional
+        createdViaOrder: true, // Mark as created via order (no password)
         addresses: [{
           street: customerInfo.address,
           isDefault: true
@@ -300,10 +304,13 @@ exports.createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Create order error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', req.body);
     res.status(500).json({
       success: false,
       message: 'Error creating order',
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };

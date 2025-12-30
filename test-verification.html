@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Verification Status</title>
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Email Verification Debug</h1>
+    <pre id="output"></pre>
+    <button onclick="checkStatus()">Check Status</button>
+    <button onclick="clearAndReload()">Clear Storage & Reload</button>
+    
+    <script>
+        function checkStatus() {
+            const output = document.getElementById('output');
+            const isLoggedIn = customerAuth.isLoggedIn();
+            const isVerified = customerAuth.isEmailVerified();
+            const customer = customerAuth.getCustomer();
+            const emailVerifiedLS = localStorage.getItem('emailVerified');
+            
+            output.textContent = JSON.stringify({
+                isLoggedIn,
+                isVerified,
+                emailVerifiedLS,
+                customer
+            }, null, 2);
+        }
+        
+        function clearAndReload() {
+            localStorage.clear();
+            location.reload();
+        }
+        
+        // Auto-check on load
+        checkStatus();
+    </script>
+</body>
+</html>

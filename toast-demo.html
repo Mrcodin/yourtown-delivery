@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast Demo - Hometown Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="toast.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+        }
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .demo-btn {
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-success { background: #10b981; color: white; }
+        .btn-error { background: #ef4444; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-info { background: #3b82f6; color: white; }
+        .code-example {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <script src="toast.js"></script>
+    
+    <div class="demo-container">
+        <h1 style="margin-bottom: 10px;">🎉 Toast Notification System</h1>
+        <p style="color: #666; margin-bottom: 40px;">Modern, accessible notifications that replace alert() popups</p>
+
+        <div class="demo-section">
+            <h2>Basic Examples</h2>
+            <div class="demo-buttons">
+                <button class="demo-btn btn-success" onclick="toast.success('Order placed successfully!')">
+                    Success Toast
+                </button>
+                <button class="demo-btn btn-error" onclick="toast.error('Payment failed. Please try again.')">
+                    Error Toast
+                </button>
+                <button class="demo-btn btn-warning" onclick="toast.warning('Your session will expire in 5 minutes.')">
+                    Warning Toast
+                </button>
+                <button class="demo-btn btn-info" onclick="toast.info('New products added to the store!')">
+                    Info Toast
+                </button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>With Titles</h2>
+            <div class="demo-buttons">
+                <button class="demo-btn btn-success" onclick="toast.success('Your order #12345 has been delivered', 'Delivery Complete')">
+                    Success with Title
+                </button>
+                <button class="demo-btn btn-error" onclick="toast.error('Unable to connect to payment gateway', 'Payment Error')">
+                    Error with Title
+                </button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Advanced Options</h2>
+            <div class="demo-buttons">
+                <button class="demo-btn btn-info" onclick="toast.show({ message: 'This stays for 10 seconds', type: 'info', duration: 10000 })">
+                    Long Duration (10s)
+                </button>
+                <button class="demo-btn btn-warning" onclick="toast.show({ message: 'This toast stays until you close it', type: 'warning', duration: 0 })">
+                    No Auto-Close
+                </button>
+                <button class="demo-btn btn-success" onclick="showMultiple()">
+                    Multiple Toasts
+                </button>
+                <button class="demo-btn btn-error" onclick="toast.closeAll()">
+                    Close All
+                </button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Usage Examples</h2>
+            
+            <h3>Simple Usage:</h3>
+            <div class="code-example">
+toast.success('Order placed!');<br>
+toast.error('Something went wrong');<br>
+toast.warning('Low stock alert');<br>
+toast.info('New feature available');
+            </div>
+
+            <h3>With Options:</h3>
+            <div class="code-example">
+toast.show({<br>
+&nbsp;&nbsp;message: 'Your order has been placed',<br>
+&nbsp;&nbsp;title: 'Success',<br>
+&nbsp;&nbsp;type: 'success',<br>
+&nbsp;&nbsp;duration: 5000<br>
+});
+            </div>
+
+            <h3>Replace alert():</h3>
+            <div class="code-example">
+// Before:<br>
+alert('✅ Saved successfully!');<br>
+<br>
+// After:<br>
+toast.success('Saved successfully!');
+            </div>
+        </div>
+
+        <div class="demo-section" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <h3 style="margin-top: 0;">✨ Features</h3>
+            <ul style="margin: 0;">
+                <li>🎨 Modern, clean design</li>
+                <li>📱 Mobile responsive</li>
+                <li>♿ Accessibility compliant (ARIA)</li>
+                <li>🌓 Dark mode support</li>
+                <li>⚡ Smooth animations</li>
+                <li>⏱️ Auto-dismiss with progress bar</li>
+                <li>❌ Manual dismissal option</li>
+                <li>🔒 XSS protection (HTML escaping)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showMultiple() {
+            toast.info('First notification');
+            setTimeout(() => toast.success('Second notification'), 500);
+            setTimeout(() => toast.warning('Third notification'), 1000);
+        }
+    </script>
+</body>
+</html>

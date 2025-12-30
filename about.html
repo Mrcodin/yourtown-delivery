@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <script src="toast.js"></script>
     <!-- ACCESSIBILITY TOOLBAR -->
     <div class="accessibility-bar">
         <div class="container accessibility-container">
@@ -442,7 +443,7 @@
                     btn.textContent = '🔊 Read Aloud';
                 };
             } else {
-                alert('Sorry, your browser does not support text-to-speech.');
+                toast.warning('Sorry, your browser does not support text-to-speech.');
             }
         }
 

@@ -23,6 +23,7 @@ class CustomerAuth {
     removeToken() {
         localStorage.removeItem(this.tokenKey);
         localStorage.removeItem(this.customerKey);
+        localStorage.removeItem('emailVerified');
     }
 
     // Get customer data
@@ -61,6 +62,9 @@ class CustomerAuth {
             // Store token and customer data
             this.setToken(data.token);
             this.setCustomer(data.customer);
+            
+            // Store email verification status (false for new registrations)
+            localStorage.setItem('emailVerified', 'false');
 
             return data;
         } catch (error) {
@@ -88,6 +92,11 @@ class CustomerAuth {
             // Store token and customer data
             this.setToken(data.token);
             this.setCustomer(data.customer);
+
+            // Store email verification status
+            if (data.emailVerified !== undefined) {
+                localStorage.setItem('emailVerified', data.emailVerified.toString());
+            }
 
             return data;
         } catch (error) {
@@ -141,6 +150,11 @@ class CustomerAuth {
 
             // Update stored customer data
             this.setCustomer(data.customer);
+            
+            // Update email verification status from profile
+            if (data.customer.isEmailVerified !== undefined) {
+                localStorage.setItem('emailVerified', data.customer.isEmailVerified.toString());
+            }
 
             return data.customer;
         } catch (error) {
@@ -255,6 +269,61 @@ class CustomerAuth {
         const redirect = sessionStorage.getItem('redirectAfterLogin');
         sessionStorage.removeItem('redirectAfterLogin');
         return redirect || '/index.html';
+    }
+
+    // Check if email is verified
+    isEmailVerified() {
+        // First check localStorage
+        const verified = localStorage.getItem('emailVerified');
+        console.log('isEmailVerified check:', { verified });
+        
+        if (verified !== null) {
+            console.log('Using localStorage value:', verified);
+            return verified === 'true';
+        }
+        
+        // Fallback: check customer data
+        const customer = this.getCustomer();
+        console.log('No localStorage, checking customer data:', customer);
+        
+        if (customer && customer.isEmailVerified !== undefined) {
+            // Update localStorage for next time
+            localStorage.setItem('emailVerified', customer.isEmailVerified.toString());
+            console.log('Using customer.isEmailVerified:', customer.isEmailVerified);
+            return customer.isEmailVerified;
+        }
+        
+        // Default to false if not found
+        console.log('No verification data found, defaulting to false');
+        return false;
+    }
+
+    // Resend verification email
+    async resendVerification() {
+        try {
+            const token = this.getToken();
+            if (!token) {
+                throw new Error('Not authenticated');
+            }
+
+            const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/resend-verification`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to resend verification email');
+            }
+
+            return data;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 

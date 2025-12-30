@@ -336,6 +336,15 @@ function updateOrderSummary() {
 async function handleCheckout(e) {
     e.preventDefault();
     
+    // Check if user is logged in and if email is verified
+    if (customerAuth.isLoggedIn() && !customerAuth.isEmailVerified()) {
+        message.showError(
+            'Please verify your email address before placing an order. Check your inbox for the verification link or go to your account to resend it.',
+            'Email Verification Required'
+        );
+        return;
+    }
+    
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const address = document.getElementById('address').value.trim();
@@ -445,14 +454,25 @@ async function handleCheckout(e) {
         }
     } catch (error) {
         console.error('Checkout error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            response: error.response,
+            stack: error.stack
+        });
         
         // Hide progress on error
         if (progressContainer) {
             progressContainer.innerHTML = '';
         }
         
+        // Show specific error message
+        let errorMessage = 'Something went wrong. Please try again.';
+        if (error.message && error.message !== 'Failed to place order') {
+            errorMessage = error.message;
+        }
+        
         message.showError(
-            message.getUserFriendlyError(error),
+            errorMessage,
             'Order Failed'
         );
         

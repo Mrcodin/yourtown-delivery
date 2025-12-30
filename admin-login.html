@@ -602,6 +602,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = document.getElementById('login-btn');
             const btnText = document.getElementById('btn-text');
             
+            // Check if elements exist (they might not if page is redirecting)
+            if (!btn || !btnText) return;
+            
             if (isLoading) {
                 btn.disabled = true;
                 btnText.innerHTML = '<div class="spinner"></div> Signing in...';
@@ -614,13 +617,18 @@ document.addEventListener('DOMContentLoaded', function() {
         function showError(message) {
             const errorEl = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
-            errorText.textContent = message;
-            errorEl.classList.add('show');
+            if (errorEl && errorText) {
+                errorText.textContent = message;
+                errorEl.classList.add('show');
+            }
         }
 
         function showSuccess() {
-            document.getElementById('success-message').classList.add('show');
-            setLoading(false);
+            const successEl = document.getElementById('success-message');
+            if (successEl) {
+                successEl.classList.add('show');
+            }
+            // Don't call setLoading here since we're redirecting
         }
 
         function hideMessages() {
@@ -629,7 +637,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function forgotPassword() {
-            alert('Please contact the system administrator to reset your password.\n\nEmail: admin@hometowndelivery.com\nPhone: 555-123-4567');
+            toast.info(
+                'Please contact the system administrator to reset your password.\n\nEmail: admin@hometowndelivery.com\nPhone: 555-123-4567',
+                'Password Reset'
+            );
         }
 
         // ============ ACTIVITY LOGGING ============

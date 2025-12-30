@@ -66,6 +66,14 @@ class API {
             }
         };
 
+        // Log request details for debugging
+        console.log('🌐 API Request:', {
+            endpoint,
+            method: config.method || 'GET',
+            hasBody: !!config.body,
+            auth: options.auth !== false
+        });
+
         // Generate request ID for tracking
         const requestId = `${endpoint}-${Date.now()}`;
         
@@ -113,6 +121,13 @@ class API {
 
             return data;
         } catch (error) {
+            console.error('❌ API Error:', {
+                endpoint,
+                message: error.message,
+                status: error.status || error.statusCode || 0,
+                data: error.data
+            });
+            
             // Add status code if network error
             if (!error.status && !error.statusCode) {
                 error.status = 0;

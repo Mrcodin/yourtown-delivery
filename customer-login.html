@@ -7,9 +7,11 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="loading.css">
+    <link rel="stylesheet" href="toast.css">
     <script src="api.js"></script>
     <script src="customer-auth.js"></script>
     <script src="loading.js"></script>
+    <script src="toast.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
 </head>
@@ -86,15 +88,21 @@
             try {
                 loading.showOverlay('Logging in...');
 
-                await customerAuth.login(email, password);
+                const response = await customerAuth.login(email, password);
 
                 loading.hideOverlay();
-                message.showSuccess('Login successful!');
+                
+                // Check if email verification warning exists
+                if (response.warning && !response.emailVerified) {
+                    message.showSuccess('Login successful! Please check your email to verify your account.');
+                } else {
+                    message.showSuccess('Login successful!');
+                }
 
                 setTimeout(() => {
                     const redirectUrl = customerAuth.getRedirectUrl();
                     window.location.href = redirectUrl;
-                }, 1000);
+                }, 1500);
             } catch (error) {
                 loading.hideOverlay();
                 message.showError(error.message || 'Login failed');

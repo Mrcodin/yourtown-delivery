@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Verification</title>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Email Verification Debug Tool</h1>
+    
+    <h2>Current Status:</h2>
+    <pre id="status"></pre>
+    
+    <h2>Actions:</h2>
+    <button onclick="checkStatus()">Refresh Status</button>
+    <button onclick="fetchProfile()">Fetch Fresh Profile</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    
+    <script>
+        function checkStatus() {
+            const output = document.getElementById('status');
+            const customer = customerAuth.getCustomer();
+            const emailVerifiedLS = localStorage.getItem('emailVerified');
+            const isLoggedIn = customerAuth.isLoggedIn();
+            const isVerified = customerAuth.isEmailVerified();
+            
+            output.textContent = JSON.stringify({
+                isLoggedIn,
+                isVerified,
+                emailVerifiedLS,
+                customerData: customer,
+                token: customerAuth.getToken() ? 'EXISTS' : 'MISSING'
+            }, null, 2);
+        }
+        
+        async function fetchProfile() {
+            try {
+                const profile = await customerAuth.getProfile();
+                console.log('Fresh profile:', profile);
+                alert('Profile fetched! Check status again.');
+                checkStatus();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function clearStorage() {
+            if (confirm('Clear all localStorage and reload?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        checkStatus();
+    </script>
+</body>
+</html>

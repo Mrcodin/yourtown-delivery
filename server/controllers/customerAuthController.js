@@ -139,12 +139,20 @@ exports.login = async (req, res) => {
         // Generate token
         const token = generateToken(customer._id);
 
-        res.json({
+        // Add verification warning if email not verified
+        const response = {
             success: true,
-            message: 'Login successful',
+            message: customer.isEmailVerified ? 'Login successful' : 'Login successful - Please verify your email',
             token,
-            customer: customer.toProfileJSON()
-        });
+            customer: customer.toProfileJSON(),
+            emailVerified: customer.isEmailVerified
+        };
+
+        if (!customer.isEmailVerified) {
+            response.warning = 'Please verify your email address to unlock all features';
+        }
+
+        res.json(response);
     } catch (error) {
         console.error('Customer login error:', error);
         res.status(500).json({
@@ -370,7 +378,23 @@ exports.verifyEmail = async (req, res) => {
  */
 exports.resendVerification = async (req, res) => {
     try {
-        const { email } = req.body;
+        // Support both authenticated and public requests
+        let email = req.body.email;
+        
+        // If authenticated, get email from token
+        if (req.customer && req.customer._id) {
+            const authCustomer = await Customer.findById(req.customer._id);
+            if (authCustomer) {
+                email = authCustomer.email;
+            }
+        }
+        
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            });
+        }
 
         const customer = await Customer.findOne({ email });
 

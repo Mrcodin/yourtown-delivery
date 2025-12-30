@@ -49,6 +49,19 @@
         </div>
     </header>
 
+    <!-- Email Verification Banner (shown only if logged in and not verified) -->
+    <div id="email-verification-banner" style="display: none; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 15px 0; text-align: center; border-bottom: 3px solid #d97706;">
+        <div class="container" style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <span style="font-size: 24px;">⚠️</span>
+            <span style="font-size: 18px; font-weight: 600; color: #78350f;">
+                Please verify your email to place orders.
+            </span>
+            <a href="customer-account.html" class="btn" style="padding: 10px 20px; font-size: 16px; background: white; color: #d97706; border: 2px solid #d97706;">
+                Go to Account
+            </a>
+        </div>
+    </div>
+
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="container">
@@ -326,6 +339,7 @@
     <script src="api.js"></script>
     <script src="customer-auth.js"></script>
     <script src="loading.js"></script>
+    <script src="toast.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
     <script src="main.js"></script>
@@ -340,6 +354,23 @@
             }
         }
         updateCustomerNav();
+        
+        // Show email verification banner if needed
+        function checkEmailVerificationBanner() {
+            const banner = document.getElementById('email-verification-banner');
+            const isLoggedIn = customerAuth.isLoggedIn();
+            const isVerified = customerAuth.isEmailVerified();
+            
+            console.log('Banner check:', { isLoggedIn, isVerified, banner: !!banner });
+            
+            if (banner && isLoggedIn && !isVerified) {
+                banner.style.display = 'block';
+                console.log('✅ Verification banner shown');
+            }
+        }
+        
+        // Delay check to ensure customer data is loaded
+        setTimeout(checkEmailVerificationBanner, 100);
     </script>
 </body>
 </html>
