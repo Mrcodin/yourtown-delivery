@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { sendEmail, verifyEmailConfig } = require('../config/email');
+const { sendEmail, verifyEmailConfig, reinitializeTransporter } = require('../config/email');
 const { testEmail, orderConfirmationEmail, orderStatusUpdateEmail, adminNewOrderEmail } = require('../utils/emailTemplates');
 
 // In-memory storage for email config (in production, use database)
@@ -22,13 +22,16 @@ let emailConfig = {
 const emailHistory = [];
 
 // Encryption key (in production, use proper key management)
-const ENCRYPTION_KEY = process.env.EMAIL_ENCRYPTION_KEY || 'change-this-to-32-char-secret!!';
+// Must be exactly 32 bytes for AES-256
+const ENCRYPTION_KEY = process.env.EMAIL_ENCRYPTION_KEY || 'hometown-delivery-secret-key!';
 const algorithm = 'aes-256-cbc';
 
 function encrypt(text) {
     if (!text) return null;
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(algorithm, Buffer.from(ENCRYPTION_KEY), iv);
+    // Ensure key is exactly 32 bytes
+    const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32));
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(text);
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     return iv.toString('hex') + ':' + encrypted.toString('hex');
@@ -39,7 +42,9 @@ function decrypt(text) {
     const parts = text.split(':');
     const iv = Buffer.from(parts.shift(), 'hex');
     const encryptedText = Buffer.from(parts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv(algorithm, Buffer.from(ENCRYPTION_KEY), iv);
+    // Ensure key is exactly 32 bytes
+    const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32));
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
@@ -181,6 +186,10 @@ exports.saveEmailConfig = async (req, res) => {
         process.env.ADMIN_EMAIL = adminEmail;
 
         emailConfig.configured = true;
+
+        // Reinitialize email transporter with new config
+        reinitializeTransporter();
+        console.log('✅ Email transporter reinitialized with new configuration');
 
         // TODO: In production, save to database instead of environment variables
 

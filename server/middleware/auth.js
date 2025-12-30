@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Customer = require('../models/Customer');
 
 // Verify JWT token and attach user to request
 exports.protect = async (req, res, next) => {
@@ -29,6 +30,60 @@ exports.protect = async (req, res, next) => {
         return res.status(401).json({
           success: false,
           message: 'User not found or inactive'
+        });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token is invalid or expired'
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication error'
+    });
+  }
+};
+
+// Protect customer routes
+exports.protectCustomer = async (req, res, next) => {
+  try {
+    let token;
+
+    // Check for token in Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please log in to access this feature'
+      });
+    }
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Check if it's a customer token
+      if (decoded.type !== 'customer') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid authentication'
+        });
+      }
+
+      // Get customer from token
+      req.customer = await Customer.findById(decoded.id);
+
+      if (!req.customer || !req.customer.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Customer not found or inactive'
         });
       }
 

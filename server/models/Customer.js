@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const customerSchema = new mongoose.Schema({
   name: {
@@ -6,20 +7,40 @@ const customerSchema = new mongoose.Schema({
     required: [true, 'Customer name is required'],
     trim: true
   },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    index: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: 6,
+    select: false // Don't return password by default
+  },
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
-    unique: true,
     trim: true,
     index: true
   },
-  email: {
-    type: String,
-    trim: true,
-    lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+  isEmailVerified: {
+    type: Boolean,
+    default: false
   },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
   addresses: [{
+    label: {
+      type: String,
+      default: 'Home'
+    },
     street: String,
     city: String,
     state: String,
@@ -29,6 +50,16 @@ const customerSchema = new mongoose.Schema({
       default: false
     },
     deliveryInstructions: String
+  }],
+  favorites: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
   usualOrder: [{
     productId: {
@@ -43,7 +74,17 @@ const customerSchema = new mongoose.Schema({
   }],
   preferences: {
     deliveryTimePreference: String,
-    substitutionPreferences: String
+    substitutionPreferences: String,
+    notifications: {
+      email: {
+        type: Boolean,
+        default: true
+      },
+      sms: {
+        type: Boolean,
+        default: false
+      }
+    }
   },
   totalOrders: {
     type: Number,
@@ -52,6 +93,11 @@ const customerSchema = new mongoose.Schema({
   totalSpent: {
     type: Number,
     default: 0
+  },
+  lastLoginAt: Date,
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true
@@ -59,5 +105,38 @@ const customerSchema = new mongoose.Schema({
 
 // Index for search
 customerSchema.index({ name: 'text', email: 'text' });
+
+// Hash password before saving
+customerSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Method to check if password matches
+customerSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Get customer with order count and spent
+customerSchema.methods.toProfileJSON = function() {
+  return {
+    _id: this._id,
+    name: this.name,
+    email: this.email,
+    phone: this.phone,
+    isEmailVerified: this.isEmailVerified,
+    addresses: this.addresses,
+    favorites: this.favorites,
+    preferences: this.preferences,
+    totalOrders: this.totalOrders,
+    totalSpent: this.totalSpent,
+    createdAt: this.createdAt
+  };
+};
 
 module.exports = mongoose.model('Customer', customerSchema);

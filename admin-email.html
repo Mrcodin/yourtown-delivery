@@ -645,7 +645,16 @@
         }
 
         // Initialize on page load
+        // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                // Redirect to login if not authenticated
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            
             loadEmailConfig();
         });
     </script>

@@ -671,16 +671,13 @@ function clearActivityLog() {
 let sessionWarningShown = false;
 
 function checkSessionTimeout() {
-    const session = Auth.getSession();
-    if (!session) return;
+    // Check if user is still logged in
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
     
-    const timeRemaining = session.expiresAt - Date.now();
-    const fiveMinutes = 5 * 60 * 1000;
-    
-    if (timeRemaining < fiveMinutes && timeRemaining > 0 && !sessionWarningShown) {
-        showSessionWarning(Math.floor(timeRemaining / 60000));
-        sessionWarningShown = true;
-    }
+    // Note: JWT tokens don't have client-side expiration tracking without decoding
+    // This is a placeholder for future enhancement with proper session management
+    // For now, the server will handle token expiration
 }
 
 function showSessionWarning(minutes) {

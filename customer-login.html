@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hometown Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="loading.css">
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="loading.js"></script>
+    <script src="config.js"></script>
+    <script src="page-config.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html">
+                    <span class="logo-icon">📦</span>
+                    <span class="logo-text">Hometown Delivery</span>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="about.html">About</a>
+                <a href="customer-register.html">Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>Welcome Back!</h1>
+                <p class="auth-subtitle">Login to your Hometown Delivery account</p>
+
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="remember">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+
+                <p class="auth-footer">
+                    Don't have an account? <a href="customer-register.html">Create one now</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 Hometown Delivery. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        if (customerAuth.isLoggedIn()) {
+            window.location.href = '/customer-account.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                loading.showOverlay('Logging in...');
+
+                await customerAuth.login(email, password);
+
+                loading.hideOverlay();
+                message.showSuccess('Login successful!');
+
+                setTimeout(() => {
+                    const redirectUrl = customerAuth.getRedirectUrl();
+                    window.location.href = redirectUrl;
+                }, 1000);
+            } catch (error) {
+                loading.hideOverlay();
+                message.showError(error.message || 'Login failed');
+            }
+        });
+    </script>
+
+    <style>
+        .auth-page {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-card h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .auth-form input[type="email"],
+        .auth-form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #718096;
+        }
+
+        .auth-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+
+            .auth-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</body>
+</html>

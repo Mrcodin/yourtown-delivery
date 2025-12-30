@@ -43,6 +43,7 @@
                 </a>
                 <a href="track.html" class="nav-link">Track Order</a>
                 <a href="about.html" class="nav-link active">About Us</a>
+                <span id="customer-nav"></span>
             </nav>
         </div>
     </header>
@@ -456,8 +457,22 @@
         }
     </script>
     <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
     <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // Update navigation
+        function updateCustomerNav() {
+            const navSpan = document.getElementById('customer-nav');
+            if (customerAuth.isLoggedIn()) {
+                navSpan.innerHTML = '<a href="customer-account.html" class="nav-link">👤 My Account</a>';
+            } else {
+                navSpan.innerHTML = '<a href="customer-login.html" class="nav-link">Login</a>';
+            }
+        }
+        updateCustomerNav();
+    </script>
 </body>
 </html>

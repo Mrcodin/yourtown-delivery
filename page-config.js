@@ -98,7 +98,10 @@
         if (!statsGrid) return; // Not on homepage
         
         try {
-            const response = await fetch(`${API_CONFIG.baseURL}/api/stats/dashboard`);
+            const baseURL = typeof API_CONFIG !== 'undefined' && API_CONFIG.BASE_URL 
+                ? API_CONFIG.BASE_URL.replace('/api', '') 
+                : 'http://localhost:3000';
+            const response = await fetch(`${baseURL}/api/stats/dashboard`);
             if (!response.ok) throw new Error('Failed to load stats');
             
             const data = await response.json();

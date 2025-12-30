@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Hometown Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="loading.css">
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="loading.js"></script>
+    <script src="config.js"></script>
+    <script src="page-config.js"></script>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html">
+                    <span class="logo-icon">📦</span>
+                    <span class="logo-text">Hometown Delivery</span>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="about.html">About</a>
+                <a href="customer-login.html">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>Create Your Account</h1>
+                <p class="auth-subtitle">Join Hometown Delivery and start shopping today!</p>
+
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="(555) 123-4567">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required minlength="6">
+                        <small>At least 6 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="terms" required>
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                </form>
+
+                <p class="auth-footer">
+                    Already have an account? <a href="customer-login.html">Login here</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 Hometown Delivery. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Check if already logged in
+        if (customerAuth.isLoggedIn()) {
+            window.location.href = '/customer-account.html';
+        }
+
+        // Handle form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validation
+            if (password !== confirmPassword) {
+                message.showError('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                message.showError('Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                loading.showOverlay('Creating your account...');
+
+                await customerAuth.register(name, email, password, phone);
+
+                loading.hideOverlay();
+                message.showSuccess('Account created successfully! Redirecting...');
+
+                // Redirect after short delay
+                setTimeout(() => {
+                    const redirectUrl = customerAuth.getRedirectUrl();
+                    window.location.href = redirectUrl;
+                }, 1500);
+            } catch (error) {
+                loading.hideOverlay();
+                message.showError(error.message || 'Failed to create account');
+            }
+        });
+    </script>
+
+    <style>
+        .auth-page {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-card h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .auth-form input[type="text"],
+        .auth-form input[type="email"],
+        .auth-form input[type="tel"],
+        .auth-form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auth-form small {
+            display: block;
+            margin-top: 5px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .checkbox-group label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .checkbox-group a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #718096;
+        }
+
+        .auth-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+
+            .auth-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</body>
+</html>

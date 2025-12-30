@@ -303,12 +303,12 @@ function renderCartItems() {
                 <p class="cart-item-price">$${item.price.toFixed(2)} each</p>
             </div>
             <div class="quantity-controls">
-                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
                 <span class="qty-number">${item.quantity}</span>
-                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
             </div>
             <div class="cart-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
-            <button class="remove-item-btn" onclick="removeFromCart(${item.id})">×</button>
+            <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">×</button>
         </div>
     `).join('');
     
@@ -457,10 +457,6 @@ async function handleCheckout(e) {
         );
         
         loading.buttonLoading(submitBtn, false);
-    }
-}
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
     }
 }
 

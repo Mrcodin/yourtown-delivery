@@ -32,35 +32,45 @@ function initializeTransporter() {
         }
 
         // Create transporter based on service
-        if (emailConfig.service === 'gmail') {
+        // Always read from process.env for latest credentials
+        if (process.env.EMAIL_SERVICE === 'gmail') {
             transporter = nodemailer.createTransport({
                 service: 'gmail',
-                auth: emailConfig.auth
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                }
             });
-        } else if (emailConfig.service === 'sendgrid') {
+        } else if (process.env.EMAIL_SERVICE === 'sendgrid') {
             transporter = nodemailer.createTransport({
                 host: 'smtp.sendgrid.net',
                 port: 587,
                 secure: false,
                 auth: {
                     user: 'apikey',
-                    pass: emailConfig.auth.pass
+                    pass: process.env.SENDGRID_API_KEY
                 }
             });
-        } else if (emailConfig.service === 'mailgun') {
+        } else if (process.env.EMAIL_SERVICE === 'mailgun') {
             transporter = nodemailer.createTransport({
                 host: 'smtp.mailgun.org',
                 port: 587,
                 secure: false,
-                auth: emailConfig.auth
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.MAILGUN_API_KEY
+                }
             });
         } else {
             // Generic SMTP configuration
             transporter = nodemailer.createTransporter({
-                host: emailConfig.host,
-                port: emailConfig.port,
-                secure: emailConfig.secure,
-                auth: emailConfig.auth
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT || 587,
+                secure: process.env.EMAIL_SECURE === 'true',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                }
             });
         }
 
@@ -135,8 +145,17 @@ async function sendEmail(options) {
     }
 }
 
+/**
+ * Reinitialize transporter (call after config changes)
+ */
+function reinitializeTransporter() {
+    transporter = null; // Clear cached transporter
+    return initializeTransporter();
+}
+
 module.exports = {
     initializeTransporter,
+    reinitializeTransporter,
     getTransporter,
     verifyEmailConfig,
     sendEmail,

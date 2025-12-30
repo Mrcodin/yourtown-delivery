@@ -42,6 +42,7 @@
                     🛒 Cart (<span id="cart-count">0</span>)
                 </a>
                 <a href="track.html" class="nav-link">Track Order</a>
+                <span id="customer-nav"></span>
             </nav>
         </div>
     </header>
@@ -103,6 +104,16 @@
 
                         <!-- DELIVERY INFO FORM -->
                         <h3 class="form-section-title">📍 Delivery Information</h3>
+                        
+                        <!-- Saved Addresses Selection (for logged-in customers) -->
+                        <div id="saved-addresses-section" style="display: none; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="saved-address-select" class="form-label">Use a Saved Address</label>
+                                <select id="saved-address-select" class="form-input form-select">
+                                    <option value="">-- Enter new address --</option>
+                                </select>
+                            </div>
+                        </div>
                         
                         <form id="checkout-form">
                             <div class="form-group">
@@ -230,10 +241,68 @@
 
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
     <script src="loading.js"></script>
     <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
     <script src="main.js"></script>
+    <script>
+        // Update navigation
+        function updateCustomerNav() {
+            const navSpan = document.getElementById('customer-nav');
+            if (customerAuth.isLoggedIn()) {
+                navSpan.innerHTML = '<a href="customer-account.html" class="nav-link">👤 My Account</a>';
+                loadSavedAddresses();
+            } else {
+                navSpan.innerHTML = '<a href="customer-login.html" class="nav-link">Login</a>';
+            }
+        }
+        updateCustomerNav();
+
+        // Load saved addresses for logged-in customers
+        async function loadSavedAddresses() {
+            try {
+                const customer = await customerAuth.getProfile();
+                
+                if (customer && customer.addresses && customer.addresses.length > 0) {
+                    const section = document.getElementById('saved-addresses-section');
+                    const select = document.getElementById('saved-address-select');
+                    
+                    // Show the saved addresses section
+                    section.style.display = 'block';
+                    
+                    // Pre-fill name fields with customer info
+                    document.getElementById('name').value = customer.name;
+                    document.getElementById('phone').value = customer.phone;
+                    document.getElementById('email').value = customer.email;
+                    
+                    // Add addresses to dropdown
+                    customer.addresses.forEach((addr, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = `${addr.label || 'Address'} - ${addr.street}, ${addr.city}`;
+                        select.appendChild(option);
+                    });
+                    
+                    // Handle address selection
+                    select.addEventListener('change', (e) => {
+                        const selectedIndex = e.target.value;
+                        
+                        if (selectedIndex === '') {
+                            // Clear address field for new entry
+                            document.getElementById('address').value = '';
+                        } else {
+                            const addr = customer.addresses[selectedIndex];
+                            const fullAddress = `${addr.street}\n${addr.city}, ${addr.state} ${addr.zipCode}${addr.instructions ? '\n\nInstructions: ' + addr.instructions : ''}`;
+                            document.getElementById('address').value = fullAddress;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.log('Not logged in or unable to load addresses');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -29,7 +29,19 @@ connectDB();
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5500',
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5500',
+      'http://127.0.0.1:5500',
+      process.env.CORS_ORIGIN,
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all for development
+    }
+  },
   credentials: true
 }));
 app.use(express.json()); // Parse JSON bodies
@@ -38,6 +50,7 @@ app.use(morgan('dev')); // HTTP request logger
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/customer-auth', require('./routes/customerAuth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/customers', require('./routes/customers'));
