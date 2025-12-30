@@ -3,6 +3,12 @@ const Customer = require('../models/Customer');
 const Product = require('../models/Product');
 const Driver = require('../models/Driver');
 const ActivityLog = require('../models/ActivityLog');
+const { sendEmail } = require('../config/email');
+const { 
+  orderConfirmationEmail, 
+  orderStatusUpdateEmail, 
+  adminNewOrderEmail 
+} = require('../utils/emailTemplates');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -224,6 +230,37 @@ exports.createOrder = async (req, res) => {
       items: order.items.length
     });
 
+    // Send confirmation email to customer
+    if (customerInfo.email) {
+      try {
+        const emailContent = orderConfirmationEmail(order);
+        await sendEmail({
+          to: customerInfo.email,
+          subject: emailContent.subject,
+          html: emailContent.html
+        });
+      } catch (emailError) {
+        console.error('Error sending customer confirmation email:', emailError);
+        // Don't fail the order if email fails
+      }
+    }
+
+    // Send notification email to admin
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      try {
+        const emailContent = adminNewOrderEmail(order);
+        await sendEmail({
+          to: adminEmail,
+          subject: emailContent.subject,
+          html: emailContent.html
+        });
+      } catch (emailError) {
+        console.error('Error sending admin notification email:', emailError);
+        // Don't fail the order if email fails
+      }
+    }
+
     res.status(201).json({
       success: true,
       order
@@ -303,6 +340,21 @@ exports.updateOrderStatus = async (req, res) => {
         name: order.delivery.driverName
       } : null
     });
+
+    // Send status update email to customer
+    if (order.customerInfo.email) {
+      try {
+        const emailContent = orderStatusUpdateEmail(order, status);
+        await sendEmail({
+          to: order.customerInfo.email,
+          subject: emailContent.subject,
+          html: emailContent.html
+        });
+      } catch (emailError) {
+        console.error('Error sending status update email:', emailError);
+        // Don't fail the order if email fails
+      }
+    }
 
     res.json({
       success: true,
