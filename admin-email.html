@@ -402,7 +402,7 @@
         // Load current email configuration
         async function loadEmailConfig() {
             try {
-                const response = await api.get('/api/email/config');
+                const response = await api.get('/email/config');
                 
                 if (response.success && response.config) {
                     const config = response.config;
@@ -496,7 +496,7 @@
             }
             
             try {
-                const response = await api.post('/api/email/config', config);
+                const response = await api.post('/email/config', config);
                 
                 if (response.success) {
                     showMessage('success', 'Email configuration saved successfully!');
@@ -514,7 +514,7 @@
         async function testEmailConnection() {
             try {
                 showMessage('info', 'Testing connection...');
-                const response = await api.post('/api/email/test-connection');
+                const response = await api.post('/email/test-connection');
                 
                 if (response.success) {
                     showMessage('success', '✅ Connection successful! Email service is working.');
@@ -542,7 +542,7 @@
                 const resultsDiv = document.getElementById('test-results');
                 resultsDiv.innerHTML = '<div class="alert alert-info">📤 Sending test email...</div>';
                 
-                const response = await api.post('/api/email/send-test', { to, type });
+                const response = await api.post('/email/send-test', { to, type });
                 
                 if (response.success) {
                     resultsDiv.innerHTML = `
@@ -577,7 +577,7 @@
             try {
                 listEl.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Loading...</p>';
                 
-                const response = await api.get(`/api/email/history?filter=${filter}`);
+                const response = await api.get(`/email/history?filter=${filter}`);
                 
                 if (response.success && response.history && response.history.length > 0) {
                     listEl.innerHTML = `
