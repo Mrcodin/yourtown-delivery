@@ -9,6 +9,7 @@ const {
   orderStatusUpdateEmail, 
   adminNewOrderEmail 
 } = require('../utils/emailTemplates');
+const { logEmail } = require('./emailController');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -239,8 +240,24 @@ exports.createOrder = async (req, res) => {
           subject: emailContent.subject,
           html: emailContent.html
         });
+        
+        // Log successful email
+        logEmail({
+          to: customerInfo.email,
+          type: 'order-confirmation',
+          subject: emailContent.subject,
+          status: 'sent'
+        });
       } catch (emailError) {
         console.error('Error sending customer confirmation email:', emailError);
+        // Log failed email
+        logEmail({
+          to: customerInfo.email,
+          type: 'order-confirmation',
+          subject: 'Order Confirmation',
+          status: 'failed',
+          error: emailError.message
+        });
         // Don't fail the order if email fails
       }
     }
@@ -255,8 +272,24 @@ exports.createOrder = async (req, res) => {
           subject: emailContent.subject,
           html: emailContent.html
         });
+        
+        // Log successful email
+        logEmail({
+          to: adminEmail,
+          type: 'admin-notification',
+          subject: emailContent.subject,
+          status: 'sent'
+        });
       } catch (emailError) {
         console.error('Error sending admin notification email:', emailError);
+        // Log failed email
+        logEmail({
+          to: adminEmail,
+          type: 'admin-notification',
+          subject: 'New Order Notification',
+          status: 'failed',
+          error: emailError.message
+        });
         // Don't fail the order if email fails
       }
     }
@@ -350,8 +383,24 @@ exports.updateOrderStatus = async (req, res) => {
           subject: emailContent.subject,
           html: emailContent.html
         });
+        
+        // Log successful email
+        logEmail({
+          to: order.customerInfo.email,
+          type: 'status-update',
+          subject: emailContent.subject,
+          status: 'sent'
+        });
       } catch (emailError) {
         console.error('Error sending status update email:', emailError);
+        // Log failed email
+        logEmail({
+          to: order.customerInfo.email,
+          type: 'status-update',
+          subject: 'Order Status Update',
+          status: 'failed',
+          error: emailError.message
+        });
         // Don't fail the order if email fails
       }
     }

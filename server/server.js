@@ -47,6 +47,7 @@ app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/email', require('./routes/email'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

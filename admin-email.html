@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Configuration - Admin | Hometown Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="loading.css">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="api.js"></script>
+    <script src="loading.js"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📦</div>
+                <h2 class="sidebar-title">Hometown<br>Delivery</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="admin.html" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="admin-orders.html" class="sidebar-link">
+                    <span class="sidebar-icon">📦</span>
+                    Orders
+                    <span class="sidebar-count" id="pending-orders-count">0</span>
+                </a>
+                <a href="admin-products.html" class="sidebar-link">
+                    <span class="sidebar-icon">🛍️</span>
+                    Products
+                </a>
+                <a href="admin-drivers.html" class="sidebar-link">
+                    <span class="sidebar-icon">🚗</span>
+                    Drivers
+                </a>
+                <a href="admin-customers.html" class="sidebar-link">
+                    <span class="sidebar-icon">👥</span>
+                    Customers
+                </a>
+                <a href="admin-reports.html" class="sidebar-link">
+                    <span class="sidebar-icon">📈</span>
+                    Reports
+                </a>
+                <a href="admin-email.html" class="sidebar-link active">
+                    <span class="sidebar-icon">📧</span>
+                    Email
+                </a>
+                <a href="admin-settings.html" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-link">
+                    <span class="sidebar-icon">🌐</span>
+                    View Website
+                </a>
+                <a href="#" class="sidebar-link" onclick="adminLogout()">
+                    <span class="sidebar-icon">🚪</span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <h1>📧 Email Configuration</h1>
+                <div class="topbar-actions">
+                    <button class="btn-secondary" onclick="location.reload()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- Email Status Card -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3>📊 Email Service Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="email-status" class="email-status-grid">
+                            <div class="status-item">
+                                <div class="status-icon" id="status-icon">⏳</div>
+                                <div class="status-info">
+                                    <div class="status-label">Status</div>
+                                    <div class="status-value" id="status-text">Checking...</div>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-icon">📤</div>
+                                <div class="status-info">
+                                    <div class="status-label">Provider</div>
+                                    <div class="status-value" id="provider-text">Not configured</div>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-icon">📨</div>
+                                <div class="status-info">
+                                    <div class="status-label">From Email</div>
+                                    <div class="status-value" id="from-email-text">Not set</div>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-icon">👨‍💼</div>
+                                <div class="status-info">
+                                    <div class="status-label">Admin Email</div>
+                                    <div class="status-value" id="admin-email-text">Not set</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Tabs -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="switchTab('setup')">🔧 Setup</button>
+                            <button class="tab-btn" onclick="switchTab('test')">🧪 Test</button>
+                            <button class="tab-btn" onclick="switchTab('history')">📜 History</button>
+                        </div>
+                    </div>
+
+                    <!-- Setup Tab -->
+                    <div class="card-body tab-content active" id="tab-setup">
+                        <div class="setup-section">
+                            <h3>📧 Email Service Setup</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Configure your email service to send order confirmations and notifications.</p>
+
+                            <form id="email-config-form" onsubmit="saveEmailConfig(event)">
+                                <!-- Email Provider Selection -->
+                                <div class="form-group">
+                                    <label for="email-provider">
+                                        <strong>Email Provider *</strong>
+                                    </label>
+                                    <select id="email-provider" class="form-control" onchange="updateProviderFields()" required>
+                                        <option value="">Choose email provider...</option>
+                                        <option value="gmail">Gmail (Easy for Development)</option>
+                                        <option value="sendgrid">SendGrid (Recommended for Production)</option>
+                                        <option value="mailgun">Mailgun (Alternative Production)</option>
+                                        <option value="smtp">Custom SMTP Server</option>
+                                    </select>
+                                    <small class="form-help">Choose how you want to send emails</small>
+                                </div>
+
+                                <!-- Provider-Specific Help -->
+                                <div id="provider-help" class="alert" style="display: none; margin-bottom: 20px;"></div>
+
+                                <!-- Gmail Fields -->
+                                <div id="gmail-fields" class="provider-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="gmail-user">
+                                            <strong>Gmail Address *</strong>
+                                        </label>
+                                        <input type="email" id="gmail-user" class="form-control" placeholder="your.email@gmail.com">
+                                        <small class="form-help">Your Gmail email address</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="gmail-password">
+                                            <strong>App Password *</strong>
+                                        </label>
+                                        <input type="password" id="gmail-password" class="form-control" placeholder="16-character app password">
+                                        <small class="form-help">
+                                            <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: #4CAF50;">Generate App Password →</a>
+                                            (Requires 2FA enabled)
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- SendGrid Fields -->
+                                <div id="sendgrid-fields" class="provider-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="sendgrid-key">
+                                            <strong>SendGrid API Key *</strong>
+                                        </label>
+                                        <input type="password" id="sendgrid-key" class="form-control" placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxx">
+                                        <small class="form-help">
+                                            <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" style="color: #4CAF50;">Get API Key →</a>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Mailgun Fields -->
+                                <div id="mailgun-fields" class="provider-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="mailgun-key">
+                                            <strong>Mailgun API Key *</strong>
+                                        </label>
+                                        <input type="password" id="mailgun-key" class="form-control" placeholder="key-xxxxxxxxxxxxxxxxxxxxxxxx">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="mailgun-domain">
+                                            <strong>Mailgun Domain *</strong>
+                                        </label>
+                                        <input type="text" id="mailgun-domain" class="form-control" placeholder="mg.yourdomain.com">
+                                        <small class="form-help">Your verified Mailgun domain</small>
+                                    </div>
+                                </div>
+
+                                <!-- SMTP Fields -->
+                                <div id="smtp-fields" class="provider-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="smtp-host">
+                                            <strong>SMTP Host *</strong>
+                                        </label>
+                                        <input type="text" id="smtp-host" class="form-control" placeholder="smtp.example.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-port">
+                                            <strong>SMTP Port *</strong>
+                                        </label>
+                                        <input type="number" id="smtp-port" class="form-control" placeholder="587" value="587">
+                                        <small class="form-help">Common ports: 587 (TLS), 465 (SSL), 25 (Unsecure)</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="smtp-secure"> Use SSL/TLS (port 465)
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-user">
+                                            <strong>SMTP Username *</strong>
+                                        </label>
+                                        <input type="text" id="smtp-user" class="form-control" placeholder="username">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-password">
+                                            <strong>SMTP Password *</strong>
+                                        </label>
+                                        <input type="password" id="smtp-password" class="form-control" placeholder="password">
+                                    </div>
+                                </div>
+
+                                <!-- Common Fields -->
+                                <div id="common-fields" style="display: none;">
+                                    <hr style="margin: 30px 0;">
+                                    <h4>📨 Email Settings</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="email-from">
+                                            <strong>From Email *</strong>
+                                        </label>
+                                        <input type="email" id="email-from" class="form-control" placeholder="noreply@hometowndelivery.com" required>
+                                        <small class="form-help">Email address customers will see emails from</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="email-from-name">
+                                            <strong>From Name</strong>
+                                        </label>
+                                        <input type="text" id="email-from-name" class="form-control" placeholder="Hometown Delivery" value="Hometown Delivery">
+                                        <small class="form-help">Display name for outgoing emails</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="admin-email">
+                                            <strong>Admin Email *</strong>
+                                        </label>
+                                        <input type="email" id="admin-email" class="form-control" placeholder="admin@hometowndelivery.com" required>
+                                        <small class="form-help">Where to receive new order notifications</small>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">💾 Save Configuration</button>
+                                        <button type="button" class="btn-secondary" onclick="testEmailConnection()">🧪 Test Connection</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Test Tab -->
+                    <div class="card-body tab-content" id="tab-test" style="display: none;">
+                        <div class="test-section">
+                            <h3>🧪 Test Email Service</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Send test emails to verify your configuration is working correctly.</p>
+
+                            <div class="form-group">
+                                <label for="test-email-to">
+                                    <strong>Send Test Email To:</strong>
+                                </label>
+                                <input type="email" id="test-email-to" class="form-control" placeholder="your@email.com">
+                                <small class="form-help">Enter an email address to receive the test email</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="test-email-type">
+                                    <strong>Email Template:</strong>
+                                </label>
+                                <select id="test-email-type" class="form-control">
+                                    <option value="test">Test Email</option>
+                                    <option value="order-confirmation">Order Confirmation</option>
+                                    <option value="status-update">Status Update</option>
+                                    <option value="admin-notification">Admin Notification</option>
+                                </select>
+                            </div>
+
+                            <button class="btn-primary" onclick="sendTestEmail()">📤 Send Test Email</button>
+
+                            <div id="test-results" style="margin-top: 20px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab -->
+                    <div class="card-body tab-content" id="tab-history" style="display: none;">
+                        <div class="history-section">
+                            <h3>📜 Email History</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Recent email sending activity</p>
+
+                            <div class="table-filters">
+                                <select id="history-filter" class="form-control" style="max-width: 200px;" onchange="loadEmailHistory()">
+                                    <option value="all">All Emails</option>
+                                    <option value="sent">Sent</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+
+                            <div id="email-history-list">
+                                <p style="text-align: center; padding: 40px; color: #999;">Loading email history...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            
+            // Load data for specific tabs
+            if (tabName === 'history') {
+                loadEmailHistory();
+            }
+        }
+
+        // Provider field management
+        const providerHelp = {
+            gmail: {
+                icon: 'info',
+                text: '📘 <strong>Gmail Setup:</strong> Enable 2FA on your Google account, then <a href="https://myaccount.google.com/apppasswords" target="_blank">generate an App Password</a>. Free but limited to 100-500 emails/day.'
+            },
+            sendgrid: {
+                icon: 'success',
+                text: '✅ <strong>SendGrid (Recommended):</strong> Professional email service with 100 free emails/day. <a href="https://signup.sendgrid.com/" target="_blank">Sign up</a> and create an API key.'
+            },
+            mailgun: {
+                icon: 'info',
+                text: '📘 <strong>Mailgun:</strong> Alternative email service with 5,000 free emails for 3 months. Requires credit card.'
+            },
+            smtp: {
+                icon: 'warning',
+                text: '⚠️ <strong>Custom SMTP:</strong> Use any SMTP server. Make sure you have the correct host, port, and credentials.'
+            }
+        };
+
+        function updateProviderFields() {
+            const provider = document.getElementById('email-provider').value;
+            
+            // Hide all provider fields
+            document.querySelectorAll('.provider-fields').forEach(el => el.style.display = 'none');
+            
+            if (provider) {
+                // Show selected provider fields
+                const fieldsId = `${provider}-fields`;
+                const fieldsEl = document.getElementById(fieldsId);
+                if (fieldsEl) {
+                    fieldsEl.style.display = 'block';
+                }
+                
+                // Show common fields
+                document.getElementById('common-fields').style.display = 'block';
+                
+                // Show provider help
+                const helpEl = document.getElementById('provider-help');
+                if (providerHelp[provider]) {
+                    helpEl.className = `alert alert-${providerHelp[provider].icon}`;
+                    helpEl.innerHTML = providerHelp[provider].text;
+                    helpEl.style.display = 'block';
+                }
+            } else {
+                document.getElementById('common-fields').style.display = 'none';
+                document.getElementById('provider-help').style.display = 'none';
+            }
+        }
+
+        // Load current email configuration
+        async function loadEmailConfig() {
+            try {
+                const response = await api.get('/api/email/config');
+                
+                if (response.success && response.config) {
+                    const config = response.config;
+                    
+                    // Update status display
+                    updateEmailStatus(response.status);
+                    
+                    // Populate form if config exists
+                    if (config.provider) {
+                        document.getElementById('email-provider').value = config.provider;
+                        updateProviderFields();
+                        
+                        // Populate provider-specific fields
+                        if (config.provider === 'gmail') {
+                            document.getElementById('gmail-user').value = config.user || '';
+                        } else if (config.provider === 'sendgrid') {
+                            // Don't show API key for security
+                        } else if (config.provider === 'mailgun') {
+                            document.getElementById('mailgun-domain').value = config.domain || '';
+                        } else if (config.provider === 'smtp') {
+                            document.getElementById('smtp-host').value = config.host || '';
+                            document.getElementById('smtp-port').value = config.port || 587;
+                            document.getElementById('smtp-secure').checked = config.secure || false;
+                            document.getElementById('smtp-user').value = config.user || '';
+                        }
+                        
+                        // Populate common fields
+                        document.getElementById('email-from').value = config.from || '';
+                        document.getElementById('email-from-name').value = config.fromName || 'Hometown Delivery';
+                        document.getElementById('admin-email').value = config.adminEmail || '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading email config:', error);
+                showMessage('error', 'Failed to load email configuration');
+            }
+        }
+
+        function updateEmailStatus(status) {
+            const statusIcon = document.getElementById('status-icon');
+            const statusText = document.getElementById('status-text');
+            const providerText = document.getElementById('provider-text');
+            const fromEmailText = document.getElementById('from-email-text');
+            const adminEmailText = document.getElementById('admin-email-text');
+            
+            if (status && status.configured) {
+                statusIcon.textContent = status.connected ? '✅' : '⚠️';
+                statusText.textContent = status.connected ? 'Connected' : 'Configured (Not Tested)';
+                statusText.style.color = status.connected ? '#4CAF50' : '#ff9800';
+                
+                providerText.textContent = status.provider || 'Not set';
+                fromEmailText.textContent = status.from || 'Not set';
+                adminEmailText.textContent = status.adminEmail || 'Not set';
+            } else {
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'Not Configured';
+                statusText.style.color = '#f44336';
+                providerText.textContent = 'Not configured';
+                fromEmailText.textContent = 'Not set';
+                adminEmailText.textContent = 'Not set';
+            }
+        }
+
+        // Save email configuration
+        async function saveEmailConfig(event) {
+            event.preventDefault();
+            
+            const provider = document.getElementById('email-provider').value;
+            const config = {
+                provider: provider,
+                from: document.getElementById('email-from').value,
+                fromName: document.getElementById('email-from-name').value,
+                adminEmail: document.getElementById('admin-email').value
+            };
+            
+            // Add provider-specific fields
+            if (provider === 'gmail') {
+                config.user = document.getElementById('gmail-user').value;
+                config.password = document.getElementById('gmail-password').value;
+            } else if (provider === 'sendgrid') {
+                config.apiKey = document.getElementById('sendgrid-key').value;
+            } else if (provider === 'mailgun') {
+                config.apiKey = document.getElementById('mailgun-key').value;
+                config.domain = document.getElementById('mailgun-domain').value;
+            } else if (provider === 'smtp') {
+                config.host = document.getElementById('smtp-host').value;
+                config.port = parseInt(document.getElementById('smtp-port').value);
+                config.secure = document.getElementById('smtp-secure').checked;
+                config.user = document.getElementById('smtp-user').value;
+                config.password = document.getElementById('smtp-password').value;
+            }
+            
+            try {
+                const response = await api.post('/api/email/config', config);
+                
+                if (response.success) {
+                    showMessage('success', 'Email configuration saved successfully!');
+                    loadEmailConfig(); // Reload to update status
+                } else {
+                    showMessage('error', response.message || 'Failed to save configuration');
+                }
+            } catch (error) {
+                console.error('Error saving config:', error);
+                showMessage('error', 'Failed to save email configuration');
+            }
+        }
+
+        // Test email connection
+        async function testEmailConnection() {
+            try {
+                showMessage('info', 'Testing connection...');
+                const response = await api.post('/api/email/test-connection');
+                
+                if (response.success) {
+                    showMessage('success', '✅ Connection successful! Email service is working.');
+                    loadEmailConfig();
+                } else {
+                    showMessage('error', `Connection failed: ${response.message}`);
+                }
+            } catch (error) {
+                console.error('Error testing connection:', error);
+                showMessage('error', 'Failed to test connection');
+            }
+        }
+
+        // Send test email
+        async function sendTestEmail() {
+            const to = document.getElementById('test-email-to').value;
+            const type = document.getElementById('test-email-type').value;
+            
+            if (!to) {
+                showMessage('error', 'Please enter an email address');
+                return;
+            }
+            
+            try {
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = '<div class="alert alert-info">📤 Sending test email...</div>';
+                
+                const response = await api.post('/api/email/send-test', { to, type });
+                
+                if (response.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ <strong>Test email sent successfully!</strong><br>
+                            Check your inbox at <strong>${to}</strong>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            ❌ <strong>Failed to send test email</strong><br>
+                            ${response.message || 'Unknown error'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error sending test email:', error);
+                document.getElementById('test-results').innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load email history
+        async function loadEmailHistory() {
+            const filter = document.getElementById('history-filter').value;
+            const listEl = document.getElementById('email-history-list');
+            
+            try {
+                listEl.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Loading...</p>';
+                
+                const response = await api.get(`/api/email/history?filter=${filter}`);
+                
+                if (response.success && response.history && response.history.length > 0) {
+                    listEl.innerHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>To</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${response.history.map(email => `
+                                    <tr>
+                                        <td>${new Date(email.sentAt).toLocaleString()}</td>
+                                        <td>${email.to}</td>
+                                        <td><span class="badge">${email.type}</span></td>
+                                        <td>
+                                            ${email.status === 'sent' 
+                                                ? '<span class="badge badge-success">✅ Sent</span>' 
+                                                : '<span class="badge badge-error">❌ Failed</span>'}
+                                        </td>
+                                        <td>${email.subject}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    listEl.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">No emails found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading email history:', error);
+                listEl.innerHTML = '<div class="alert alert-error">Failed to load email history</div>';
+            }
+        }
+
+        // Show message helper
+        function showMessage(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'error' ? 'alert-error' : 
+                             type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            const icon = type === 'success' ? '✅' : 
+                        type === 'error' ? '❌' : 
+                        type === 'warning' ? '⚠️' : 'ℹ️';
+            
+            // Create or update message element
+            let msgEl = document.getElementById('global-message');
+            if (!msgEl) {
+                msgEl = document.createElement('div');
+                msgEl.id = 'global-message';
+                msgEl.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;';
+                document.body.appendChild(msgEl);
+            }
+            
+            msgEl.innerHTML = `<div class="alert ${alertClass}" style="animation: slideIn 0.3s;">${icon} ${message}</div>`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                msgEl.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmailConfig();
+        });
+    </script>
+
+    <style>
+        .email-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-icon {
+            font-size: 32px;
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-value {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            color: #1565C0;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            color: #2e7d32;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .table-filters {
+            margin-bottom: 20px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</body>
+</html>
