@@ -105,8 +105,8 @@ Generated: December 28, 2025
    [✅] Order history for logged-in customers
    [✅] Save multiple delivery addresses
    [➕] Save favorite/frequently ordered items (partially - favorites field exists)
-   [ ] Password reset functionality (via email)
-   [ ] Email verification for new accounts
+   [✅] Password reset functionality (via email)
+   [✅] Email verification for new accounts
    [✅] Update cart to associate with user accounts (auto-fill from profile)
 
    Database Changes:
@@ -123,11 +123,20 @@ Generated: December 28, 2025
    [➕] Added: customer-login.html - Login page with validation
    [➕] Added: customer-account.html - Comprehensive account dashboard
    [➕] Added: Saved addresses management with auto-fill on checkout
+   [➕] Added: verify-email.html - Email verification page with token validation
+   [➕] Added: forgot-password.html - Password reset request page
+   [➕] Added: reset-password.html - Password reset form with strength indicator
+   [➕] Added: Email verification and password reset endpoints
+   [➕] Added: Email templates for verification and password reset
    [➕] Updated: All pages with consistent navigation and customer links
    [➕] Updated: cart.html - Auto-fill customer data and saved addresses
+   [➕] Updated: customer-login.html - Added "Forgot password?" link
+   [➕] Updated: customer-register.html - Shows email verification message
    
    📝 See CUSTOMER_ACCOUNT_COMPLETE.md for implementation details
+   📝 See EMAIL_VERIFICATION_PASSWORD_RESET_COMPLETE.md for testing guide
    📝 Features: JWT authentication, profile management, order history, saved addresses
+   📝 Security: Email verification, password reset, token expiration, hashed tokens
    📝 Design: Senior-friendly UI with large fonts (18-42px), high contrast, accessibility features
    
    Completion Date: December 30, 2024
