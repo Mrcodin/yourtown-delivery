@@ -6,6 +6,10 @@ const { protectCustomer } = require('../middleware/auth');
 // Public routes
 router.post('/register', customerAuthController.register);
 router.post('/login', customerAuthController.login);
+router.get('/verify-email/:token', customerAuthController.verifyEmail);
+router.post('/resend-verification', customerAuthController.resendVerification);
+router.post('/forgot-password', customerAuthController.forgotPassword);
+router.put('/reset-password/:token', customerAuthController.resetPassword);
 
 // Protected routes (require customer authentication)
 router.get('/me', protectCustomer, customerAuthController.getProfile);

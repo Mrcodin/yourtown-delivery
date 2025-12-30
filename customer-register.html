@@ -123,13 +123,13 @@
                 await customerAuth.register(name, email, password, phone);
 
                 loading.hideOverlay();
-                message.showSuccess('Account created successfully! Redirecting...');
+                message.showSuccess('Account created successfully! Please check your email to verify your account.');
 
                 // Redirect after short delay
                 setTimeout(() => {
                     const redirectUrl = customerAuth.getRedirectUrl();
                     window.location.href = redirectUrl;
-                }, 1500);
+                }, 3000);
             } catch (error) {
                 loading.hideOverlay();
                 message.showError(error.message || 'Failed to create account');

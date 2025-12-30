@@ -54,13 +54,20 @@ exports.register = async (req, res) => {
         customer.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
         await customer.save();
 
-        // Send verification email (optional - can enable later)
-        // const verificationUrl = `${req.protocol}://${req.get('host')}/verify-email/${verificationToken}`;
-        // await sendEmail({
-        //     to: customer.email,
-        //     subject: 'Verify Your Email - Hometown Delivery',
-        //     html: `<p>Please click <a href="${verificationUrl}">here</a> to verify your email.</p>`
-        // });
+        // Send verification email
+        try {
+            const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/verify-email.html?token=${verificationToken}`;
+            const { emailVerificationEmail } = require('../utils/emailTemplates');
+            const emailContent = emailVerificationEmail(customer.name, verificationUrl);
+            
+            await sendEmail({
+                to: customer.email,
+                ...emailContent
+            });
+        } catch (emailError) {
+            console.error('Error sending verification email:', emailError);
+            // Don't fail registration if email sending fails
+        }
 
         // Generate token
         const token = generateToken(customer._id);
@@ -294,6 +301,245 @@ exports.verifyToken = async (req, res) => {
         res.status(401).json({
             success: false,
             message: 'Invalid token'
+        });
+    }
+};
+
+/**
+ * @desc    Verify email
+ * @route   GET /api/customer-auth/verify-email/:token
+ * @access  Public
+ */
+exports.verifyEmail = async (req, res) => {
+    try {
+        // Hash the token from URL
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(req.params.token)
+            .digest('hex');
+
+        // Find customer with matching token that hasn't expired
+        const customer = await Customer.findOne({
+            emailVerificationToken: hashedToken,
+            emailVerificationExpires: { $gt: Date.now() }
+        });
+
+        if (!customer) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired verification token'
+            });
+        }
+
+        // Mark email as verified
+        customer.isEmailVerified = true;
+        customer.emailVerificationToken = undefined;
+        customer.emailVerificationExpires = undefined;
+        await customer.save();
+
+        // Send confirmation email
+        try {
+            const { emailVerifiedEmail } = require('../utils/emailTemplates');
+            const emailContent = emailVerifiedEmail(customer.name);
+            await sendEmail({
+                to: customer.email,
+                ...emailContent
+            });
+        } catch (emailError) {
+            console.error('Error sending verification confirmation email:', emailError);
+            // Don't fail the verification if email sending fails
+        }
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully! You can now log in.'
+        });
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error verifying email'
+        });
+    }
+};
+
+/**
+ * @desc    Resend verification email
+ * @route   POST /api/customer-auth/resend-verification
+ * @access  Public
+ */
+exports.resendVerification = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const customer = await Customer.findOne({ email });
+
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'No account found with that email'
+            });
+        }
+
+        if (customer.isEmailVerified) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is already verified'
+            });
+        }
+
+        // Generate new verification token
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+        customer.emailVerificationToken = crypto
+            .createHash('sha256')
+            .update(verificationToken)
+            .digest('hex');
+        customer.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+        await customer.save();
+
+        // Send verification email
+        const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/verify-email.html?token=${verificationToken}`;
+        
+        const { emailVerificationEmail } = require('../utils/emailTemplates');
+        const emailContent = emailVerificationEmail(customer.name, verificationUrl);
+        
+        await sendEmail({
+            to: customer.email,
+            ...emailContent
+        });
+
+        res.json({
+            success: true,
+            message: 'Verification email sent! Please check your inbox.'
+        });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error sending verification email'
+        });
+    }
+};
+
+/**
+ * @desc    Request password reset
+ * @route   POST /api/customer-auth/forgot-password
+ * @access  Public
+ */
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const customer = await Customer.findOne({ email });
+
+        if (!customer) {
+            // Don't reveal whether email exists for security
+            return res.json({
+                success: true,
+                message: 'If an account exists with that email, a password reset link has been sent.'
+            });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        customer.passwordResetToken = crypto
+            .createHash('sha256')
+            .update(resetToken)
+            .digest('hex');
+        customer.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+        await customer.save();
+
+        // Send reset email
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/reset-password.html?token=${resetToken}`;
+        
+        const { passwordResetEmail } = require('../utils/emailTemplates');
+        const emailContent = passwordResetEmail(customer.name, resetUrl);
+        
+        try {
+            await sendEmail({
+                to: customer.email,
+                ...emailContent
+            });
+        } catch (emailError) {
+            console.error('Error sending password reset email:', emailError);
+            // Clear reset token if email fails
+            customer.passwordResetToken = undefined;
+            customer.passwordResetExpires = undefined;
+            await customer.save();
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Error sending password reset email. Please try again.'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'If an account exists with that email, a password reset link has been sent.'
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error processing password reset request'
+        });
+    }
+};
+
+/**
+ * @desc    Reset password
+ * @route   PUT /api/customer-auth/reset-password/:token
+ * @access  Public
+ */
+exports.resetPassword = async (req, res) => {
+    try {
+        const { password } = req.body;
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 6 characters'
+            });
+        }
+
+        // Hash the token from URL
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(req.params.token)
+            .digest('hex');
+
+        // Find customer with matching token that hasn't expired
+        const customer = await Customer.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpires: { $gt: Date.now() }
+        }).select('+password');
+
+        if (!customer) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset token'
+            });
+        }
+
+        // Update password
+        customer.password = password; // Will be hashed by pre-save hook
+        customer.passwordResetToken = undefined;
+        customer.passwordResetExpires = undefined;
+        await customer.save();
+
+        // Generate new JWT token
+        const token = generateToken(customer._id);
+
+        res.json({
+            success: true,
+            message: 'Password reset successfully!',
+            token
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error resetting password'
         });
     }
 };

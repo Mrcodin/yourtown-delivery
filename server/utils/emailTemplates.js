@@ -470,10 +470,165 @@ function testEmail(recipientName = 'User') {
     };
 }
 
+/**
+ * Email verification email
+ */
+function emailVerificationEmail(customerName, verificationUrl) {
+    const content = `
+        <div class="greeting">
+            <h2>Welcome to Hometown Delivery! 🎉</h2>
+            <p>Hi ${customerName},</p>
+        </div>
+
+        <p>Thank you for creating an account with Hometown Delivery. We're excited to have you join our community!</p>
+
+        <p>To complete your registration and start shopping, please verify your email address by clicking the button below:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" class="btn">
+                ✅ Verify Email Address
+            </a>
+        </div>
+
+        <div class="order-details">
+            <p><strong>⏰ This verification link will expire in 24 hours.</strong></p>
+            <p>If you didn't create an account with Hometown Delivery, you can safely ignore this email.</p>
+        </div>
+
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #666; font-size: 14px;">${verificationUrl}</p>
+
+        <div class="footer-note">
+            <p><strong>Why verify your email?</strong></p>
+            <ul>
+                <li>Receive order confirmations and updates</li>
+                <li>Get special offers and promotions</li>
+                <li>Reset your password if you forget it</li>
+                <li>Ensure account security</li>
+            </ul>
+        </div>
+
+        <div class="greeting">
+            <p>Need help? Contact us:</p>
+            <p>📞 <a href="tel:555-123-4567">555-123-4567</a></p>
+            <p>📧 <a href="mailto:support@hometowndelivery.com">support@hometowndelivery.com</a></p>
+        </div>
+    `;
+
+    return {
+        subject: 'Verify Your Email - Hometown Delivery',
+        html: getEmailTemplate(content)
+    };
+}
+
+/**
+ * Password reset email
+ */
+function passwordResetEmail(customerName, resetUrl) {
+    const content = `
+        <div class="greeting">
+            <h2>Password Reset Request 🔐</h2>
+            <p>Hi ${customerName},</p>
+        </div>
+
+        <p>We received a request to reset your password for your Hometown Delivery account.</p>
+
+        <p>Click the button below to create a new password:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" class="btn">
+                🔄 Reset My Password
+            </a>
+        </div>
+
+        <div class="order-details">
+            <p><strong>⏰ This password reset link will expire in 1 hour.</strong></p>
+            <p><strong>⚠️ If you didn't request a password reset, please ignore this email.</strong> Your password will remain unchanged.</p>
+        </div>
+
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #666; font-size: 14px;">${resetUrl}</p>
+
+        <div class="footer-note">
+            <p><strong>Security Tips:</strong></p>
+            <ul>
+                <li>Never share your password with anyone</li>
+                <li>Use a strong, unique password</li>
+                <li>Don't use the same password across multiple sites</li>
+                <li>Contact us immediately if you notice suspicious activity</li>
+            </ul>
+        </div>
+
+        <div class="greeting">
+            <p>Questions or concerns?</p>
+            <p>📞 <a href="tel:555-123-4567">555-123-4567</a></p>
+            <p>📧 <a href="mailto:support@hometowndelivery.com">support@hometowndelivery.com</a></p>
+        </div>
+    `;
+
+    return {
+        subject: 'Reset Your Password - Hometown Delivery',
+        html: getEmailTemplate(content)
+    };
+}
+
+/**
+ * Email verification success confirmation
+ */
+function emailVerifiedEmail(customerName) {
+    const content = `
+        <div class="greeting">
+            <h2>Email Verified Successfully! ✅</h2>
+            <p>Hi ${customerName},</p>
+        </div>
+
+        <p>Great news! Your email address has been successfully verified.</p>
+
+        <p>You can now enjoy all the benefits of your Hometown Delivery account:</p>
+
+        <div class="order-details">
+            <h3>What You Can Do Now:</h3>
+            <ul>
+                <li>✅ Browse and shop our full product catalog</li>
+                <li>📦 Place orders for delivery</li>
+                <li>💾 Save multiple delivery addresses</li>
+                <li>⭐ Mark your favorite products</li>
+                <li>📊 View your order history</li>
+                <li>🔄 Quick reorder with "My Usual Order"</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:5500'}/shop.html" class="btn">
+                🛒 Start Shopping Now
+            </a>
+        </div>
+
+        <div class="greeting">
+            <p>Thank you for choosing Hometown Delivery!</p>
+            <p>We look forward to serving you.</p>
+        </div>
+
+        <div class="greeting">
+            <p>Questions? We're here to help:</p>
+            <p>📞 <a href="tel:555-123-4567">555-123-4567</a></p>
+            <p>📧 <a href="mailto:support@hometowndelivery.com">support@hometowndelivery.com</a></p>
+        </div>
+    `;
+
+    return {
+        subject: 'Welcome to Hometown Delivery! 🎉',
+        html: getEmailTemplate(content)
+    };
+}
+
 module.exports = {
     getEmailTemplate,
     orderConfirmationEmail,
     orderStatusUpdateEmail,
     adminNewOrderEmail,
-    testEmail
+    testEmail,
+    emailVerificationEmail,
+    passwordResetEmail,
+    emailVerifiedEmail
 };
