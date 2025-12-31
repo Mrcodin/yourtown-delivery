@@ -1,0 +1,425 @@
+/**
+ * Enhanced Form Validation Styles
+ * Live validation feedback with helpful messages
+ */
+
+/* ==================== INPUT STATES ==================== */
+
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* Input base state */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-right: 40px; /* Space for validation icon */
+}
+
+/* Focus state */
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+/* Valid state */
+.form-group.valid input,
+.form-group.valid textarea,
+.form-group.valid select {
+    border-color: #10b981;
+    background: linear-gradient(to right, #ffffff 0%, #f0fdf4 100%);
+}
+
+.form-group.valid input:focus,
+.form-group.valid textarea:focus,
+.form-group.valid select:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Invalid state */
+.form-group.invalid input,
+.form-group.invalid textarea,
+.form-group.invalid select {
+    border-color: #ef4444;
+    background: linear-gradient(to right, #ffffff 0%, #fef2f2 100%);
+}
+
+.form-group.invalid input:focus,
+.form-group.invalid textarea:focus,
+.form-group.invalid select:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Warning state */
+.form-group.warning input,
+.form-group.warning textarea,
+.form-group.warning select {
+    border-color: #f59e0b;
+    background: linear-gradient(to right, #ffffff 0%, #fffbeb 100%);
+}
+
+/* ==================== VALIDATION ICONS ==================== */
+
+.validation-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.form-group.valid .validation-icon,
+.form-group.invalid .validation-icon,
+.form-group.warning .validation-icon {
+    opacity: 1;
+}
+
+.form-group.valid .validation-icon::before {
+    content: '✓';
+    color: #10b981;
+}
+
+.form-group.invalid .validation-icon::before {
+    content: '✕';
+    color: #ef4444;
+}
+
+.form-group.warning .validation-icon::before {
+    content: '⚠';
+    color: #f59e0b;
+}
+
+/* ==================== VALIDATION MESSAGES ==================== */
+
+.validation-message {
+    display: block;
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 20px;
+}
+
+.form-group.valid .validation-message,
+.form-group.invalid .validation-message,
+.form-group.warning .validation-message {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.form-group.valid .validation-message {
+    color: #10b981;
+}
+
+.form-group.invalid .validation-message {
+    color: #ef4444;
+}
+
+.form-group.warning .validation-message {
+    color: #f59e0b;
+}
+
+/* ==================== PASSWORD STRENGTH METER ==================== */
+
+.password-strength {
+    margin-top: 8px;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.password-strength.active {
+    opacity: 1;
+}
+
+.password-strength-bar {
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 2px;
+}
+
+.password-strength[data-strength="weak"] .password-strength-bar {
+    width: 33%;
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+.password-strength[data-strength="medium"] .password-strength-bar {
+    width: 66%;
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.password-strength[data-strength="strong"] .password-strength-bar {
+    width: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.password-strength-text {
+    font-size: 13px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.password-strength[data-strength="weak"] .password-strength-text {
+    color: #ef4444;
+}
+
+.password-strength[data-strength="medium"] .password-strength-text {
+    color: #f59e0b;
+}
+
+.password-strength[data-strength="strong"] .password-strength-text {
+    color: #10b981;
+}
+
+/* ==================== REQUIREMENTS LIST ==================== */
+
+.requirements-list {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.requirement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 14px;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+.requirement-icon {
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.requirement.met {
+    color: #10b981;
+}
+
+.requirement.met .requirement-icon {
+    background: #10b981;
+    color: white;
+}
+
+.requirement.met .requirement-icon::before {
+    content: '✓';
+}
+
+.requirement:not(.met) .requirement-icon::before {
+    content: '○';
+}
+
+/* ==================== CHAR COUNTER ==================== */
+
+.char-counter {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.char-counter.warning {
+    color: #f59e0b;
+}
+
+.char-counter.error {
+    color: #ef4444;
+}
+
+/* ==================== EMAIL SUGGESTIONS ==================== */
+
+.email-suggestion {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e40af;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.email-suggestion:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.email-suggestion strong {
+    color: #1e3a8a;
+}
+
+/* ==================== LOADING STATE ==================== */
+
+.form-group.validating input,
+.form-group.validating textarea,
+.form-group.validating select {
+    border-color: #667eea;
+}
+
+.form-group.validating .validation-icon::before {
+    content: '⏳';
+    color: #667eea;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==================== TOOLTIP HINTS ==================== */
+
+.field-hint {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.field-hint:hover {
+    opacity: 1;
+}
+
+.field-hint::before {
+    content: '?';
+}
+
+.field-hint-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.field-hint:hover .field-hint-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.field-hint-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 10px;
+    border: 6px solid transparent;
+    border-top-color: #1f2937;
+}
+
+/* ==================== MOBILE OPTIMIZATIONS ==================== */
+
+@media (max-width: 768px) {
+    .validation-icon {
+        right: 8px;
+        font-size: 18px;
+    }
+    
+    .field-hint {
+        display: none; /* Hide hints on mobile to save space */
+    }
+    
+    .validation-message {
+        font-size: 13px;
+    }
+    
+    .requirements-list {
+        padding: 10px;
+    }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .form-group input,
+    .form-group textarea,
+    .form-group select,
+    .validation-icon,
+    .validation-message,
+    .password-strength,
+    .password-strength-bar,
+    .requirement,
+    .requirement-icon {
+        transition: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .form-group.valid input,
+    .form-group.invalid input {
+        border-width: 3px;
+    }
+    
+    .validation-message {
+        font-weight: 700;
+    }
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

@@ -1,0 +1,301 @@
+/**
+ * Card Hover Effects
+ * Smooth animations for product and feature cards
+ */
+
+/* ==================== PRODUCT CARDS ==================== */
+
+.grocery-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.grocery-item:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.grocery-item:active {
+    transform: translateY(-4px) scale(1.01);
+}
+
+/* Item image emoji zoom effect */
+.item-image {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grocery-item:hover .item-image {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Add to cart button effect */
+.grocery-item .add-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grocery-item:hover .add-btn {
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.grocery-item .add-btn:active {
+    transform: scale(0.98);
+}
+
+/* ==================== CART ITEMS ==================== */
+
+.cart-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-item:hover {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateX(4px);
+}
+
+.cart-item-image {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-item:hover .cart-item-image {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* ==================== FEATURE CARDS (Homepage) ==================== */
+
+.feature-card, .feature, .feature-box {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover, .feature:hover, .feature-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.2),
+                0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.feature-card:active, .feature:active, .feature-box:active {
+    transform: translateY(-4px);
+}
+
+/* Feature icon animation */
+.feature-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover .feature-icon,
+.feature:hover .feature-icon,
+.feature-box:hover .feature-icon {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* ==================== STAT CARDS ==================== */
+
+.stat, .stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat:hover, .stat-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.stat-number, .stat-value {
+    transition: color 0.3s ease;
+}
+
+.stat:hover .stat-number,
+.stat-card:hover .stat-value {
+    color: #667eea;
+}
+
+/* ==================== ORDER CARDS ==================== */
+
+.order-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.order-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+/* ==================== CATEGORY BUTTONS ==================== */
+
+.category-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-btn:hover:not(.active) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.category-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ==================== BUTTONS ==================== */
+
+.btn, button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover, button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active, button:active {
+    transform: translateY(0);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 6px 16px rgba(107, 114, 128, 0.3);
+}
+
+/* ==================== DRIVER CARDS (Admin) ==================== */
+
+.driver-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.driver-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+/* ==================== PRODUCT CARDS (Admin) ==================== */
+
+.product-row {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-row:hover {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    transform: translateX(4px);
+}
+
+/* ==================== NAVIGATION LINKS ==================== */
+
+.nav-link {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.nav-link:hover {
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* ==================== MOBILE RESPONSIVENESS ==================== */
+
+@media (max-width: 768px) {
+    /* Reduce hover effects on mobile for better performance */
+    .grocery-item:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+    
+    .feature-card:hover, .feature:hover {
+        transform: translateY(-4px);
+    }
+    
+    .btn:hover, button:hover {
+        transform: none;
+    }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .grocery-item,
+    .cart-item,
+    .feature-card,
+    .feature,
+    .stat,
+    .order-card,
+    .category-btn,
+    .btn,
+    button,
+    .nav-link,
+    .item-image,
+    .cart-item-image,
+    .feature-icon {
+        transition: none;
+    }
+    
+    .grocery-item:hover,
+    .feature-card:hover,
+    .feature:hover,
+    .stat:hover,
+    .nav-link:hover {
+        transform: none;
+    }
+    
+    .grocery-item:hover .item-image,
+    .cart-item:hover .cart-item-image,
+    .feature-card:hover .feature-icon,
+    .feature:hover .feature-icon {
+        transform: none;
+    }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+    .grocery-item:hover,
+    .cart-item:hover,
+    .feature-card:hover {
+        box-shadow: 0 0 0 3px currentColor;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .cart-item:hover {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+    
+    .product-row:hover {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+}
+
+/* ==================== FOCUS STATES (Accessibility) ==================== */
+
+.grocery-item:focus-within,
+.cart-item:focus-within,
+.feature-card:focus-within,
+.order-card:focus-within {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Add smooth focus transitions */
+.grocery-item:focus-within .add-btn,
+.cart-item:focus-within button {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}

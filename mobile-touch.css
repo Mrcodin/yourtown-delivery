@@ -1,0 +1,438 @@
+/**
+ * Mobile Touch Target Improvements
+ * Ensures all interactive elements meet accessibility guidelines (44x44px minimum)
+ */
+
+/* ==================== BUTTONS ==================== */
+
+@media (max-width: 768px) {
+    /* Ensure all buttons meet minimum touch target size */
+    .btn,
+    button,
+    .add-btn,
+    .category-btn,
+    .access-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 20px;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    /* Primary action buttons - even larger for easier tapping */
+    .btn-primary,
+    .btn-block {
+        min-height: 52px;
+        font-size: 18px;
+        padding: 14px 24px;
+    }
+
+    /* Cart buttons need extra attention */
+    .cart-item button,
+    .quantity-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px;
+        font-size: 18px;
+    }
+
+    /* Cart preview button */
+    .cart-preview .btn {
+        min-height: 52px;
+        font-size: 18px;
+        padding: 14px 24px;
+    }
+
+    /* Add to cart buttons on product cards */
+    .grocery-item .add-btn {
+        min-height: 48px;
+        width: 100%;
+        font-size: 17px;
+        padding: 12px;
+        margin-top: 10px;
+    }
+
+    /* ==================== NAVIGATION LINKS ==================== */
+
+    .nav-link,
+    .site-nav a {
+        min-height: 44px;
+        padding: 12px 16px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 16px;
+    }
+
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px;
+    }
+
+    /* ==================== FORM INPUTS ==================== */
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="number"],
+    select,
+    textarea {
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        line-height: 1.5;
+    }
+
+    /* Textareas should be taller */
+    textarea {
+        min-height: 100px;
+    }
+
+    /* Quantity inputs in cart */
+    .quantity-input {
+        min-height: 44px;
+        min-width: 60px;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    /* ==================== CHECKBOXES & RADIOS ==================== */
+
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-height: 24px;
+        min-width: 24px;
+        cursor: pointer;
+    }
+
+    /* Clickable label area for checkboxes */
+    .checkbox-group label,
+    .radio-group label {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 4px;
+        cursor: pointer;
+    }
+
+    /* ==================== ICON BUTTONS ==================== */
+
+    /* Close buttons, delete buttons, etc. */
+    .close-btn,
+    .delete-btn,
+    .remove-btn,
+    .icon-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    /* Accessibility toolbar buttons */
+    .access-btn {
+        min-height: 44px;
+        padding: 10px 16px;
+        font-size: 15px;
+    }
+
+    /* ==================== CATEGORY FILTERS ==================== */
+
+    .category-btn {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 16px;
+        margin: 4px;
+        white-space: nowrap;
+    }
+
+    /* ==================== CART ITEM CONTROLS ==================== */
+
+    .cart-item-quantity {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+
+    .cart-item-quantity button {
+        min-height: 44px;
+        min-width: 44px;
+        font-size: 20px;
+        padding: 10px;
+        flex-shrink: 0;
+    }
+
+    .cart-item-quantity input {
+        min-height: 44px;
+        min-width: 50px;
+        font-size: 18px;
+        text-align: center;
+        flex: 0 0 auto;
+    }
+
+    /* ==================== LINKS IN TEXT ==================== */
+
+    /* Ensure links in paragraphs have enough padding */
+    p a,
+    .auth-footer a {
+        padding: 4px 8px;
+        margin: -4px -8px;
+        display: inline-block;
+        min-height: 44px;
+        line-height: 36px;
+    }
+
+    /* ==================== BREADCRUMB NAVIGATION ==================== */
+
+    .breadcrumb a {
+        min-height: 44px;
+        padding: 10px 12px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* ==================== ORDER ACTIONS ==================== */
+
+    .order-card button,
+    .order-actions button {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px 16px;
+        font-size: 16px;
+        margin: 4px;
+    }
+
+    /* ==================== SEARCH INPUT ==================== */
+
+    .search-input {
+        min-height: 52px;
+        padding: 14px 20px;
+        font-size: 17px;
+    }
+
+    /* Search button if present */
+    .search-btn {
+        min-height: 52px;
+        min-width: 52px;
+        padding: 12px;
+    }
+
+    /* ==================== PRODUCT CARDS ==================== */
+
+    .grocery-item {
+        padding: 16px;
+        /* Ensure entire card is tappable */
+        cursor: pointer;
+    }
+
+    /* Product card emoji/image - make it larger and more tappable */
+    .item-image {
+        font-size: 60px;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    /* ==================== SAVED ADDRESSES ==================== */
+
+    .saved-address {
+        padding: 16px;
+        min-height: 60px;
+    }
+
+    .saved-address button {
+        min-height: 44px;
+        min-width: 44px;
+        margin: 4px;
+    }
+
+    /* ==================== PHONE BAR ==================== */
+
+    .phone-bar a {
+        min-height: 44px;
+        padding: 10px 16px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* ==================== FOOTER LINKS ==================== */
+
+    .footer a {
+        min-height: 44px;
+        padding: 10px 12px;
+        display: inline-block;
+        line-height: 24px;
+    }
+
+    /* ==================== SPACING IMPROVEMENTS ==================== */
+
+    /* Add more space between interactive elements */
+    .form-group {
+        margin-bottom: 24px; /* Increased from default */
+    }
+
+    .btn + .btn,
+    button + button {
+        margin-left: 12px;
+    }
+
+    /* Stack buttons vertically on very small screens */
+    @media (max-width: 480px) {
+        .btn-group,
+        .cart-actions,
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-group .btn,
+        .cart-actions .btn,
+        .order-actions .btn {
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    /* ==================== TAB NAVIGATION ==================== */
+
+    .tabs button,
+    .tab-button {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    /* ==================== PAGINATION ==================== */
+
+    .pagination button,
+    .pagination a {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px;
+        font-size: 16px;
+        margin: 4px;
+    }
+
+    /* ==================== MODAL/DIALOG BUTTONS ==================== */
+
+    .modal button,
+    .dialog button {
+        min-height: 48px;
+        min-width: 100px;
+        padding: 12px 24px;
+        font-size: 16px;
+        margin: 8px;
+    }
+
+    /* ==================== RESEND EMAIL BUTTON ==================== */
+
+    #resend-verification-btn {
+        min-height: 48px;
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+
+    /* ==================== BACK TO TOP BUTTON ==================== */
+
+    .back-to-top {
+        width: 56px;
+        height: 56px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 24px;
+    }
+
+    /* ==================== TOAST CLOSE BUTTON ==================== */
+
+    .toast-close {
+        min-height: 32px;
+        min-width: 32px;
+        padding: 6px;
+        font-size: 18px;
+    }
+}
+
+/* ==================== EXTRA SMALL SCREENS ==================== */
+
+@media (max-width: 375px) {
+    /* On very small screens, make touch targets even more generous */
+    .btn-primary,
+    .btn-block,
+    .add-btn {
+        min-height: 56px;
+        font-size: 18px;
+    }
+
+    /* Category buttons - make them full width on tiny screens */
+    .category-btn {
+        width: 100%;
+        margin: 6px 0;
+    }
+
+    /* Ensure cart quantity controls are easy to tap */
+    .cart-item-quantity button {
+        min-width: 48px;
+        min-height: 48px;
+        font-size: 22px;
+    }
+}
+
+/* ==================== LANDSCAPE MODE ==================== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    /* In landscape, we have less vertical space but more horizontal space */
+    /* Adjust heights slightly to fit more content on screen */
+    .btn,
+    button {
+        min-height: 40px;
+    }
+
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+    }
+}
+
+/* ==================== ACCESSIBILITY FOCUS STATES ==================== */
+
+@media (max-width: 768px) {
+    /* Larger, more visible focus indicators on mobile */
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+        outline: 3px solid #667eea;
+        outline-offset: 3px;
+    }
+
+    /* Ensure focus is visible on touch devices */
+    button:focus,
+    a:focus,
+    input:focus,
+    select:focus {
+        outline: 2px solid #667eea;
+        outline-offset: 2px;
+    }
+}
+
+/* ==================== HIGH CONTRAST MODE ==================== */
+
+@media (prefers-contrast: high) and (max-width: 768px) {
+    button,
+    .btn,
+    input,
+    select {
+        border-width: 3px;
+    }
+}

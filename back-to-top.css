@@ -1,0 +1,109 @@
+/**
+ * Back to Top Button Styles
+ * Modern floating button that appears on scroll
+ */
+
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+}
+
+.back-to-top:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
+
+.back-to-top:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Pulsing animation for first appearance */
+.back-to-top.pulse {
+    animation: pulse 2s ease-in-out 3;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(0) scale(1.05);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: high) {
+    .back-to-top {
+        background: #000;
+        border: 2px solid #fff;
+    }
+    
+    .back-to-top:hover {
+        background: #333;
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .back-to-top {
+        transition: opacity 0.3s ease;
+        transform: none;
+    }
+    
+    .back-to-top:hover {
+        transform: none;
+    }
+    
+    .back-to-top.pulse {
+        animation: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .back-to-top {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+    
+    .back-to-top:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+    }
+}
