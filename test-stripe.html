@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Stripe Integration</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Stripe Integration Test</h1>
+    <div id="status"></div>
+    
+    <script>
+        const status = document.getElementById('status');
+        
+        // Test 1: Check if Stripe.js loaded
+        if (typeof Stripe === 'undefined') {
+            status.innerHTML += '<p style="color:red">❌ Stripe.js not loaded</p>';
+        } else {
+            status.innerHTML += '<p style="color:green">✅ Stripe.js loaded</p>';
+        }
+        
+        // Test 2: Check if config loaded
+        if (typeof STRIPE_PUBLISHABLE_KEY === 'undefined') {
+            status.innerHTML += '<p style="color:red">❌ STRIPE_PUBLISHABLE_KEY not found in config.js</p>';
+        } else {
+            status.innerHTML += '<p style="color:green">✅ STRIPE_PUBLISHABLE_KEY found: ' + STRIPE_PUBLISHABLE_KEY.substring(0, 20) + '...</p>';
+        }
+        
+        // Test 3: Try to initialize Stripe
+        try {
+            const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+            status.innerHTML += '<p style="color:green">✅ Stripe initialized successfully</p>';
+            
+            // Test 4: Try to create Elements
+            const elements = stripe.elements();
+            status.innerHTML += '<p style="color:green">✅ Stripe Elements created</p>';
+            
+            // Test 5: Try to create card element
+            const cardElement = elements.create('card');
+            status.innerHTML += '<p style="color:green">✅ Card Element created</p>';
+            
+            status.innerHTML += '<h2 style="color:green">🎉 All tests passed! Stripe is working correctly.</h2>';
+            
+        } catch (error) {
+            status.innerHTML += '<p style="color:red">❌ Error: ' + error.message + '</p>';
+            console.error('Stripe error:', error);
+        }
+    </script>
+</body>
+</html>

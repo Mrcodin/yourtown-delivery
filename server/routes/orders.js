@@ -14,10 +14,11 @@ const trackLimiter = rateLimit({
 
 // Public routes
 router.get('/track/:phone', trackLimiter, orderController.trackOrder);
+router.get('/public/:id', orderController.getOrderPublic); // Public order retrieval with payment intent verification
 router.post('/', orderValidation, validate, orderController.createOrder);
 
 // Protected routes
-router.get('/', protect, authorize('admin', 'manager'), orderController.getOrders);
+router.get('/', protect, orderController.getOrders); // Allow both admin and customer
 router.get('/:id', protect, orderController.getOrder);
 router.put('/:id/status', protect, authorize('admin', 'manager'), orderController.updateOrderStatus);
 router.put('/:id/assign-driver', protect, authorize('admin', 'manager'), orderController.assignDriver);

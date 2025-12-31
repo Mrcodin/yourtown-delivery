@@ -300,19 +300,20 @@
         async function loadOrders() {
             try {
                 const token = customerAuth.getToken();
-                const response = await fetch(`${API_CONFIG.BASE_URL}/orders?customerId=${customer._id}`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/orders`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 const data = await response.json();
                 
-                if (data.success && data.data.length > 0) {
-                    displayOrders(data.data);
+                if (data.success && data.orders && data.orders.length > 0) {
+                    displayOrders(data.orders);
                 } else {
                     document.getElementById('orders-container').innerHTML = '<p>No orders yet. <a href="shop.html">Start shopping!</a></p>';
                 }
             } catch (error) {
+                console.error('Error loading orders:', error);
                 document.getElementById('orders-container').innerHTML = '<p>Error loading orders.</p>';
             }
         }
@@ -320,7 +321,11 @@
         // Display orders
         function displayOrders(orders) {
             const container = document.getElementById('orders-container');
-            container.innerHTML = orders.map(order => `
+            container.innerHTML = orders.map(order => {
+                // Use pricing.total if available, fallback to totalAmount or total
+                const total = order.pricing?.total || order.totalAmount || order.total || 0;
+                
+                return `
                 <div class="order-card-large">
                     <div class="order-card-header">
                         <div>
@@ -331,15 +336,16 @@
                     </div>
                     <div class="order-card-body">
                         <div class="order-info-large">
-                            <span class="info-item">💰 Total: <strong>$${order.totalAmount.toFixed(2)}</strong></span>
+                            <span class="info-item">💰 Total: <strong>$${total.toFixed(2)}</strong></span>
                             <span class="info-item">📦 Items: <strong>${order.items.length}</strong></span>
                         </div>
-                        <a href="track.html?orderId=${order.orderId}" class="btn-large btn-secondary">
+                        <a href="track.html?phone=${order.customerInfo?.phone || ''}" class="btn-large btn-secondary">
                             👁️ View Details
                         </a>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // Tab switching

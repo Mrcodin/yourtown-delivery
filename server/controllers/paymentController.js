@@ -47,13 +47,17 @@ exports.confirmPayment = async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status === 'succeeded') {
-      // Update order payment status
-      const order = await Order.findOne({ orderId });
+      // Update order payment status - orderId could be MongoDB _id or orderId string
+      let order = await Order.findById(orderId);
+      if (!order) {
+        order = await Order.findOne({ orderId });
+      }
       
       if (order) {
         order.payment.status = 'completed';
         order.payment.transactionId = paymentIntent.id;
         order.payment.stripePaymentIntentId = paymentIntent.id;
+        order.status = 'confirmed'; // Update order status
         await order.save();
 
         // Log activity

@@ -13,12 +13,20 @@ const { logEmail } = require('./emailController');
 
 // @desc    Get all orders
 // @route   GET /api/orders
-// @access  Private (Admin/Manager)
+// @access  Private (Admin/Manager or Customer for own orders)
 exports.getOrders = async (req, res) => {
   try {
-    const { status, startDate, endDate, search, driverId } = req.query;
+    const { status, startDate, endDate, search, driverId, customerId } = req.query;
 
     let query = {};
+
+    // If customer is requesting, only show their orders
+    if (req.customer) {
+      query.customerId = req.customer._id;
+    } else if (customerId) {
+      // Admin can filter by specific customer
+      query.customerId = customerId;
+    }
 
     // Filter by status
     if (status) {
@@ -89,6 +97,59 @@ exports.getOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Get order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching order',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get order by ID with payment intent verification
+// @route   GET /api/orders/public/:id?payment_intent=xxx
+// @access  Public (requires valid payment intent for card payments, or recent order for cash/check)
+exports.getOrderPublic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { payment_intent } = req.query;
+
+    // Find order
+    const order = await Order.findById(id)
+      .populate('delivery.driverId', 'firstName lastName phone')
+      .populate('items.productId', 'name price category');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Verify payment intent matches (if order has payment intent and it's provided)
+    if (order.payment?.stripePaymentIntentId) {
+      if (order.payment.stripePaymentIntentId !== payment_intent) {
+        return res.status(403).json({
+          success: false,
+          message: 'Invalid payment intent for this order'
+        });
+      }
+    } else {
+      // For cash/check orders without payment intent, only allow recent orders (within 1 hour)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      if (order.createdAt < oneHourAgo) {
+        return res.status(403).json({
+          success: false,
+          message: 'Order access expired. Please log in to view older orders.'
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      order
+    });
+  } catch (error) {
+    console.error('Get public order error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching order',
@@ -169,19 +230,43 @@ exports.createOrder = async (req, res) => {
     const total = subtotal + deliveryFee;
 
     // Find or create customer
-    let customer = await Customer.findOne({ phone: customerInfo.phone });
+    // Try to find by phone first, then by email
+    let customer = await Customer.findOne({ 
+      $or: [
+        { phone: customerInfo.phone },
+        ...(customerInfo.email ? [{ email: customerInfo.email }] : [])
+      ]
+    });
     
     if (!customer) {
-      customer = await Customer.create({
-        name: customerInfo.name,
-        phone: customerInfo.phone,
-        email: customerInfo.email || undefined, // Make email optional
-        createdViaOrder: true, // Mark as created via order (no password)
-        addresses: [{
-          street: customerInfo.address,
-          isDefault: true
-        }]
-      });
+      // Create new customer without email if email might be duplicate
+      try {
+        customer = await Customer.create({
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          email: customerInfo.email || undefined, // Make email optional
+          createdViaOrder: true, // Mark as created via order (no password)
+          addresses: [{
+            street: customerInfo.address,
+            isDefault: true
+          }]
+        });
+      } catch (error) {
+        // If duplicate email error, create without email
+        if (error.code === 11000) {
+          customer = await Customer.create({
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            createdViaOrder: true,
+            addresses: [{
+              street: customerInfo.address,
+              isDefault: true
+            }]
+          });
+        } else {
+          throw error;
+        }
+      }
     }
 
     // Generate order ID

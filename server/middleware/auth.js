@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Customer = require('../models/Customer');
 
-// Verify JWT token and attach user to request
+// Protect routes - accepts both admin and customer tokens
 exports.protect = async (req, res, next) => {
   try {
     let token;
@@ -23,14 +23,25 @@ exports.protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from token
-      req.user = await User.findById(decoded.id);
-
-      if (!req.user || req.user.status !== 'active') {
-        return res.status(401).json({
-          success: false,
-          message: 'User not found or inactive'
-        });
+      // Check if it's a customer or admin token
+      if (decoded.type === 'customer') {
+        // Customer token
+        req.customer = await Customer.findById(decoded.id);
+        if (!req.customer || !req.customer.isActive) {
+          return res.status(401).json({
+            success: false,
+            message: 'Customer not found or inactive'
+          });
+        }
+      } else {
+        // Admin/user token
+        req.user = await User.findById(decoded.id);
+        if (!req.user || req.user.status !== 'active') {
+          return res.status(401).json({
+            success: false,
+            message: 'User not found or inactive'
+          });
+        }
       }
 
       next();

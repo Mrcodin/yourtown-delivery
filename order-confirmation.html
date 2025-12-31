@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed - Hometown Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="loading.css">
+    <link rel="stylesheet" href="breadcrumb.css">
+    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="back-to-top.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <script src="toast.js"></script>
+    
+    <!-- ACCESSIBILITY TOOLBAR -->
+    <div class="accessibility-bar">
+        <div class="container accessibility-container">
+            <span>Accessibility:</span>
+            <button onclick="toggleLargeText()" id="text-size-btn" class="access-btn">🔤 Larger Text</button>
+            <button onclick="toggleContrast()" id="contrast-btn" class="access-btn">🌓 High Contrast</button>
+            <button onclick="speakPage()" id="speak-btn" class="access-btn">🔊 Read Aloud</button>
+        </div>
+    </div>
+
+    <!-- PHONE BAR -->
+    <div class="phone-bar">
+        <div class="container">
+            📞 <strong>Prefer to Call?</strong> 
+            <a href="tel:555-123-4567">555-123-4567</a> | 
+            Mon-Fri 8am-6pm, Sat 9am-3pm
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="shop.html" class="nav-link">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </a>
+                <a href="track.html" class="nav-link">Track Order</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <span id="customer-nav"></span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Success Container -->
+            <div class="success-container" id="success-container" style="display: none;">
+                <div class="success-icon">✓</div>
+                <h1 class="success-title">Order Confirmed!</h1>
+                <p class="success-subtitle">Thank you for your order!</p>
+
+                <div class="order-summary-card">
+                    <h2>Order Details</h2>
+                    <div class="order-detail-row">
+                        <span>Order Number:</span>
+                        <strong id="order-number">Loading...</strong>
+                    </div>
+                    <div class="order-detail-row">
+                        <span>Total:</span>
+                        <strong id="total-amount">$0.00</strong>
+                    </div>
+                    <div class="order-detail-row">
+                        <span>Payment Method:</span>
+                        <strong id="payment-method">Cash on Delivery</strong>
+                    </div>
+                    <div class="order-detail-row">
+                        <span>Status:</span>
+                        <strong class="status-pending">Pending</strong>
+                    </div>
+                </div>
+
+                <div class="success-message">
+                    <p>📞 <strong>We'll call you soon!</strong> We'll confirm your order within 30 minutes.</p>
+                    <p>📦 Your order will be prepared and delivered at the scheduled time.</p>
+                    <p id="payment-note">💵 Please have payment ready upon delivery.</p>
+                </div>
+
+                <div class="success-actions">
+                    <a href="track.html" class="btn btn-primary">Track My Order</a>
+                    <a href="shop.html" class="btn btn-secondary">Continue Shopping</a>
+                    <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-container" id="loading-container">
+                <div class="spinner-large"></div>
+                <p>Loading order details...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-container" id="error-container" style="display: none;">
+                <div class="error-icon">✕</div>
+                <h1 class="error-title">Order Not Found</h1>
+                <p class="error-message">We couldn't find your order details.</p>
+                
+                <div class="error-actions">
+                    <a href="track.html" class="btn btn-primary">Track Order</a>
+                    <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer footer-simple">
+        <div class="container">
+            <p>&copy; 2024 Hometown Grocery Delivery | 📞 <a href="tel:555-123-4567">555-123-4567</a></p>
+        </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="loading.js"></script>
+    <script src="breadcrumb.js"></script>
+    <script src="config.js"></script>
+    <script src="page-config.js"></script>
+    <script src="main.js"></script>
+    <script src="back-to-top.js"></script>
+
+    <script>
+        // Update customer navigation
+        function updateCustomerNav() {
+            const navSpan = document.getElementById('customer-nav');
+            if (customerAuth.isLoggedIn()) {
+                navSpan.innerHTML = '<a href="customer-account.html" class="nav-link">👤 My Account</a>';
+            } else {
+                navSpan.innerHTML = '<a href="customer-login.html" class="nav-link">Login</a>';
+            }
+        }
+        updateCustomerNav();
+
+        // Get order ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order_id');
+        const paymentMethod = urlParams.get('payment_method');
+
+        async function loadOrderDetails() {
+            const loadingContainer = document.getElementById('loading-container');
+            const successContainer = document.getElementById('success-container');
+            const errorContainer = document.getElementById('error-container');
+
+            try {
+                if (!orderId) {
+                    throw new Error('No order ID provided');
+                }
+
+                // Fetch order details - use public endpoint if available
+                // For cash/check orders without payment intent, we'll use the order ID only
+                let response;
+                try {
+                    // Try public endpoint first (works for all orders)
+                    response = await fetch(`${API_BASE_URL}/orders/public/${orderId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(r => r.json());
+                } catch (err) {
+                    // Fallback: if user is logged in, try authenticated endpoint
+                    if (customerAuth.isLoggedIn()) {
+                        response = await api.get(`/orders/${orderId}`);
+                    } else {
+                        throw err;
+                    }
+                }
+
+                if (response.success && response.order) {
+                    const order = response.order;
+
+                    // Show success container
+                    loadingContainer.style.display = 'none';
+                    successContainer.style.display = 'block';
+
+                    // Update order details
+                    document.getElementById('order-number').textContent = order.orderId || orderId;
+                    document.getElementById('total-amount').textContent = `$${order.total.toFixed(2)}`;
+                    
+                    // Update payment method display
+                    const paymentDisplay = document.getElementById('payment-method');
+                    const paymentNote = document.getElementById('payment-note');
+                    
+                    if (paymentMethod === 'cash') {
+                        paymentDisplay.textContent = 'Cash on Delivery';
+                        paymentNote.textContent = '💵 Please have exact cash ready upon delivery.';
+                    } else if (paymentMethod === 'check') {
+                        paymentDisplay.textContent = 'Check';
+                        paymentNote.textContent = '📝 Please have check payable to "Hometown Delivery" ready.';
+                    } else if (paymentMethod === 'card') {
+                        paymentDisplay.textContent = 'Credit/Debit Card';
+                        paymentNote.textContent = '💳 Payment processed successfully. Receipt sent to your email.';
+                    }
+
+                    // Show success toast
+                    toast.success('Your order has been confirmed!', 'Success');
+
+                } else {
+                    throw new Error('Order not found');
+                }
+
+            } catch (error) {
+                console.error('Error loading order:', error);
+                
+                loadingContainer.style.display = 'none';
+                errorContainer.style.display = 'block';
+
+                toast.error('Could not load order details', 'Error');
+            }
+        }
+
+        // Load order details on page load
+        if (orderId) {
+            loadOrderDetails();
+        } else {
+            document.getElementById('loading-container').style.display = 'none';
+            document.getElementById('error-container').style.display = 'block';
+        }
+    </script>
+
+    <style>
+        .success-container,
+        .error-container,
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-size: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            font-size: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-title,
+        .error-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .success-subtitle {
+            font-size: 20px;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .order-summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .order-summary-card h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 16px;
+        }
+
+        .order-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .order-detail-row span {
+            color: #6b7280;
+        }
+
+        .order-detail-row strong {
+            color: #1f2937;
+        }
+
+        .status-pending {
+            color: #f59e0b;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .success-message p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #1f2937;
+        }
+
+        .success-actions,
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-message {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .spinner-large {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-container p {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        @media (max-width: 768px) {
+            .success-title,
+            .error-title {
+                font-size: 28px;
+            }
+
+            .success-icon,
+            .error-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 48px;
+            }
+
+            .success-actions,
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .success-actions .btn,
+            .error-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</body>
+</html>

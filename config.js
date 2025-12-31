@@ -103,7 +103,13 @@ async function loadBusinessConfig() {
     return DEFAULT_CONFIG;
 }
 
+// Stripe Configuration
+// ⚠️ This is your PUBLISHABLE key - safe to expose in frontend
+// Get this from: https://dashboard.stripe.com/apikeys
+// IMPORTANT: Use TEST key (pk_test_) for development, LIVE key (pk_live_) for production
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SkVBm1Q8OjRkTazELvM1TurrRUst2NtCpCx8zwAVWvAjWTcSwlF9bpR10TGsLY8JB2t5qIVViKfgPvNRI6dAs2V00gOFXqrNQ';
+
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { BUSINESS_CONFIG, DEFAULT_CONFIG, loadBusinessConfig };
+    module.exports = { BUSINESS_CONFIG, DEFAULT_CONFIG, loadBusinessConfig, STRIPE_PUBLISHABLE_KEY };
 }

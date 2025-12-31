@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="form-validation.css">
     <link rel="stylesheet" href="mobile-touch.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <script src="toast.js"></script>
@@ -30,7 +32,9 @@
     <!-- PHONE BAR -->
     <div class="phone-bar">
         <div class="container">
-            📞 Questions about your order? Call <a href="tel:555-123-4567">555-123-4567</a>
+            📞 <strong>Prefer to Call?</strong> 
+            <a href="tel:555-123-4567">555-123-4567</a> | 
+            Mon-Fri 8am-6pm, Sat 9am-3pm
         </div>
     </div>
 
@@ -41,6 +45,7 @@
                 <span class="logo-icon">🛒</span>
                 <span class="logo-text">Hometown Delivery</span>
             </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
             <nav class="nav" id="main-nav">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="shop.html" class="nav-link">Shop Groceries</a>
@@ -48,6 +53,7 @@
                     🛒 Cart (<span id="cart-count">0</span>)
                 </a>
                 <a href="track.html" class="nav-link">Track Order</a>
+                <a href="about.html" class="nav-link">About Us</a>
                 <span id="customer-nav"></span>
             </nav>
         </div>
@@ -215,10 +221,28 @@
                                         <span class="payment-icon">💳</span>
                                         <div>
                                             <strong>Credit/Debit Card</strong>
-                                            <small>Secure online payment</small>
+                                            <small>Secure payment via Stripe</small>
                                         </div>
                                     </div>
                                 </label>
+                            </div>
+
+                            <!-- Card Payment Details (shown when card is selected) -->
+                            <div id="card-payment-section" class="card-payment-section" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label">Card Information *</label>
+                                    <div id="card-element" class="stripe-card-element"></div>
+                                    <div id="card-errors" class="card-error-message" role="alert"></div>
+                                    <small class="form-help">
+                                        🔒 Secure payment processed by Stripe. Your card details are never stored.
+                                    </small>
+                                </div>
+
+                                <div class="security-badges">
+                                    <span class="security-badge">🔒 SSL Encrypted</span>
+                                    <span class="security-badge">✓ PCI Compliant</span>
+                                    <span class="security-badge">💳 All Cards Accepted</span>
+                                </div>
                             </div>
 
                             <!-- Progress Indicator (shown during checkout) -->
@@ -251,8 +275,11 @@
     <script src="loading.js"></script>
     <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
+    <script src="checkout.js"></script>
     <script src="page-config.js"></script>
     <script src="main.js"></script>
+    <script src="cart-checkout.js"></script>
+    <script src="back-to-top.js"></script>
     <script>
         // Update navigation
         function updateCustomerNav() {
@@ -310,6 +337,108 @@
             }
         }
     </script>
-    <script src="back-to-top.js"></script>
+
+    <style>
+        /* Stripe Elements Styles */
+        .card-payment-section {
+            margin-top: 25px;
+            padding: 25px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .stripe-card-element {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #d1d5db;
+            transition: border-color 0.2s;
+        }
+
+        .stripe-card-element:hover,
+        .stripe-card-element:focus {
+            border-color: #667eea;
+        }
+
+        .card-error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            background: #fee2e2;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .security-badges {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .security-badge {
+            font-size: 13px;
+            color: #059669;
+            background: #d1fae5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .checkout-progress-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #eff6ff;
+            border-radius: 8px;
+            border: 2px solid #3b82f6;
+            color: #1e40af;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .progress-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #bfdbfe;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .btn-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .card-payment-section {
+                padding: 20px;
+            }
+
+            .security-badges {
+                flex-direction: column;
+            }
+
+            .security-badge {
+                text-align: center;
+            }
+        }
+    </style>
 </body>
 </html>

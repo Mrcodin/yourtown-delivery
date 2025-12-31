@@ -7,7 +7,17 @@ class ToastManager {
     constructor() {
         this.container = null;
         this.toasts = [];
-        this.init();
+        // Don't init immediately, wait for DOM
+        if (document.body) {
+            this.init();
+        } else {
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.init());
+            } else {
+                this.init();
+            }
+        }
     }
 
     init() {
@@ -34,6 +44,11 @@ class ToastManager {
      * @param {Function} options.onClose - Callback when toast closes
      */
     show(options) {
+        // Ensure container is initialized
+        if (!this.container) {
+            this.init();
+        }
+        
         const {
             message,
             title = '',
