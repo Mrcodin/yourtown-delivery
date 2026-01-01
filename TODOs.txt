@@ -510,6 +510,15 @@ MONTH 2+
 🎉 RECENT FIXES (January 1, 2026)
 ================================================================================
 
+PDF RECEIPT Y-POSITIONING BUG FIXED (January 1, 2026):
+   ✅ Fixed overlapping text in PDF receipt totals section
+   ✅ All line items now properly spaced (subtotal, delivery, tip, tax, discount)
+   ✅ Tip correctly displays and is included in total calculation
+   ✅ Improved tax label: "Tax (on delivery)" for clarity
+   ✅ Comprehensive tests: 4/4 scenarios pass (no tip, $3 tip, $5 tip + discount, custom $7.50 tip)
+   ✅ Root cause: doc.y wasn't being incremented, causing values to overlap
+   ✅ Solution: Introduced currentY variable with proper 20px increments
+
 PROMO CODE SYSTEM COMPLETED:
    ✅ Full promo code infrastructure (backend + frontend)
    ✅ PromoCode model with validation logic (percentage/fixed discounts)
