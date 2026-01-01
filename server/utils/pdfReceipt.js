@@ -34,7 +34,7 @@ async function generateReceipt(order, outputPath = null) {
       // Header - Business Name
       doc.fontSize(24)
          .fillColor('#2563eb')
-         .text('🚚 Hometown Delivery', { align: 'center' })
+         .text('Hometown Delivery', { align: 'center' })
          .moveDown(0.3);
 
       doc.fontSize(10)
@@ -159,7 +159,9 @@ async function generateReceipt(order, outputPath = null) {
           itemY = 50;
         }
 
-        doc.text(`${item.emoji || '📦'} ${item.name}`, leftColumn, itemY)
+        // Don't include emoji in PDF - PDFKit doesn't handle Unicode emojis well
+        // Just show the product name
+        doc.text(item.name, leftColumn, itemY)
            .text(item.quantity.toString(), 350, itemY, { width: 50, align: 'center' })
            .text(`$${item.price.toFixed(2)}`, 420, itemY, { width: 60, align: 'right' })
            .text(`$${itemTotal.toFixed(2)}`, 490, itemY, { width: 60, align: 'right' });
