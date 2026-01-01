@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const ActivityLog = require('../models/ActivityLog');
+const { uploadToCloudinary, cloudinary } = require('../config/cloudinary');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -181,6 +182,72 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting product',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Upload product image
+// @route   POST /api/products/:id/image
+// @access  Private (Admin/Manager)
+exports.uploadProductImage = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload an image file'
+      });
+    }
+
+    // Delete old image from Cloudinary if exists
+    if (product.imageUrl) {
+      try {
+        const publicId = product.imageUrl.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`yourtown-delivery/products/${publicId}`);
+      } catch (err) {
+        console.error('Error deleting old image:', err);
+      }
+    }
+
+    // Upload new image to Cloudinary
+    const filename = `${product._id}-${Date.now()}`;
+    const result = await uploadToCloudinary(req.file.buffer, filename);
+
+    // Update product with new image URL
+    product.imageUrl = result.secure_url;
+    await product.save();
+
+    // Log activity
+    await ActivityLog.create({
+      action: 'product-image-upload',
+      userId: req.user._id,
+      username: req.user.username,
+      metadata: { 
+        productId: product._id,
+        imageUrl: result.secure_url
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Product image uploaded successfully',
+      imageUrl: result.secure_url,
+      product
+    });
+  } catch (error) {
+    console.error('Upload product image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading product image',
       error: error.message
     });
   }

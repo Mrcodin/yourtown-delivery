@@ -27,7 +27,8 @@ async function loadProducts() {
                 name: p.name,
                 price: p.price,
                 category: p.category,
-                emoji: p.emoji || '📦'
+                emoji: p.emoji || '📦',
+                imageUrl: p.imageUrl || null
             }));
             
             // console.log(`✅ Loaded ${groceries.length} products from API`);
@@ -147,6 +148,7 @@ function addToCart(productId) {
             name: product.name,
             price: product.price,
             emoji: product.emoji,
+            imageUrl: product.imageUrl,
             quantity: 1
         });
     }
@@ -228,9 +230,14 @@ function renderGroceryGrid(items = groceries) {
         resultsInfo.textContent = `Showing ${items.length} item${items.length !== 1 ? 's' : ''}`;
     }
     
-    grid.innerHTML = items.map(item => `
+    grid.innerHTML = items.map(item => {
+        const imageHtml = item.imageUrl 
+            ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+            : item.emoji;
+        
+        return `
         <div class="grocery-item" data-category="${item.category}">
-            <div class="item-image">${item.emoji}</div>
+            <div class="item-image">${imageHtml}</div>
             <div class="item-content">
                 <h3 class="item-name">${item.name}</h3>
                 <div class="item-price">$${item.price.toFixed(2)}</div>
@@ -239,7 +246,8 @@ function renderGroceryGrid(items = groceries) {
                 </button>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Filter by category
@@ -295,9 +303,14 @@ function renderCartItems() {
     if (orderSummary) orderSummary.style.display = 'block';
     if (cartActions) cartActions.style.display = 'flex';
     
-    cartContainer.innerHTML = cart.map(item => `
+    cartContainer.innerHTML = cart.map(item => {
+        const imageHtml = item.imageUrl 
+            ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`
+            : item.emoji;
+        
+        return `
         <div class="cart-item">
-            <div class="cart-item-image">${item.emoji}</div>
+            <div class="cart-item-image">${imageHtml}</div>
             <div class="cart-item-info">
                 <h3 class="cart-item-name">${item.name}</h3>
                 <p class="cart-item-price">$${item.price.toFixed(2)} each</p>
@@ -310,7 +323,8 @@ function renderCartItems() {
             <div class="cart-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
             <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">×</button>
         </div>
-    `).join('');
+        `;
+    }).join('');
     
     // Update summary
     updateOrderSummary();
