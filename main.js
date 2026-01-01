@@ -877,9 +877,11 @@ document.addEventListener('DOMContentLoaded', function() {
         renderGroceryGrid();
     }
     
-    // Attach checkout handler
+    // Attach checkout handler ONLY if cart-checkout.js is not loaded
+    // cart-checkout.js handles the modern Stripe payment flow
     const checkoutForm = document.getElementById('checkout-form');
-    if (checkoutForm) {
+    if (checkoutForm && typeof handleCheckoutSubmit === 'undefined') {
+        // Only attach if cart-checkout.js (which defines handleCheckoutSubmit) is NOT present
         checkoutForm.addEventListener('submit', handleCheckout);
     }
     
