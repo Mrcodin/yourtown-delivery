@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tip Flow Test</title>
+</head>
+<body>
+    <h1>Tip Flow Test</h1>
+    
+    <div>
+        <h2>1. Select Tip</h2>
+        <button onclick="selectTip(3)">$3</button>
+        <button onclick="selectTip(5)">$5</button>
+        <button onclick="selectTip(7)">$7</button>
+        <input type="number" id="custom-tip" placeholder="0.00">
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2>2. Check Value</h2>
+        <button onclick="checkValue()">Check Tip Value</button>
+        <div id="result"></div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2>3. Submit (simulates checkout)</h2>
+        <button onclick="submitOrder()">Submit Order</button>
+        <div id="order-result"></div>
+    </div>
+
+    <script>
+        function selectTip(amount) {
+            const customTipInput = document.getElementById('custom-tip');
+            if (customTipInput) {
+                customTipInput.value = amount;
+                console.log('Set tip to:', amount);
+            }
+        }
+        
+        function checkValue() {
+            const tipElement = document.getElementById('custom-tip');
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <p>Element exists: ${tipElement !== null}</p>
+                <p>Value: "${tipElement?.value}"</p>
+                <p>Parsed: ${parseFloat(tipElement?.value || 0)}</p>
+                <p>Final tip: ${parseFloat(tipElement?.value || 0) || 0}</p>
+            `;
+        }
+        
+        function submitOrder() {
+            const tipElement = document.getElementById('custom-tip');
+            const tip = parseFloat(tipElement?.value || 0) || 0;
+            const orderResult = document.getElementById('order-result');
+            orderResult.innerHTML = `
+                <p><strong>Order submitted with tip: $${tip.toFixed(2)}</strong></p>
+                <p>Element value at submit time: "${tipElement?.value}"</p>
+            `;
+        }
+    </script>
+</body>
+</html>
