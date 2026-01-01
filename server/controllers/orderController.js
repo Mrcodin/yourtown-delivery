@@ -23,13 +23,15 @@ exports.getOrders = async (req, res) => {
 
     let query = {};
 
-    // If customer is requesting, only show their orders
-    if (req.customer) {
+    // If customer is requesting (not admin), only show their orders
+    if (req.customer && !req.user) {
+      // Customer token - filter to only their orders
       query.customerId = req.customer._id;
     } else if (customerId) {
       // Admin can filter by specific customer
       query.customerId = customerId;
     }
+    // If req.user is set (admin), show all orders (no filter)
 
     // Filter by status
     if (status) {
