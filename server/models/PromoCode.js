@@ -140,6 +140,9 @@ PromoCodeSchema.methods.isValid = function(customerId = null, orderAmount = 0) {
 };
 
 // Method to calculate discount
+// Calculate discount amount
+// @param {Number} orderAmount - Subtotal amount (groceries only, excludes delivery/tip/tax)
+// @returns {Number} - Calculated discount amount
 PromoCodeSchema.methods.calculateDiscount = function(orderAmount) {
   let discount = 0;
   

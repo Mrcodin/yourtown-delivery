@@ -373,7 +373,8 @@ async function applyPromoCode() {
             sum + (item.price * item.quantity), 0
         );
         const deliveryFee = 6.99;
-        const orderAmount = subtotal + deliveryFee;
+        // Promo codes apply only to subtotal (groceries), not delivery/tip/tax
+        const orderAmount = subtotal;
         
         // Get customer ID if logged in
         const customerId = localStorage.getItem('customerId') || null;
