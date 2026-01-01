@@ -113,10 +113,10 @@ class StripeCheckout {
                 }
             }
             
-            // Calculate Washington state sales tax (8.6%)
+            // Calculate Washington state sales tax
+            // Groceries are tax-exempt in WA. Only delivery fee is taxable.
             const taxRate = 0.086;
-            const taxableAmount = subtotal + deliveryFee - discount;
-            const tax = taxableAmount * taxRate;
+            const tax = deliveryFee * taxRate; // Tax only on delivery fee
             
             const total = subtotal + deliveryFee + tax - discount;
 

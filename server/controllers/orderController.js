@@ -242,9 +242,10 @@ exports.createOrder = async (req, res) => {
     }
     
     // Calculate Washington state sales tax
+    // NOTE: Groceries are EXEMPT from sales tax in WA state
+    // Only delivery fee is taxable (RCW 82.08.0293)
     const taxRate = parseFloat(process.env.TAX_RATE) || 0.086; // Default 8.6% for WA
-    const taxableAmount = subtotal + deliveryFee - discount;
-    const tax = taxableAmount * taxRate;
+    const tax = deliveryFee * taxRate; // Tax only on delivery fee, not groceries
     
     const total = subtotal + deliveryFee + tax - discount;
 
