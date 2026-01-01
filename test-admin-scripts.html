@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Scripts Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e293b; color: #e2e8f0; }
+        .test { background: #334155; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Admin Scripts Loading Test</h1>
+    
+    <div class="test">
+        <h3>Script Load Order:</h3>
+        <ol id="load-order"></ol>
+    </div>
+    
+    <div class="test">
+        <h3>Global Variables Check:</h3>
+        <div id="globals-check"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Admin Functions Check:</h3>
+        <div id="functions-check"></div>
+    </div>
+    
+    <!-- Load scripts in same order as admin.html -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ Socket.io loaded</li>';
+    </script>
+    
+    <script src="api.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ api.js loaded</li>';
+    </script>
+    
+    <script src="auth.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ auth.js loaded</li>';
+    </script>
+    
+    <script src="main.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ main.js loaded</li>';
+    </script>
+    
+    <script src="loading.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ loading.js loaded</li>';
+    </script>
+    
+    <script src="admin.js"></script>
+    <script>
+        document.getElementById('load-order').innerHTML += '<li class="success">✅ admin.js loaded</li>';
+        
+        // Check global variables
+        const globalsCheck = document.getElementById('globals-check');
+        const globals = ['api', 'Auth', 'loading', 'adminOrders', 'drivers', 'customers', 'products'];
+        
+        globals.forEach(g => {
+            if (typeof window[g] !== 'undefined') {
+                globalsCheck.innerHTML += `<div class="success">✅ ${g} is defined</div>`;
+            } else {
+                globalsCheck.innerHTML += `<div class="error">❌ ${g} is undefined</div>`;
+            }
+        });
+        
+        // Check functions
+        const functionsCheck = document.getElementById('functions-check');
+        const functions = ['initDashboard', 'renderOrdersTable', 'viewOrderDetail', 'adminLogout'];
+        
+        functions.forEach(f => {
+            if (typeof window[f] === 'function') {
+                functionsCheck.innerHTML += `<div class="success">✅ ${f}() is defined</div>`;
+            } else {
+                functionsCheck.innerHTML += `<div class="error">❌ ${f}() is undefined</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
