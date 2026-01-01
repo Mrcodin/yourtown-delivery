@@ -91,6 +91,9 @@
                 </div>
 
                 <div class="success-actions">
+                    <button onclick="showSaveOrderModal()" class="btn" style="background: #8b5cf6; color: white;">
+                        ⭐ Save as My Usual Order
+                    </button>
                     <a href="track.html" class="btn btn-primary">Track My Order</a>
                     <a href="shop.html" class="btn btn-secondary">Continue Shopping</a>
                     <a href="index.html" class="btn btn-secondary">Back to Home</a>
@@ -123,6 +126,42 @@
             <p>&copy; 2024 Hometown Grocery Delivery | 📞 <a href="tel:555-123-4567">555-123-4567</a></p>
         </div>
     </footer>
+
+    <!-- SAVE USUAL ORDER MODAL -->
+    <div id="save-usual-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Save as My Usual Order</h2>
+                <button onclick="closeSaveUsualModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; font-size: 16px;">
+                    Save this order for quick reordering in the future!
+                </p>
+                
+                <label for="usual-order-name" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    Give this order a name:
+                </label>
+                <input 
+                    type="text" 
+                    id="usual-order-name" 
+                    class="form-input" 
+                    placeholder="e.g., Weekly Groceries, Monthly Stock-up" 
+                    maxlength="100"
+                    style="width: 100%; margin-bottom: 20px;"
+                >
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeSaveUsualModal()" class="btn btn-outline" style="flex: 1;">
+                        Cancel
+                    </button>
+                    <button onclick="confirmSaveUsualOrder()" class="btn" style="flex: 1; background: #8b5cf6; color: white;">
+                        Save Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="api.js"></script>
     <script src="customer-auth.js"></script>
@@ -230,6 +269,145 @@
             document.getElementById('loading-container').style.display = 'none';
             document.getElementById('error-container').style.display = 'block';
         }
+
+        // ============ SAVE AS USUAL ORDER ============
+        let currentOrder = null;
+
+        async function loadOrderDetailsWithSave() {
+            const loadingContainer = document.getElementById('loading-container');
+            const successContainer = document.getElementById('success-container');
+            const errorContainer = document.getElementById('error-container');
+
+            try {
+                if (!orderId) {
+                    throw new Error('No order ID provided');
+                }
+
+                let response;
+                try {
+                    response = await fetch(`${API_BASE_URL}/api/orders/public/${orderId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(r => r.json());
+                } catch (err) {
+                    if (customerAuth.isLoggedIn()) {
+                        response = await api.get(`/orders/${orderId}`);
+                    } else {
+                        throw err;
+                    }
+                }
+
+                if (response.success && response.order) {
+                    currentOrder = response.order; // Store for saving
+                    loadingContainer.style.display = 'none';
+                    successContainer.style.display = 'block';
+
+                    document.getElementById('order-number').textContent = response.order.orderId || orderId;
+                    document.getElementById('total-amount').textContent = `$${response.order.pricing.total.toFixed(2)}`;
+                    
+                    const paymentDisplay = document.getElementById('payment-method');
+                    const paymentNote = document.getElementById('payment-note');
+                    
+                    if (paymentMethod === 'cash') {
+                        paymentDisplay.textContent = 'Cash on Delivery';
+                        paymentNote.textContent = '💵 Please have exact cash ready upon delivery.';
+                    } else if (paymentMethod === 'check') {
+                        paymentDisplay.textContent = 'Check';
+                        paymentNote.textContent = '📝 Please have check payable to "Hometown Delivery" ready.';
+                    } else if (paymentMethod === 'card') {
+                        paymentDisplay.textContent = 'Credit/Debit Card';
+                        paymentNote.textContent = '💳 Payment processed successfully. Receipt sent to your email.';
+                    }
+
+                    showToast('Your order has been confirmed!', 'success');
+                } else {
+                    throw new Error('Order not found');
+                }
+            } catch (error) {
+                console.error('Error loading order:', error);
+                loadingContainer.style.display = 'none';
+                errorContainer.style.display = 'block';
+                showToast('Could not load order details', 'error');
+            }
+        }
+
+        function showSaveOrderModal() {
+            if (!currentOrder) {
+                showToast('Order information not available', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('save-usual-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeSaveUsualModal() {
+            const modal = document.getElementById('save-usual-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                document.getElementById('usual-order-name').value = '';
+            }
+        }
+
+        async function confirmSaveUsualOrder() {
+            const nameInput = document.getElementById('usual-order-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                showToast('Please enter a name for this order', 'error');
+                return;
+            }
+            
+            if (!currentOrder) {
+                showToast('Order information not available', 'error');
+                return;
+            }
+            
+            try {
+                loading.show();
+                
+                const items = currentOrder.items.map(item => ({
+                    productId: item.productId?._id || item.productId,
+                    quantity: item.quantity
+                }));
+                
+                const response = await fetch(`${API_BASE_URL}/api/usual-orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        items,
+                        phone: currentOrder.customerInfo.phone
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to save order');
+                }
+                
+                closeSaveUsualModal();
+                showToast('Order saved! Reorder anytime from your account.', 'success');
+                
+            } catch (error) {
+                console.error('Save usual order error:', error);
+                showToast(error.message || 'Failed to save order', 'error');
+            } finally {
+                loading.hide();
+            }
+        }
+
+        // Override loadOrderDetails to use the new version
+        loadOrderDetails = loadOrderDetailsWithSave;
     </script>
 
     <style>

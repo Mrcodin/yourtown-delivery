@@ -67,6 +67,7 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/promo-codes', require('./routes/promoCodes'));
+app.use('/api/usual-orders', require('./routes/usualOrders'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/email', require('./routes/email'));
