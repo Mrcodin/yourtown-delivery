@@ -190,7 +190,14 @@ Generated: December 28, 2025
    [✅] Smooth redirect without empty cart flash
    [✅] Public order endpoint for payment verification
    [✅] Support for discount codes
-   [ ] Calculate tax properly
+   [✅] Calculate tax properly (Washington state 8.6%)
+   
+   📝 Tax Calculation Complete:
+   - WA state sales tax: 8.6% (configurable in .env)
+   - Applied after discount: (subtotal + delivery - discount) × 0.086
+   - Displayed in cart, checkout, and PDF receipts
+   - Included in Stripe payment amounts
+   - Legal compliance: ✅ Correct tax collection
    [➕] Added: payment-success.html - Beautiful confirmation page
    [➕] Added: order-confirmation.html - Generic confirmation for cash/check
    [➕] Added: checkout.js - Stripe Elements integration (445 lines)
@@ -581,12 +588,23 @@ CLOUDINARY IMAGE UPLOAD COMPLETED (January 1, 2026):
    ✅ Free tier: 25GB storage + 25GB bandwidth
    ✅ Documentation: CLOUDINARY_SETUP.md
 
+WASHINGTON STATE TAX IMPLEMENTATION (January 1, 2026):
+   ✅ Tax rate configured: 8.6% (TAX_RATE in .env)
+   ✅ Tax calculation: (subtotal + delivery - discount) × 0.086
+   ✅ Tax displayed in cart order summary
+   ✅ Tax included in order creation
+   ✅ Tax shown in PDF receipts
+   ✅ Tax included in Stripe payment amounts
+   ✅ Legal compliance: Correct WA sales tax collection
+   ✅ Tested with and without promo codes
+
 COMPREHENSIVE TESTING COMPLETED (January 1, 2026):
    ✅ Promo code validation tested (WELCOME10 works)
    ✅ Order creation with promo code verified
    ✅ PDF receipt includes discount line item
    ✅ Admin promo code UI functional
    ✅ Mobile responsiveness tested and improved
+   ✅ Tax calculation verified ($1.29 on $14.97, $3.00 on $34.83)
    ✅ All servers running (backend + frontend)
    ✅ MongoDB container operational
 
