@@ -189,40 +189,57 @@ async function generateReceipt(order, outputPath = null) {
       const discount = order.pricing?.discount || 0;
       const total = order.pricing?.total || (subtotal + delivery + tip + tax - discount);
 
+      let currentY = doc.y;
+
+      // Subtotal
       doc.fontSize(10)
          .fillColor('#666666')
-         .text('Subtotal:', totalsX, doc.y)
+         .text('Subtotal:', totalsX, currentY)
          .fillColor('#000000')
-         .text(`$${subtotal.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+         .text(`$${subtotal.toFixed(2)}`, 490, currentY, { width: 60, align: 'right' });
+      
+      currentY += 20;
 
+      // Delivery Fee
       doc.fillColor('#666666')
-         .text('Delivery Fee:', totalsX, doc.y + 20)
+         .text('Delivery Fee:', totalsX, currentY)
          .fillColor('#000000')
-         .text(`$${delivery.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+         .text(`$${delivery.toFixed(2)}`, 490, currentY, { width: 60, align: 'right' });
+      
+      currentY += 20;
 
+      // Tip (if present)
       if (tip > 0) {
         doc.fillColor('#666666')
-           .text('Driver Tip:', totalsX, doc.y + 20)
+           .text('Driver Tip:', totalsX, currentY)
            .fillColor('#16a34a')
-           .text(`$${tip.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+           .text(`$${tip.toFixed(2)}`, 490, currentY, { width: 60, align: 'right' });
+        currentY += 20;
       }
 
+      // Tax (if present)
       if (tax > 0) {
         doc.fillColor('#666666')
-           .text('Tax:', totalsX, doc.y + 20)
+           .text('Tax (on delivery):', totalsX, currentY)
            .fillColor('#000000')
-           .text(`$${tax.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+           .text(`$${tax.toFixed(2)}`, 490, currentY, { width: 60, align: 'right' });
+        currentY += 20;
       }
 
+      // Discount (if present)
       if (discount > 0) {
         doc.fillColor('#666666')
-           .text('Discount:', totalsX, doc.y + 20)
+           .text('Discount:', totalsX, currentY)
            .fillColor('#10b981')
-           .text(`-$${discount.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+           .text(`-$${discount.toFixed(2)}`, 490, currentY, { width: 60, align: 'right' });
+        currentY += 20;
       }
 
+      // Update doc.y to current position
+      doc.y = currentY;
       doc.moveDown(0.5);
 
+      // Horizontal line
       doc.strokeColor('#000000')
          .lineWidth(2)
          .moveTo(totalsX, doc.y)
@@ -231,6 +248,7 @@ async function generateReceipt(order, outputPath = null) {
 
       doc.moveDown(0.5);
 
+      // Total
       doc.fontSize(12)
          .font('Helvetica-Bold')
          .fillColor('#000000')
