@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tip Issue Test</title>
+</head>
+<body>
+    <h1>Testing Tip Calculation</h1>
+    <input type="number" id="custom-tip" value="5" min="0" max="100" step="0.01">
+    <button onclick="testTip()">Test</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function testTip() {
+            const tip1 = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
+            const tip2 = document.getElementById('custom-tip')?.value;
+            const tip3 = parseFloat(tip2 || 0);
+            
+            const output = `
+Tip Input Value: "${tip2}"
+parseFloat with ?. : ${tip1}
+parseFloat direct: ${tip3}
+
+Test with empty:
+`;
+            document.getElementById('custom-tip').value = '';
+            const emptyTip = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
+            
+            document.getElementById('output').textContent = output + `Empty tip: ${emptyTip}`;
+        }
+        testTip();
+    </script>
+</body>
+</html>

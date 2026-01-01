@@ -252,6 +252,9 @@ exports.createOrder = async (req, res) => {
     
     // Get tip amount (default to 0 if not provided)
     const tip = req.body.tip || 0;
+    console.log('🎯 TIP DEBUG - orderController.js createOrder():');
+    console.log('  req.body.tip:', req.body.tip);
+    console.log('  parsed tip:', tip);
     
     // Calculate Washington state sales tax
     // NOTE: Groceries are EXEMPT from sales tax in WA state (RCW 82.08.0293)

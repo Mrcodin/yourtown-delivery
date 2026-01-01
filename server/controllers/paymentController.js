@@ -8,6 +8,11 @@ const ActivityLog = require('../models/ActivityLog');
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { orderId, amount, customerInfo } = req.body;
+    
+    console.log('💳 PAYMENT INTENT DEBUG:');
+    console.log('  Order ID:', orderId);
+    console.log('  Amount received:', amount);
+    console.log('  Amount in cents:', Math.round(amount * 100));
 
     // Create payment intent params
     const paymentIntentParams = {
