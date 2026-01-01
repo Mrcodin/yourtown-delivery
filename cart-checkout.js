@@ -103,6 +103,17 @@ async function processCardPayment(deliveryInfo, cartItems) {
         // Disable submit button and show processing state
         submitButton.disabled = true;
         submitButton.innerHTML = '⏳ Processing Payment...';
+        
+        // 🔧 FIX: Get tip value here and store it
+        const tipElement = document.getElementById('custom-tip');
+        const tip = parseFloat(tipElement?.value || 0) || 0;
+        
+        console.log('🎯 CART-CHECKOUT.JS - processCardPayment():');
+        console.log('  Tip element:', tipElement);
+        console.log('  Tip value:', tip);
+        
+        // Store tip in deliveryInfo to pass to checkout.js
+        deliveryInfo.tip = tip;
 
         // Create order and payment intent
         const orderResult = await stripeCheckout.createOrder(deliveryInfo, cartItems);

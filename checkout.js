@@ -118,24 +118,30 @@ class StripeCheckout {
                 return sum + (item.isTaxable ? item.price * item.quantity : 0);
             }, 0);
             
-            // Get tip amount
-            const tipElement = document.getElementById('custom-tip');
-            console.log('🎯 TIP DEBUG - checkout.js createOrder():');
-            console.log('  Looking for element with id="custom-tip"');
-            console.log('  Element found:', tipElement);
-            console.log('  Element exists:', tipElement !== null);
-            console.log('  Element value attr:', tipElement?.value);
-            console.log('  Element value type:', typeof tipElement?.value);
-            
-            // Try multiple ways to get the value
-            const rawValue = tipElement?.value;
-            const parsedValue = parseFloat(rawValue || 0);
-            const tip = parsedValue || 0;
-            
-            console.log('  Raw value:', rawValue);
-            console.log('  Parsed value:', parsedValue);
-            console.log('  Final tip:', tip);
-            console.log('  Is tip zero?', tip === 0);
+            // Get tip amount - prefer value passed from cart-checkout.js
+            let tip = 0;
+            if (deliveryInfo.tip !== undefined) {
+                tip = parseFloat(deliveryInfo.tip) || 0;
+                console.log('🎯 TIP from deliveryInfo:', tip);
+            } else {
+                const tipElement = document.getElementById('custom-tip');
+                console.log('🎯 TIP DEBUG - checkout.js createOrder():');
+                console.log('  Looking for element with id="custom-tip"');
+                console.log('  Element found:', tipElement);
+                console.log('  Element exists:', tipElement !== null);
+                console.log('  Element value attr:', tipElement?.value);
+                console.log('  Element value type:', typeof tipElement?.value);
+                
+                // Try multiple ways to get the value
+                const rawValue = tipElement?.value;
+                const parsedValue = parseFloat(rawValue || 0);
+                tip = parsedValue || 0;
+                
+                console.log('  Raw value:', rawValue);
+                console.log('  Parsed value:', parsedValue);
+                console.log('  Final tip:', tip);
+                console.log('  Is tip zero?', tip === 0);
+            }
             
             // CRITICAL: Alert if tip is 0 to debug
             if (tip === 0) {
