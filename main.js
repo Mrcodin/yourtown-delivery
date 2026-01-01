@@ -344,15 +344,22 @@ function updateOrderSummary() {
         }
     }
     
-    const total = subtotal + delivery - discount;
+    // Calculate Washington state sales tax (8.6%)
+    const taxRate = 0.086;
+    const taxableAmount = subtotal + delivery - discount;
+    const tax = taxableAmount * taxRate;
+    
+    const total = subtotal + delivery + tax - discount;
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     
     const summaryItemCount = document.getElementById('summary-item-count');
     const summarySubtotal = document.getElementById('summary-subtotal');
+    const summaryTax = document.getElementById('summary-tax');
     const summaryTotal = document.getElementById('summary-total');
     
     if (summaryItemCount) summaryItemCount.textContent = itemCount;
     if (summarySubtotal) summarySubtotal.textContent = subtotal.toFixed(2);
+    if (summaryTax) summaryTax.textContent = tax.toFixed(2);
     if (summaryTotal) summaryTotal.textContent = total.toFixed(2);
 }
 

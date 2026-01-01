@@ -113,7 +113,12 @@ class StripeCheckout {
                 }
             }
             
-            const total = subtotal + deliveryFee - discount;
+            // Calculate Washington state sales tax (8.6%)
+            const taxRate = 0.086;
+            const taxableAmount = subtotal + deliveryFee - discount;
+            const tax = taxableAmount * taxRate;
+            
+            const total = subtotal + deliveryFee + tax - discount;
 
             // Create order - match backend expected format
             const orderData = {

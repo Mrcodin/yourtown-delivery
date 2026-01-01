@@ -241,7 +241,12 @@ exports.createOrder = async (req, res) => {
       };
     }
     
-    const total = subtotal + deliveryFee - discount;
+    // Calculate Washington state sales tax
+    const taxRate = parseFloat(process.env.TAX_RATE) || 0.086; // Default 8.6% for WA
+    const taxableAmount = subtotal + deliveryFee - discount;
+    const tax = taxableAmount * taxRate;
+    
+    const total = subtotal + deliveryFee + tax - discount;
 
     // Find or create customer
     // Try to find by phone first, then by email (if provided)
@@ -308,6 +313,7 @@ exports.createOrder = async (req, res) => {
       pricing: {
         subtotal,
         deliveryFee,
+        tax,
         discount,
         promoCode: promoCodeData,
         total
