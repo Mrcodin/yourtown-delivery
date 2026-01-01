@@ -250,6 +250,9 @@ exports.createOrder = async (req, res) => {
       };
     }
     
+    // Get tip amount (default to 0 if not provided)
+    const tip = req.body.tip || 0;
+    
     // Calculate Washington state sales tax
     // NOTE: Groceries are EXEMPT from sales tax in WA state (RCW 82.08.0293)
     // Taxable: delivery fee + non-food items (soap, paper products, cleaning supplies)
@@ -258,7 +261,7 @@ exports.createOrder = async (req, res) => {
     const taxableAmount = deliveryFee + taxableItemsSubtotal;
     const tax = taxableAmount * taxRate;
     
-    const total = subtotal + deliveryFee + tax - discount;
+    const total = subtotal + deliveryFee + tip + tax - discount;
 
     // Find or create customer
     // Try to find by phone first, then by email (if provided)
@@ -325,6 +328,7 @@ exports.createOrder = async (req, res) => {
       pricing: {
         subtotal,
         deliveryFee,
+        tip,
         tax,
         discount,
         promoCode: promoCodeData,

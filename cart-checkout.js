@@ -174,6 +174,9 @@ async function processCashOrCheckOrder(deliveryInfo, cartItems, paymentMethod) {
         const total = cartItems.reduce((sum, item) => 
             sum + (item.price * item.quantity), 0
         );
+        
+        // Get tip amount
+        const tip = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
 
         // Create order - match backend expected format
         const orderData = {
@@ -195,7 +198,8 @@ async function processCashOrCheckOrder(deliveryInfo, cartItems, paymentMethod) {
             payment: {
                 method: paymentMethod
             },
-            notes: deliveryInfo.instructions || ''
+            notes: deliveryInfo.instructions || '',
+            tip: tip
         };
         
         // Add promo code if available

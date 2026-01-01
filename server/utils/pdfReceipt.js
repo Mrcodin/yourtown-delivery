@@ -184,9 +184,10 @@ async function generateReceipt(order, outputPath = null) {
       const totalsX = 400;
       const subtotal = order.pricing?.subtotal || order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const delivery = order.pricing?.deliveryFee || 6.99;
+      const tip = order.pricing?.tip || 0;
       const tax = order.pricing?.tax || 0;
       const discount = order.pricing?.discount || 0;
-      const total = order.pricing?.total || (subtotal + delivery + tax - discount);
+      const total = order.pricing?.total || (subtotal + delivery + tip + tax - discount);
 
       doc.fontSize(10)
          .fillColor('#666666')
@@ -198,6 +199,13 @@ async function generateReceipt(order, outputPath = null) {
          .text('Delivery Fee:', totalsX, doc.y + 20)
          .fillColor('#000000')
          .text(`$${delivery.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+
+      if (tip > 0) {
+        doc.fillColor('#666666')
+           .text('Driver Tip:', totalsX, doc.y + 20)
+           .fillColor('#16a34a')
+           .text(`$${tip.toFixed(2)}`, 490, doc.y, { width: 60, align: 'right' });
+      }
 
       if (tax > 0) {
         doc.fillColor('#666666')

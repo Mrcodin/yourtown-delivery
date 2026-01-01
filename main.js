@@ -337,6 +337,9 @@ function updateOrderSummary() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const delivery = 6.99;
     
+    // Get tip amount
+    const tip = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
+    
     // Get discount from validated promo code (if available)
     let discount = 0;
     if (typeof getValidatedPromoCode === 'function') {
@@ -358,7 +361,7 @@ function updateOrderSummary() {
     const taxableAmount = delivery + taxableItemsSubtotal;
     const tax = taxableAmount * taxRate;
     
-    const total = subtotal + delivery + tax - discount;
+    const total = subtotal + delivery + tip + tax - discount;
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     
     const summaryItemCount = document.getElementById('summary-item-count');
@@ -756,3 +759,62 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('high-contrast');
     }
 });
+// ============ TIP HANDLING ============
+function selectTip(amount) {
+    // Update custom tip input
+    const customTipInput = document.getElementById('custom-tip');
+    if (customTipInput) {
+        customTipInput.value = amount;
+    }
+    
+    // Update button states
+    document.querySelectorAll('.tip-btn').forEach(btn => {
+        if (parseInt(btn.dataset.tip) === amount) {
+            btn.style.background = '#f59e0b';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#d97706';
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = '#713f12';
+            btn.style.borderColor = '#d97706';
+        }
+    });
+    
+    // Update tip display
+    updateTipDisplay(amount);
+    
+    // Update order total
+    updateOrderSummary();
+}
+
+function selectCustomTip() {
+    const customTipInput = document.getElementById('custom-tip');
+    const amount = parseFloat(customTipInput.value) || 0;
+    
+    // Reset preset buttons
+    document.querySelectorAll('.tip-btn').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#713f12';
+        btn.style.borderColor = '#d97706';
+    });
+    
+    // Update tip display
+    updateTipDisplay(amount);
+    
+    // Update order total
+    updateOrderSummary();
+}
+
+function updateTipDisplay(amount) {
+    const tipDisplay = document.getElementById('tip-display');
+    const tipAmount = document.getElementById('selected-tip-amount');
+    
+    if (tipDisplay && tipAmount) {
+        if (amount > 0) {
+            tipAmount.textContent = amount.toFixed(2);
+            tipDisplay.style.display = 'block';
+        } else {
+            tipDisplay.style.display = 'none';
+        }
+    }
+}

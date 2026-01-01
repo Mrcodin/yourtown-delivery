@@ -51,6 +51,10 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       default: 6.99
     },
+    tip: {
+      type: Number,
+      default: 0
+    },
     tax: {
       type: Number,
       default: 0
