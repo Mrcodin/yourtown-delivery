@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Quick Tip Test</title></head>
+<body>
+    <h2>Quick Test</h2>
+    <p>Open browser console (F12) and click the button below</p>
+    <input type="number" id="custom-tip" value="5">
+    <button onclick="test()">Test Tip Reading</button>
+    <script>
+        function test() {
+            const el = document.getElementById('custom-tip');
+            const val = el?.value;
+            const parsed = parseFloat(val || 0) || 0;
+            console.log('Element:', el);
+            console.log('Value:', val);
+            console.log('Parsed:', parsed);
+            alert('Tip: $' + parsed + ' - Check console for details');
+        }
+    </script>
+</body>
+</html>

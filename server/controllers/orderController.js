@@ -198,7 +198,9 @@ exports.trackOrder = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     console.log('📦 Creating order - Request received');
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Request body keys:', Object.keys(req.body));
+    console.log('Tip in request:', req.body.tip);
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
     
     const { customerInfo, items, payment, delivery, notes, promoCode } = req.body;
 
