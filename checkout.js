@@ -47,8 +47,7 @@ class StripeCheckout {
                     color: '#1f2937',
                     fontFamily: 'Inter, system-ui, sans-serif',
                     fontSmoothing: 'antialiased',
-                    fontSize: '18px',
-                    lineHeight: '24px',
+                    fontSize: '16px',
                     '::placeholder': {
                         color: '#9ca3af'
                     }
@@ -91,10 +90,30 @@ class StripeCheckout {
      */
     async createOrder(deliveryInfo, cartItems) {
         try {
-            // Calculate total
-            const total = cartItems.reduce((sum, item) => 
+            // Calculate subtotal from cart items
+            const subtotal = cartItems.reduce((sum, item) => 
                 sum + (item.price * item.quantity), 0
             );
+            
+            // Add delivery fee (must match backend)
+            const deliveryFee = 6.99;
+            
+            // Get promo code discount if available
+            let discount = 0;
+            let promoCodeData = null;
+            if (typeof getValidatedPromoCode === 'function') {
+                const validatedPromo = getValidatedPromoCode();
+                if (validatedPromo) {
+                    discount = validatedPromo.discount || 0;
+                    promoCodeData = {
+                        code: validatedPromo.code,
+                        discount: discount,
+                        promoCodeId: validatedPromo.promoCodeId
+                    };
+                }
+            }
+            
+            const total = subtotal + deliveryFee - discount;
 
             // Create order - match backend expected format
             const orderData = {
@@ -118,6 +137,11 @@ class StripeCheckout {
                 },
                 notes: deliveryInfo.instructions || ''
             };
+            
+            // Add promo code if available
+            if (promoCodeData) {
+                orderData.promoCode = promoCodeData;
+            }
 
             console.log('Creating order:', orderData);
             const response = await api.post('/orders', orderData);
@@ -129,10 +153,15 @@ class StripeCheckout {
             this.orderId = response.order._id;
             console.log('Order created:', this.orderId);
 
-            // Create payment intent
+            // Create payment intent with total including delivery fee and discount
             const paymentResponse = await api.post('/payments/create-intent', {
                 orderId: this.orderId,
-                amount: total
+                amount: total,
+                customerInfo: {
+                    name: deliveryInfo.name,
+                    phone: deliveryInfo.phone,
+                    email: deliveryInfo.email || '' // Send empty string if no email
+                }
             });
 
             if (!paymentResponse.success) {

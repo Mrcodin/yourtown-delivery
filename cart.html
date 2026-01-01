@@ -107,6 +107,74 @@
                             <span>$<span id="summary-delivery">6.99</span></span>
                         </div>
                         
+                        <!-- PROMO CODE SECTION -->
+                        <div class="promo-code-section" style="margin: 15px 0; padding: 15px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <span style="font-size: 20px;">🏷️</span>
+                                <strong style="color: #374151; font-size: 15px;">Have a Promo Code?</strong>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <input 
+                                    type="text" 
+                                    id="promo-code-input" 
+                                    class="form-input" 
+                                    placeholder="Enter code (e.g., WELCOME10)"
+                                    style="flex: 1; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="apply-promo-btn" 
+                                    class="btn btn-secondary" 
+                                    onclick="applyPromoCode()"
+                                    style="padding: 10px 24px; white-space: nowrap; font-weight: 600;"
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                            <div id="promo-message" style="font-size: 14px; margin-top: 8px; font-weight: 500;"></div>
+                        </div>
+                        
+                        <!-- DISCOUNT ROW (hidden by default) -->
+                        <div id="discount-row" style="display: none;">
+                            <!-- Discount Breakdown Box -->
+                            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 3px solid #10b981; border-radius: 12px; padding: 16px; margin: 15px 0; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 24px;">🎉</span>
+                                        <span style="font-weight: 700; color: #047857; font-size: 18px;">
+                                            Promo Code Applied!
+                                        </span>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onclick="removePromoCode()" 
+                                        style="background: white; border: 2px solid #ef4444; color: #dc2626; cursor: pointer; font-size: 13px; padding: 6px 12px; border-radius: 6px; font-weight: 600; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#fef2f2'"
+                                        onmouseout="this.style.background='white'"
+                                        title="Remove promo code"
+                                    >Remove</button>
+                                </div>
+                                
+                                <!-- Code and Percentage Display -->
+                                <div style="background: white; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid #86efac;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="color: #065f46; font-size: 14px; font-weight: 500;">Promo Code:</span>
+                                        <span style="color: #047857; font-size: 16px; font-weight: 700; font-family: monospace; background: #f0fdf4; padding: 4px 12px; border-radius: 4px;" id="discount-code"></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: #065f46; font-size: 14px; font-weight: 500;">Discount:</span>
+                                        <span id="discount-percentage" style="font-weight: 700; color: #047857; font-size: 20px; background: #f0fdf4; padding: 4px 16px; border-radius: 6px;"></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Total Savings -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; color: #047857; font-size: 20px; font-weight: 700; padding: 12px; background: white; border-radius: 8px; border: 2px dashed #10b981;">
+                                    <span>💰 You Save:</span>
+                                    <span style="color: #10b981; font-size: 24px;">-$<span id="summary-discount">0.00</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="summary-row summary-total">
                             <span>Total</span>
                             <span>$<span id="summary-total">0.00</span></span>
@@ -245,9 +313,6 @@
                                 </div>
                             </div>
 
-                            <!-- Progress Indicator (shown during checkout) -->
-                            <div id="checkout-progress" style="margin: 30px 0;"></div>
-
                             <button type="submit" class="btn btn-primary btn-xl btn-block">
                                 <span class="btn-text">🚚 Place Order</span>
                             </button>
@@ -308,7 +373,10 @@
                     // Pre-fill name fields with customer info
                     document.getElementById('name').value = customer.name;
                     document.getElementById('phone').value = customer.phone;
-                    document.getElementById('email').value = customer.email;
+                    // Only pre-fill email if customer has one
+                    if (customer.email) {
+                        document.getElementById('email').value = customer.email;
+                    }
                     
                     // Add addresses to dropdown
                     customer.addresses.forEach((addr, index) => {
@@ -354,6 +422,7 @@
             border-radius: 8px;
             border: 2px solid #d1d5db;
             transition: border-color 0.2s;
+            min-height: 48px;
         }
 
         .stripe-card-element:hover,

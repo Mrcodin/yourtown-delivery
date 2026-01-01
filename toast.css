@@ -6,9 +6,9 @@
 /* Toast Container */
 .toast-container {
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
-    z-index: 10000;
+    z-index: 100000;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -26,10 +26,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    min-width: 300px;
-    max-width: 400px;
+    min-width: 350px;
+    max-width: 450px;
     pointer-events: auto;
-    transform: translateX(400px);
+    transform: translateX(450px);
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;

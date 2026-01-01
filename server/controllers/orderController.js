@@ -10,6 +10,7 @@ const {
   adminNewOrderEmail 
 } = require('../utils/emailTemplates');
 const { logEmail } = require('./emailController');
+const { generateReceipt } = require('../utils/pdfReceipt');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -199,7 +200,7 @@ exports.createOrder = async (req, res) => {
     console.log('📦 Creating order - Request received');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     
-    const { customerInfo, items, payment, delivery, notes } = req.body;
+    const { customerInfo, items, payment, delivery, notes, promoCode } = req.body;
 
     // Validate products and calculate pricing
     let subtotal = 0;
@@ -227,42 +228,61 @@ exports.createOrder = async (req, res) => {
     }
 
     const deliveryFee = 6.99;
-    const total = subtotal + deliveryFee;
+    
+    // Calculate discount from promo code if provided
+    let discount = 0;
+    let promoCodeData = null;
+    if (promoCode && promoCode.code && promoCode.discount) {
+      discount = promoCode.discount;
+      promoCodeData = {
+        code: promoCode.code,
+        discount: promoCode.discount,
+        promoCodeId: promoCode.promoCodeId
+      };
+    }
+    
+    const total = subtotal + deliveryFee - discount;
 
     // Find or create customer
-    // Try to find by phone first, then by email
+    // Try to find by phone first, then by email (if provided)
     let customer = await Customer.findOne({ 
       $or: [
         { phone: customerInfo.phone },
-        ...(customerInfo.email ? [{ email: customerInfo.email }] : [])
+        ...(customerInfo.email && customerInfo.email.trim() ? [{ email: customerInfo.email }] : [])
       ]
     });
     
     if (!customer) {
-      // Create new customer without email if email might be duplicate
+      // Prepare customer data - only include email if it's not empty
+      const customerData = {
+        name: customerInfo.name,
+        phone: customerInfo.phone,
+        createdViaOrder: true, // Mark as created via order (no password)
+        addresses: [{
+          street: customerInfo.address,
+          isDefault: true
+        }]
+      };
+      
+      // Only add email if it exists and is not empty
+      if (customerInfo.email && customerInfo.email.trim()) {
+        customerData.email = customerInfo.email;
+      }
+      
+      // Create new customer
       try {
-        customer = await Customer.create({
-          name: customerInfo.name,
-          phone: customerInfo.phone,
-          email: customerInfo.email || undefined, // Make email optional
-          createdViaOrder: true, // Mark as created via order (no password)
-          addresses: [{
-            street: customerInfo.address,
-            isDefault: true
-          }]
-        });
+        customer = await Customer.create(customerData);
       } catch (error) {
-        // If duplicate email error, create without email
+        // If duplicate error (phone or email), try to find existing customer
         if (error.code === 11000) {
-          customer = await Customer.create({
-            name: customerInfo.name,
-            phone: customerInfo.phone,
-            createdViaOrder: true,
-            addresses: [{
-              street: customerInfo.address,
-              isDefault: true
-            }]
-          });
+          // Try finding by phone again
+          customer = await Customer.findOne({ phone: customerInfo.phone });
+          
+          if (!customer) {
+            // If still not found, there might be a duplicate email, try without email
+            delete customerData.email;
+            customer = await Customer.create(customerData);
+          }
         } else {
           throw error;
         }
@@ -288,6 +308,8 @@ exports.createOrder = async (req, res) => {
       pricing: {
         subtotal,
         deliveryFee,
+        discount,
+        promoCode: promoCodeData,
         total
       },
       status: 'placed',
@@ -305,6 +327,30 @@ exports.createOrder = async (req, res) => {
         timestamp: new Date()
       }]
     });
+
+    // Update promo code usage if applicable
+    if (promoCodeData && promoCodeData.promoCodeId) {
+      const PromoCode = require('../models/PromoCode');
+      try {
+        await PromoCode.findByIdAndUpdate(
+          promoCodeData.promoCodeId,
+          {
+            $inc: { usageCount: 1 },
+            $push: { 
+              usedBy: {
+                customerId: customer._id,
+                orderId: order._id,
+                usedAt: new Date()
+              }
+            }
+          }
+        );
+        console.log('✅ Promo code usage updated');
+      } catch (promoError) {
+        console.error('⚠️ Failed to update promo code usage:', promoError);
+        // Don't fail the order if promo code update fails
+      }
+    }
 
     // Update customer stats
     customer.totalOrders += 1;
@@ -628,6 +674,47 @@ exports.cancelOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error cancelling order',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Generate PDF receipt for an order
+// @route   GET /api/orders/:id/receipt
+// @access  Public (with order ID) or Private (authenticated)
+exports.generateOrderReceipt = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    
+    // Find order by MongoDB _id or orderId
+    let order = await Order.findById(orderId).populate('items.productId');
+    if (!order) {
+      order = await Order.findOne({ orderId }).populate('items.productId');
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Generate PDF receipt
+    const pdfBuffer = await generateReceipt(order);
+
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="receipt-${order.orderId}.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    // Send PDF buffer
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Generate receipt error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating receipt',
       error: error.message
     });
   }

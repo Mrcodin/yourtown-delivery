@@ -96,12 +96,15 @@
                 </div>
 
                 <div class="success-message">
-                    <p>📧 <strong>Confirmation email sent!</strong> We've sent a receipt to your email address.</p>
+                    <p id="email-confirmation-message" style="display: none;">📧 <strong>Confirmation email sent!</strong> We've sent a receipt to your email address.</p>
                     <p>📦 Your order has been placed and will be delivered soon.</p>
                     <p>You can track your order status from the Track Order page.</p>
                 </div>
 
                 <div class="success-actions">
+                    <button id="download-receipt-btn" class="btn btn-primary" onclick="downloadReceipt()" style="display: none;">
+                        📄 Download Receipt (PDF)
+                    </button>
                     <a href="track.html" class="btn btn-primary">Track My Order</a>
                     <a href="shop.html" class="btn btn-secondary">Continue Shopping</a>
                     <a href="index.html" class="btn btn-secondary">Back to Home</a>
@@ -213,6 +216,14 @@
                                 orderStatusElement.textContent = orderStatus.charAt(0).toUpperCase() + orderStatus.slice(1);
                                 orderStatusElement.className = `status-${orderStatus}`;
                             }
+                            
+                            // Show email confirmation message only if customer has email
+                            if (order.customerInfo?.email && order.customerInfo.email.trim()) {
+                                document.getElementById('email-confirmation-message').style.display = 'block';
+                            }
+                            
+                            // Show download receipt button
+                            document.getElementById('download-receipt-btn').style.display = 'inline-block';
                         }
                     } catch (err) {
                         console.log('Could not fetch order details:', err);
@@ -224,8 +235,14 @@
                         updateCartDisplay();
                     }
 
-                    // Show success toast
-                    toast.success('Payment successful! Your order has been placed.', 'Thank You!');
+                    // Show success toast after page content is visible
+                    setTimeout(() => {
+                        if (typeof toast !== 'undefined') {
+                            toast.success('Payment successful! Your order has been placed.', 'Thank You!');
+                        } else {
+                            console.error('Toast not defined');
+                        }
+                    }, 1000);
 
                 } else {
                     throw new Error(response.message || 'Payment confirmation failed');
@@ -253,6 +270,58 @@
             document.getElementById('error-container').style.display = 'block';
             document.getElementById('error-message').textContent = 
                 'No payment information found. If you just placed an order, please check your email for confirmation.';
+        }
+
+        // Download receipt function
+        async function downloadReceipt() {
+            if (!orderId) {
+                toast.error('Order ID not found', 'Error');
+                return;
+            }
+
+            const downloadBtn = document.getElementById('download-receipt-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '⏳ Generating...';
+            downloadBtn.disabled = true;
+
+            try {
+                // Use the API base URL from config
+                const baseUrl = window.config?.API_BASE_URL || 'http://localhost:3000/api';
+                
+                // Fetch the PDF as a blob
+                const response = await fetch(`${baseUrl}/orders/${orderId}/receipt`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate receipt');
+                }
+                
+                // Get the PDF blob
+                const blob = await response.blob();
+                
+                // Create a download link
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `receipt-${orderId}.pdf`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Clean up the blob URL
+                URL.revokeObjectURL(link.href);
+                
+                toast.success('Receipt downloaded', 'Success');
+                
+            } catch (error) {
+                console.error('Download receipt error:', error);
+                toast.error('Failed to download receipt. Please try again.', 'Error');
+            } finally {
+                // Reset button
+                setTimeout(() => {
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                }, 1000);
+            }
         }
     </script>
 

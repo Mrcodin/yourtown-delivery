@@ -7,6 +7,14 @@ const http = require('http');
 const socketIo = require('socket.io');
 const connectDB = require('./config/database');
 
+// Import models to ensure they're registered
+require('./models/PromoCode');
+require('./models/Product');
+require('./models/Order');
+require('./models/Customer');
+require('./models/Driver');
+require('./models/User');
+
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
@@ -58,6 +66,7 @@ app.use('/api/drivers', require('./routes/drivers'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/promo-codes', require('./routes/promoCodes'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/email', require('./routes/email'));

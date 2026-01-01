@@ -15,6 +15,7 @@ const trackLimiter = rateLimit({
 // Public routes
 router.get('/track/:phone', trackLimiter, orderController.trackOrder);
 router.get('/public/:id', orderController.getOrderPublic); // Public order retrieval with payment intent verification
+router.get('/:id/receipt', orderController.generateOrderReceipt); // PDF receipt generation
 router.post('/', orderValidation, validate, orderController.createOrder);
 
 // Protected routes

@@ -7,10 +7,10 @@ const ActivityLog = require('../models/ActivityLog');
 // @access  Public
 exports.createPaymentIntent = async (req, res) => {
   try {
-    const { orderId, amount } = req.body;
+    const { orderId, amount, customerInfo } = req.body;
 
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Create payment intent params
+    const paymentIntentParams = {
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'usd',
       metadata: {
@@ -19,7 +19,44 @@ exports.createPaymentIntent = async (req, res) => {
       automatic_payment_methods: {
         enabled: true
       }
-    });
+    };
+
+    // Only create/attach Stripe customer if email is provided
+    if (customerInfo && customerInfo.email && customerInfo.email.trim()) {
+      try {
+        // Search for existing Stripe customer by email
+        const existingCustomers = await stripe.customers.list({
+          email: customerInfo.email,
+          limit: 1
+        });
+
+        let stripeCustomer;
+        
+        if (existingCustomers.data.length > 0) {
+          // Use existing customer
+          stripeCustomer = existingCustomers.data[0];
+        } else {
+          // Create new Stripe customer
+          stripeCustomer = await stripe.customers.create({
+            email: customerInfo.email,
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            metadata: {
+              orderId
+            }
+          });
+        }
+
+        // Attach customer to payment intent
+        paymentIntentParams.customer = stripeCustomer.id;
+      } catch (customerError) {
+        console.error('Error creating/finding Stripe customer:', customerError);
+        // Continue without customer if there's an error
+      }
+    }
+
+    // Create a PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
 
     res.json({
       success: true,

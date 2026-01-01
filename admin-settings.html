@@ -289,6 +289,65 @@
                         <p><strong>Minimum Order:</strong> $<span id="preview-minimumOrder">-</span></p>
                     </div>
                 </div>
+
+                <!-- Promo Code Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🎟️ Create Promo Code</h2>
+                    </div>
+                    <form id="promo-form" class="settings-form" onsubmit="createPromoCode(event)">
+                        <div class="settings-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="promoCode">Code Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="promoCode" 
+                                        placeholder="e.g., SUMMER25, NEWCUSTOMER"
+                                        required
+                                        style="text-transform: uppercase; font-weight: 600; letter-spacing: 1px;"
+                                        maxlength="20"
+                                    >
+                                    <small style="color: #6b7280;">Will be converted to uppercase automatically</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="promoDiscount">Discount Percentage (%) *</label>
+                                    <input 
+                                        type="number" 
+                                        id="promoDiscount" 
+                                        placeholder="10"
+                                        min="1"
+                                        max="100"
+                                        required
+                                        style="font-size: 18px; font-weight: 600;"
+                                    >
+                                    <small style="color: #6b7280;">Enter a number between 1-100</small>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    ✨ Create Promo Code
+                                </button>
+                                <button type="button" onclick="clearPromoForm()" class="btn btn-secondary">
+                                    🔄 Clear
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Active Promo Codes List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📋 Active Promo Codes</h2>
+                        <button onclick="loadPromoCodes()" class="btn btn-secondary">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div id="promo-codes-list">
+                        <p style="text-align: center; color: #6b7280; padding: 20px;">Loading promo codes...</p>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -501,8 +560,169 @@
             setTimeout(() => container.innerHTML = '', 5000);
         }
 
+        // ============ PROMO CODE FUNCTIONS ============
+
+        // Create promo code
+        async function createPromoCode(event) {
+            event.preventDefault();
+            
+            const codeInput = document.getElementById('promoCode');
+            const discountInput = document.getElementById('promoDiscount');
+            
+            const code = codeInput.value.trim().toUpperCase();
+            const discount = parseInt(discountInput.value);
+            
+            if (!code || !discount) {
+                showError('Please fill in both fields');
+                return;
+            }
+            
+            if (discount < 1 || discount > 100) {
+                showError('Discount must be between 1-100%');
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const promoData = {
+                    code: code,
+                    description: `Get ${discount}% off your order`,
+                    discountType: 'percentage',
+                    discountValue: discount,
+                    minimumOrderAmount: 0,
+                    maxDiscount: null,
+                    usageLimit: null,
+                    perCustomerLimit: null,
+                    validFrom: new Date(),
+                    validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+                    isActive: true
+                };
+                
+                const response = await api.post('/promo-codes', promoData);
+                
+                if (response.success) {
+                    showSuccess(`✨ Promo code "${code}" created successfully! (${discount}% off)`);
+                    clearPromoForm();
+                    loadPromoCodes();
+                } else {
+                    showError(response.message || 'Failed to create promo code');
+                }
+            } catch (error) {
+                console.error('Error creating promo code:', error);
+                showError('Error creating promo code: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Clear promo form
+        function clearPromoForm() {
+            document.getElementById('promoCode').value = '';
+            document.getElementById('promoDiscount').value = '';
+        }
+
+        // Load promo codes
+        async function loadPromoCodes() {
+            try {
+                const response = await api.get('/promo-codes');
+                
+                const listContainer = document.getElementById('promo-codes-list');
+                
+                if (response.success && response.promoCodes && response.promoCodes.length > 0) {
+                    listContainer.innerHTML = `
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f3f4f6; text-align: left;">
+                                        <th style="padding: 12px; font-weight: 600;">Code</th>
+                                        <th style="padding: 12px; font-weight: 600;">Discount</th>
+                                        <th style="padding: 12px; font-weight: 600;">Type</th>
+                                        <th style="padding: 12px; font-weight: 600;">Used</th>
+                                        <th style="padding: 12px; font-weight: 600;">Status</th>
+                                        <th style="padding: 12px; font-weight: 600;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${response.promoCodes.map(promo => `
+                                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                                            <td style="padding: 12px;">
+                                                <strong style="font-family: monospace; font-size: 14px; background: #f0fdf4; padding: 4px 8px; border-radius: 4px;">${promo.code}</strong>
+                                            </td>
+                                            <td style="padding: 12px;">
+                                                <span style="color: #10b981; font-weight: 600; font-size: 16px;">
+                                                    ${promo.discountType === 'percentage' ? promo.discountValue + '%' : '$' + promo.discountValue}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 12px; text-transform: capitalize;">${promo.discountType}</td>
+                                            <td style="padding: 12px;">${promo.usageCount || 0} times</td>
+                                            <td style="padding: 12px;">
+                                                <span style="background: ${promo.isActive ? '#d1fae5' : '#fee2e2'}; color: ${promo.isActive ? '#047857' : '#dc2626'}; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                                    ${promo.isActive ? '✓ Active' : '✕ Inactive'}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 12px;">
+                                                <button 
+                                                    onclick="deletePromoCode('${promo._id}', '${promo.code}')" 
+                                                    class="btn btn-secondary"
+                                                    style="padding: 6px 12px; font-size: 13px; background: #ef4444; color: white; border: none;"
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    listContainer.innerHTML = `
+                        <p style="text-align: center; color: #6b7280; padding: 40px;">
+                            No promo codes yet. Create your first one above! 🎟️
+                        </p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading promo codes:', error);
+                document.getElementById('promo-codes-list').innerHTML = `
+                    <p style="text-align: center; color: #ef4444; padding: 20px;">
+                        Error loading promo codes: ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        // Delete promo code
+        async function deletePromoCode(id, code) {
+            if (!confirm(`Delete promo code "${code}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const response = await api.delete(`/promo-codes/${id}`);
+                
+                if (response.success) {
+                    showSuccess(`Promo code "${code}" deleted successfully`);
+                    loadPromoCodes();
+                } else {
+                    showError(response.message || 'Failed to delete promo code');
+                }
+            } catch (error) {
+                console.error('Error deleting promo code:', error);
+                showError('Error deleting promo code: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
         // Load settings on page load
         loadSettings();
+        
+        // Load promo codes on page load
+        loadPromoCodes();
     </script>
 </body>
 </html>

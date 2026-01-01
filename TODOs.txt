@@ -172,7 +172,7 @@ Generated: December 28, 2025
    [✅] Complete Stripe integration
    [✅] Add Stripe checkout page
    [✅] Payment confirmation screen
-   [ ] Generate order receipts (PDF)
+   [✅] Generate order receipts (PDF)
    [✅] Email receipt to customer
    [✅] Handle payment failures gracefully
    [✅] Add refund functionality in admin
@@ -181,7 +181,7 @@ Generated: December 28, 2025
    [✅] Display correct payment totals and status
    [✅] Smooth redirect without empty cart flash
    [✅] Public order endpoint for payment verification
-   [ ] Support for discount codes
+   [✅] Support for discount codes
    [ ] Calculate tax properly
    [➕] Added: payment-success.html - Beautiful confirmation page
    [➕] Added: order-confirmation.html - Generic confirmation for cash/check
@@ -492,8 +492,36 @@ MONTH 2+
    [ ] New vs returning customers
    [ ] Cart abandonment rate
    [ ] Page load times
-🎉 RECENT FIXES (December 31, 2025)
+🎉 RECENT FIXES (January 1, 2026)
 ================================================================================
+
+PROMO CODE SYSTEM COMPLETED:
+   ✅ Full promo code infrastructure (backend + frontend)
+   ✅ PromoCode model with validation logic (percentage/fixed discounts)
+   ✅ Usage limits, minimum order amounts, max discount caps
+   ✅ Date validity checks, per-customer limits
+   ✅ Public validation API endpoint
+   ✅ Admin CRUD endpoints for promo code management
+   ✅ Frontend input field with real-time validation
+   ✅ Discount display in order summary
+   ✅ Integration with order creation (card + cash/check)
+   ✅ Usage tracking (usageCount, usedBy array)
+   ✅ Test promo code created: WELCOME10 (10% off, min $20 order)
+
+PDF RECEIPT GENERATION COMPLETED:
+   ✅ PDFKit library integration
+   ✅ Professional PDF receipt template (business header, order details, items table)
+   ✅ Download endpoint: GET /api/orders/:id/receipt
+   ✅ Download button on payment success page
+   ✅ Fixed API_BASE_URL reference error
+   ✅ Proper blob download with error handling
+   ✅ Shows discount line item if promo code used
+
+ORDER PRICING UPDATES:
+   ✅ Order model updated with discount and promoCode fields
+   ✅ Order creation calculates discount properly
+   ✅ Total calculation includes: subtotal + delivery - discount
+   ✅ Promo code usage incremented when order created
 
 STRIPE PAYMENT BUGS FIXED:
    ✅ Fixed 401 Unauthorized error on payment success page

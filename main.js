@@ -320,7 +320,17 @@ function renderCartItems() {
 function updateOrderSummary() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const delivery = 6.99;
-    const total = subtotal + delivery;
+    
+    // Get discount from validated promo code (if available)
+    let discount = 0;
+    if (typeof getValidatedPromoCode === 'function') {
+        const promoCode = getValidatedPromoCode();
+        if (promoCode && promoCode.discount) {
+            discount = promoCode.discount;
+        }
+    }
+    
+    const total = subtotal + delivery - discount;
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     
     const summaryItemCount = document.getElementById('summary-item-count');

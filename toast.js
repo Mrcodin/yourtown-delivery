@@ -27,9 +27,16 @@ class ToastManager {
             this.container.className = 'toast-container';
             this.container.setAttribute('role', 'region');
             this.container.setAttribute('aria-label', 'Notifications');
+            // Ensure it's absolutely on top with inline styles
+            this.container.style.position = 'fixed';
+            this.container.style.top = '160px';
+            this.container.style.right = '20px';
+            this.container.style.zIndex = '999999';
             document.body.appendChild(this.container);
         } else {
             this.container = document.querySelector('.toast-container');
+            // Ensure z-index is set
+            this.container.style.zIndex = '999999';
         }
     }
 
