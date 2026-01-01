@@ -119,11 +119,23 @@ class StripeCheckout {
             }, 0);
             
             // Get tip amount
-            const tip = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
+            const tipElement = document.getElementById('custom-tip');
             console.log('🎯 TIP DEBUG - checkout.js createOrder():');
-            console.log('  custom-tip element:', document.getElementById('custom-tip'));
-            console.log('  custom-tip value:', document.getElementById('custom-tip')?.value);
-            console.log('  parsed tip:', tip);
+            console.log('  Looking for element with id="custom-tip"');
+            console.log('  Element found:', tipElement);
+            console.log('  Element exists:', tipElement !== null);
+            console.log('  Element value attr:', tipElement?.value);
+            console.log('  Element value type:', typeof tipElement?.value);
+            
+            // Try multiple ways to get the value
+            const rawValue = tipElement?.value;
+            const parsedValue = parseFloat(rawValue || 0);
+            const tip = parsedValue || 0;
+            
+            console.log('  Raw value:', rawValue);
+            console.log('  Parsed value:', parsedValue);
+            console.log('  Final tip:', tip);
+            console.log('  Is tip zero?', tip === 0);
             
             // Calculate Washington state sales tax - Chelan County 8.4%
             // NOTE: Groceries are tax-exempt in WA (RCW 82.08.0293)
