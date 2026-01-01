@@ -622,6 +622,242 @@ function emailVerifiedEmail(customerName) {
     };
 }
 
+/**
+ * Order cancellation email template (customer notification)
+ */
+function orderCancellationEmail(order, reason, businessInfo = {}) {
+    const {
+        businessName = 'Hometown Delivery',
+        businessPhone = '(555) 123-4567',
+        businessEmail = 'support@hometowndelivery.com'
+    } = businessInfo;
+
+    const content = `
+        <div class="content">
+            <h2>Order Cancelled</h2>
+            <p>Hello ${order.customerInfo.name},</p>
+            <p>Your order has been cancelled as requested.</p>
+            
+            <div class="order-box">
+                <h3>Cancelled Order Details</h3>
+                <table class="order-details">
+                    <tr>
+                        <td><strong>Order ID:</strong></td>
+                        <td>${order.orderId}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cancellation Reason:</strong></td>
+                        <td>${reason}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Order Date:</strong></td>
+                        <td>${new Date(order.createdAt).toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cancelled At:</strong></td>
+                        <td>${new Date().toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</td>
+                    </tr>
+                </table>
+            </div>
+
+            ${order.payment?.method === 'card' ? `
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+                <strong>💳 Refund Information</strong>
+                <p style="margin: 10px 0 0 0;">Your payment of $${order.pricing.total.toFixed(2)} will be refunded to your original payment method within 5-7 business days.</p>
+            </div>
+            ` : ''}
+
+            <div class="items-section">
+                <h3>Cancelled Items</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${order.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="total-box">
+                <table class="total-table">
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td>$${order.pricing.subtotal.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery Fee:</td>
+                        <td>$${order.pricing.deliveryFee.toFixed(2)}</td>
+                    </tr>
+                    ${order.pricing.tip > 0 ? `
+                    <tr>
+                        <td>Tip:</td>
+                        <td>$${order.pricing.tip.toFixed(2)}</td>
+                    </tr>
+                    ` : ''}
+                    <tr>
+                        <td>Tax:</td>
+                        <td>$${order.pricing.tax.toFixed(2)}</td>
+                    </tr>
+                    ${order.pricing.discount > 0 ? `
+                    <tr style="color: #28a745;">
+                        <td>Discount:</td>
+                        <td>-$${order.pricing.discount.toFixed(2)}</td>
+                    </tr>
+                    ` : ''}
+                    <tr class="total-row">
+                        <td><strong>Total Amount:</strong></td>
+                        <td><strong>$${order.pricing.total.toFixed(2)}</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>We're sorry to see this order cancelled. If you have any questions or would like to place a new order, please don't hesitate to contact us.</p>
+            
+            <div class="button-container">
+                <a href="${businessInfo.websiteUrl || 'http://localhost:8080'}/shop.html" class="button">Browse Products</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>${businessName}</strong></p>
+            <p>📞 ${businessPhone} | 📧 ${businessEmail}</p>
+            <p style="font-size: 12px; color: #999;">
+                This is an automated email. Please do not reply directly to this message.
+            </p>
+        </div>
+    `;
+
+    return {
+        subject: `Order #${order.orderId} Cancelled - ${businessName}`,
+        html: getEmailTemplate(content)
+    };
+}
+
+/**
+ * Order cancellation email template (admin notification)
+ */
+function adminOrderCancellationEmail(order, reason, businessInfo = {}) {
+    const {
+        businessName = 'Hometown Delivery',
+        businessPhone = '(555) 123-4567'
+    } = businessInfo;
+
+    const content = `
+        <div class="content">
+            <h2>⚠️ Order Cancelled by Customer</h2>
+            <p>A customer has cancelled their order.</p>
+            
+            <div class="order-box">
+                <h3>Order Details</h3>
+                <table class="order-details">
+                    <tr>
+                        <td><strong>Order ID:</strong></td>
+                        <td>${order.orderId}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Customer:</strong></td>
+                        <td>${order.customerInfo.name}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phone:</strong></td>
+                        <td>${order.customerInfo.phone}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cancellation Reason:</strong></td>
+                        <td><strong style="color: #dc3545;">${reason}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Order Total:</strong></td>
+                        <td>$${order.pricing.total.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payment Method:</strong></td>
+                        <td>${order.payment?.method === 'card' ? '💳 Card' : order.payment?.method === 'cash' ? '💵 Cash' : '📝 Check'}</td>
+                    </tr>
+                </table>
+            </div>
+
+            ${order.payment?.method === 'card' ? `
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+                <strong>💳 Refund Required</strong>
+                <p style="margin: 10px 0 0 0;">This was a card payment. Process refund of $${order.pricing.total.toFixed(2)} through Stripe dashboard.</p>
+            </div>
+            ` : ''}
+
+            <div class="items-section">
+                <h3>Cancelled Items (${order.items.length})</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${order.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="button-container">
+                <a href="${businessInfo.adminUrl || 'http://localhost:8080'}/admin-orders.html" class="button">View in Admin Dashboard</a>
+            </div>
+
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                <strong>Next Steps:</strong><br>
+                1. Review cancellation reason<br>
+                ${order.payment?.method === 'card' ? '2. Process refund through Stripe<br>3. ' : '2. '}Update inventory if needed<br>
+                ${order.payment?.method === 'card' ? '4. ' : '3. '}Follow up with customer if appropriate
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>${businessName} - Admin Notification</strong></p>
+            <p>📞 ${businessPhone}</p>
+            <p style="font-size: 12px; color: #999;">
+                This is an automated admin notification.
+            </p>
+        </div>
+    `;
+
+    return {
+        subject: `🚨 Order Cancelled: #${order.orderId} - ${businessName}`,
+        html: getEmailTemplate(content)
+    };
+}
+
 module.exports = {
     getEmailTemplate,
     orderConfirmationEmail,
@@ -630,5 +866,7 @@ module.exports = {
     testEmail,
     emailVerificationEmail,
     passwordResetEmail,
-    emailVerifiedEmail
+    emailVerifiedEmail,
+    orderCancellationEmail,
+    adminOrderCancellationEmail
 };

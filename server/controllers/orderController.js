@@ -7,7 +7,9 @@ const { sendEmail } = require('../config/email');
 const { 
   orderConfirmationEmail, 
   orderStatusUpdateEmail, 
-  adminNewOrderEmail 
+  adminNewOrderEmail,
+  orderCancellationEmail,
+  adminOrderCancellationEmail
 } = require('../utils/emailTemplates');
 const { logEmail } = require('./emailController');
 const { generateReceipt } = require('../utils/pdfReceipt');
@@ -698,6 +700,55 @@ exports.cancelOrderCustomer = async (req, res) => {
 
     await order.save();
 
+    // Send cancellation emails
+    try {
+      const businessInfo = {
+        businessName: process.env.BUSINESS_NAME || 'Hometown Delivery',
+        businessPhone: process.env.BUSINESS_PHONE || '(555) 123-4567',
+        businessEmail: process.env.BUSINESS_EMAIL || 'support@hometowndelivery.com',
+        websiteUrl: process.env.WEBSITE_URL || 'http://localhost:8080',
+        adminUrl: process.env.ADMIN_URL || 'http://localhost:8080'
+      };
+
+      // Send email to customer
+      if (order.customerInfo.email) {
+        const customerEmailData = orderCancellationEmail(order, reason, businessInfo);
+        await sendEmail({
+          to: order.customerInfo.email,
+          subject: customerEmailData.subject,
+          html: customerEmailData.html
+        });
+
+        await logEmail({
+          to: order.customerInfo.email,
+          subject: customerEmailData.subject,
+          type: 'order_cancelled',
+          orderId: order._id
+        });
+      }
+
+      // Send notification to admin
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+      if (adminEmail) {
+        const adminEmailData = adminOrderCancellationEmail(order, reason, businessInfo);
+        await sendEmail({
+          to: adminEmail,
+          subject: adminEmailData.subject,
+          html: adminEmailData.html
+        });
+
+        await logEmail({
+          to: adminEmail,
+          subject: adminEmailData.subject,
+          type: 'admin_order_cancelled',
+          orderId: order._id
+        });
+      }
+    } catch (emailError) {
+      console.error('Error sending cancellation emails:', emailError);
+      // Don't fail the cancellation if email fails
+    }
+
     // TODO: Send cancellation email to customer and admin
 
     // Log activity
@@ -755,6 +806,35 @@ exports.cancelOrder = async (req, res) => {
     });
 
     await order.save();
+
+    // Send cancellation email to customer
+    try {
+      const businessInfo = {
+        businessName: process.env.BUSINESS_NAME || 'Hometown Delivery',
+        businessPhone: process.env.BUSINESS_PHONE || '(555) 123-4567',
+        businessEmail: process.env.BUSINESS_EMAIL || 'support@hometowndelivery.com',
+        websiteUrl: process.env.WEBSITE_URL || 'http://localhost:8080'
+      };
+
+      if (order.customerInfo.email) {
+        const customerEmailData = orderCancellationEmail(order, reason || 'Cancelled by store', businessInfo);
+        await sendEmail({
+          to: order.customerInfo.email,
+          subject: customerEmailData.subject,
+          html: customerEmailData.html
+        });
+
+        await logEmail({
+          to: order.customerInfo.email,
+          subject: customerEmailData.subject,
+          type: 'order_cancelled_admin',
+          orderId: order._id
+        });
+      }
+    } catch (emailError) {
+      console.error('Error sending cancellation email:', emailError);
+      // Don't fail the cancellation if email fails
+    }
 
     // Log activity
     await ActivityLog.create({

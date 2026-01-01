@@ -2,6 +2,11 @@ const Customer = require('../models/Customer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { sendEmail } = require('../config/email');
+const { 
+  trackFailedLogin, 
+  resetLoginAttempts, 
+  isAccountLocked 
+} = require('../middleware/security');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -104,13 +109,34 @@ exports.login = async (req, res) => {
             });
         }
 
+        // Check if account is locked
+        const lockCheck = isAccountLocked(email);
+        if (lockCheck.locked) {
+            return res.status(429).json({
+                success: false,
+                message: lockCheck.message,
+                remainingTime: lockCheck.remainingTime
+            });
+        }
+
         // Check for customer (include password field)
         const customer = await Customer.findOne({ email }).select('+password');
 
         if (!customer) {
+            // Track failed attempt
+            const failedAttempt = trackFailedLogin(email);
+            if (failedAttempt.locked) {
+                return res.status(429).json({
+                    success: false,
+                    message: failedAttempt.message,
+                    remainingTime: failedAttempt.remainingTime
+                });
+            }
+            
             return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password'
+                message: 'Invalid email or password',
+                attemptsRemaining: failedAttempt.remaining
             });
         }
 
@@ -126,11 +152,25 @@ exports.login = async (req, res) => {
         const isMatch = await customer.matchPassword(password);
 
         if (!isMatch) {
+            // Track failed attempt
+            const failedAttempt = trackFailedLogin(email);
+            if (failedAttempt.locked) {
+                return res.status(429).json({
+                    success: false,
+                    message: failedAttempt.message,
+                    remainingTime: failedAttempt.remainingTime
+                });
+            }
+            
             return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password'
+                message: 'Invalid email or password',
+                attemptsRemaining: failedAttempt.remaining
             });
         }
+
+        // Reset login attempts on successful login
+        resetLoginAttempts(email);
 
         // Update last login
         customer.lastLoginAt = Date.now();

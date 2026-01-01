@@ -1,11 +1,16 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
 const socketIo = require('socket.io');
 const connectDB = require('./config/database');
+const { 
+  apiLimiter, 
+  helmetConfig, 
+  mongoSanitize, 
+  hpp 
+} = require('./middleware/security');
 
 // Import models to ensure they're registered
 require('./models/PromoCode');
@@ -34,8 +39,12 @@ app.set('io', io);
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(helmet()); // Security headers
+// Security Middleware
+app.use(helmetConfig); // Security headers
+app.use(mongoSanitize); // Prevent MongoDB injection
+app.use(hpp); // Prevent HTTP Parameter Pollution
+
+// CORS Configuration
 app.use(cors({
   origin: function(origin, callback) {
     const allowedOrigins = [
@@ -55,6 +64,9 @@ app.use(cors({
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(morgan('dev')); // HTTP request logger
+
+// Apply general rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

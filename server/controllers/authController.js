@@ -1,6 +1,11 @@
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 const jwt = require('jsonwebtoken');
+const { 
+  trackFailedLogin, 
+  resetLoginAttempts, 
+  isAccountLocked 
+} = require('../middleware/security');
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -16,13 +21,34 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    // Check if account is locked
+    const lockCheck = isAccountLocked(username);
+    if (lockCheck.locked) {
+      return res.status(429).json({
+        success: false,
+        message: lockCheck.message,
+        remainingTime: lockCheck.remainingTime
+      });
+    }
+
     // Find user and include password field
     const user = await User.findOne({ username }).select('+password');
 
     if (!user) {
+      // Track failed attempt
+      const failedAttempt = trackFailedLogin(username);
+      if (failedAttempt.locked) {
+        return res.status(429).json({
+          success: false,
+          message: failedAttempt.message,
+          remainingTime: failedAttempt.remainingTime
+        });
+      }
+      
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
+        attemptsRemaining: failedAttempt.remaining
       });
     }
 
@@ -38,11 +64,25 @@ exports.login = async (req, res) => {
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
+      // Track failed attempt
+      const failedAttempt = trackFailedLogin(username);
+      if (failedAttempt.locked) {
+        return res.status(429).json({
+          success: false,
+          message: failedAttempt.message,
+          remainingTime: failedAttempt.remainingTime
+        });
+      }
+      
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
+        attemptsRemaining: failedAttempt.remaining
       });
     }
+
+    // Reset login attempts on successful login
+    resetLoginAttempts(username);
 
     // Update last login
     user.lastLogin = new Date();
