@@ -567,7 +567,9 @@ async function trackOrder() {
         if (statusContainer) statusContainer.style.display = 'block';
         
         // Fill in order details
-        document.getElementById('order-id').textContent = order.orderId;
+        const orderIdEl = document.getElementById('order-id');
+        orderIdEl.textContent = order.orderId;
+        orderIdEl.dataset.mongoId = order._id; // Store MongoDB ID for cancellation
         document.getElementById('order-date').textContent = new Date(order.createdAt).toLocaleDateString();
         document.getElementById('order-total').textContent = `$${order.total.toFixed(2)}`;
         document.getElementById('placed-time').textContent = new Date(order.createdAt).toLocaleTimeString();
@@ -629,14 +631,26 @@ function updateStatusTimeline(status) {
     const statusMapping = {
         'placed': ['status-confirmed'],
         'confirmed': ['status-confirmed'],
-        'in_progress': ['status-confirmed', 'status-shopping'],
-        'ready': ['status-confirmed', 'status-shopping'],
-        'out_for_delivery': ['status-confirmed', 'status-shopping', 'status-delivering'],
-        'delivered': ['status-confirmed', 'status-shopping', 'status-delivering', 'status-delivered']
+        'shopping': ['status-confirmed', 'status-shopping'],
+        'delivering': ['status-confirmed', 'status-shopping', 'status-delivering'],
+        'delivered': ['status-confirmed', 'status-shopping', 'status-delivering', 'status-delivered'],
+        'cancelled': [] // Don't mark any as completed if cancelled
     };
     
     const completedStatuses = statusMapping[status] || [];
     
+    // Reset all statuses first
+    ['status-confirmed', 'status-shopping', 'status-delivering', 'status-delivered'].forEach(statusId => {
+        const statusEl = document.getElementById(statusId);
+        if (statusEl) {
+            statusEl.classList.remove('completed');
+            const marker = statusEl.querySelector('.timeline-marker');
+            const markerNumbers = { 'status-confirmed': '2', 'status-shopping': '3', 'status-delivering': '4', 'status-delivered': '5' };
+            if (marker) marker.textContent = markerNumbers[statusId] || '';
+        }
+    });
+    
+    // Mark completed statuses
     completedStatuses.forEach(statusId => {
         const statusEl = document.getElementById(statusId);
         if (statusEl) {
@@ -649,19 +663,140 @@ function updateStatusTimeline(status) {
     if (status === 'delivered') {
         document.getElementById('delivered-time').textContent = 'Just now!';
     }
+    
+    // Show/hide cancel button based on order status
+    const cancelSection = document.getElementById('cancel-order-section');
+    if (cancelSection) {
+        if (status === 'placed' || status === 'confirmed') {
+            cancelSection.style.display = 'block';
+        } else {
+            cancelSection.style.display = 'none';
+        }
+    }
 }
 
 function formatStatus(status) {
     const statusLabels = {
         'placed': 'Order Placed',
         'confirmed': 'Order Confirmed',
-        'in_progress': 'Being Prepared',
-        'ready': 'Ready for Pickup',
-        'out_for_delivery': 'Out for Delivery',
+        'shopping': 'Shopping in Progress',
+        'delivering': 'Out for Delivery',
         'delivered': 'Delivered',
         'cancelled': 'Cancelled'
     };
     return statusLabels[status] || status;
+}
+
+// ============ ORDER CANCELLATION ============
+let currentOrderId = null;
+
+function showCancelModal() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCancelModal() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        
+        // Reset form
+        document.getElementById('cancel-reason').value = '';
+        document.getElementById('other-reason').value = '';
+        document.getElementById('other-reason-container').style.display = 'none';
+    }
+}
+
+// Show/hide custom reason textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelReasonSelect = document.getElementById('cancel-reason');
+    if (cancelReasonSelect) {
+        cancelReasonSelect.addEventListener('change', function() {
+            const otherContainer = document.getElementById('other-reason-container');
+            if (this.value === 'other') {
+                otherContainer.style.display = 'block';
+            } else {
+                otherContainer.style.display = 'none';
+            }
+        });
+    }
+});
+
+async function confirmCancelOrder() {
+    const reasonSelect = document.getElementById('cancel-reason');
+    const otherReasonInput = document.getElementById('other-reason');
+    const phone = document.getElementById('track-phone').value.trim();
+    
+    let reason = reasonSelect.value;
+    
+    if (!reason) {
+        showToast('Please select a cancellation reason', 'error');
+        return;
+    }
+    
+    if (reason === 'other') {
+        const otherReason = otherReasonInput.value.trim();
+        if (!otherReason) {
+            showToast('Please specify your reason', 'error');
+            return;
+        }
+        reason = otherReason;
+    }
+    
+    // Get order ID from the page
+    const orderIdEl = document.getElementById('order-id');
+    if (!orderIdEl) {
+        showToast('Order information not found', 'error');
+        return;
+    }
+    
+    // Need to store the MongoDB _id when tracking, for now we'll use the orderId
+    // We need to modify trackOrder to store the _id
+    const orderId = orderIdEl.dataset.mongoId;
+    
+    if (!orderId) {
+        showToast('Order ID not available', 'error');
+        return;
+    }
+    
+    try {
+        loading.show();
+        
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/cancel`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reason, phone })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to cancel order');
+        }
+        
+        // Close modal
+        closeCancelModal();
+        
+        // Show success message
+        showToast('Your order has been cancelled successfully', 'success');
+        
+        // Refresh order status
+        setTimeout(() => {
+            trackOrder();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Cancel order error:', error);
+        showToast(error.message || 'Failed to cancel order. Please contact us directly.', 'error');
+    } finally {
+        loading.hide();
+    }
 }
 
 // ============ ACCESSIBILITY ============

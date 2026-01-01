@@ -94,6 +94,16 @@
                                 $<span id="order-total">0.00</span>
                             </div>
                         </div>
+                        
+                        <!-- CANCEL ORDER BUTTON (only visible if placed/confirmed) -->
+                        <div id="cancel-order-section" style="display: none; margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <p style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">
+                                Need to make changes? You can cancel your order until we start shopping.
+                            </p>
+                            <button onclick="showCancelModal()" class="btn" style="background: #ef4444; color: white; width: 100%;">
+                                ❌ Cancel Order
+                            </button>
+                        </div>
                     </div>
 
                     <!-- STATUS TIMELINE -->
@@ -173,6 +183,55 @@
             <p>&copy; 2024 Hometown Grocery Delivery | 📞 <a href="tel:555-123-4567">555-123-4567</a></p>
         </div>
     </footer>
+
+    <!-- CANCEL ORDER MODAL -->
+    <div id="cancel-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Cancel Order</h2>
+                <button onclick="closeCancelModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; font-size: 16px;">
+                    Are you sure you want to cancel this order? <strong>This action cannot be undone.</strong>
+                </p>
+                
+                <label for="cancel-reason" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    Please tell us why you're cancelling:
+                </label>
+                <select id="cancel-reason" class="form-input" style="width: 100%; margin-bottom: 20px;">
+                    <option value="">-- Select a reason --</option>
+                    <option value="Changed my mind">Changed my mind</option>
+                    <option value="Ordered by mistake">Ordered by mistake</option>
+                    <option value="Too expensive">Too expensive</option>
+                    <option value="Taking too long">Taking too long</option>
+                    <option value="other">Other (please specify)</option>
+                </select>
+                
+                <div id="other-reason-container" style="display: none; margin-bottom: 20px;">
+                    <label for="other-reason" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        Please specify:
+                    </label>
+                    <textarea 
+                        id="other-reason" 
+                        class="form-input" 
+                        rows="3" 
+                        placeholder="Tell us more..."
+                        style="width: 100%; resize: vertical;"
+                    ></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeCancelModal()" class="btn btn-outline" style="flex: 1;">
+                        Keep Order
+                    </button>
+                    <button onclick="confirmCancelOrder()" class="btn" style="flex: 1; background: #ef4444; color: white;">
+                        Yes, Cancel Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script src="api.js"></script>

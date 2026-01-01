@@ -644,7 +644,87 @@ exports.assignDriver = async (req, res) => {
   }
 };
 
-// @desc    Cancel order
+// @desc    Cancel order (customer self-service)
+// @route   PUT /api/orders/:id/cancel
+// @access  Public (with order validation)
+exports.cancelOrderCustomer = async (req, res) => {
+  try {
+    const { reason, phone } = req.body;
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cancellation reason is required'
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Verify customer owns this order
+    if (phone && order.customerInfo.phone !== phone) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized to cancel this order'
+      });
+    }
+
+    // Only allow cancellation if order is placed or confirmed
+    if (!['placed', 'confirmed'].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled at this stage. Please contact us directly.'
+      });
+    }
+
+    order.status = 'cancelled';
+    order.cancelledAt = new Date();
+    order.cancelReason = reason;
+    order.statusHistory.push({
+      status: 'cancelled',
+      timestamp: new Date()
+    });
+
+    await order.save();
+
+    // TODO: Send cancellation email to customer and admin
+
+    // Log activity
+    await ActivityLog.create({
+      type: 'order_cancel',
+      message: `Customer cancelled order ${order.orderId}`,
+      metadata: { orderId: order._id, reason }
+    });
+
+    // Emit socket event
+    const io = req.app.get('io');
+    io.to('admin-room').emit('order-cancelled', {
+      orderId: order.orderId,
+      reason
+    });
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      order
+    });
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling order',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Cancel order (admin)
 // @route   DELETE /api/orders/:id
 // @access  Private (Admin/Manager)
 exports.cancelOrder = async (req, res) => {

@@ -17,6 +17,7 @@ router.get('/track/:phone', trackLimiter, orderController.trackOrder);
 router.get('/public/:id', orderController.getOrderPublic); // Public order retrieval with payment intent verification
 router.get('/:id/receipt', orderController.generateOrderReceipt); // PDF receipt generation
 router.post('/', orderValidation, validate, orderController.createOrder);
+router.put('/:id/cancel', orderController.cancelOrderCustomer); // Customer self-service cancellation
 
 // Protected routes
 router.get('/', protect, orderController.getOrders); // Allow both admin and customer
