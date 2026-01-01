@@ -204,6 +204,7 @@ exports.createOrder = async (req, res) => {
 
     // Validate products and calculate pricing
     let subtotal = 0;
+    let taxableItemsSubtotal = 0; // Track taxable items separately
     const validatedItems = [];
 
     for (const item of items) {
@@ -216,15 +217,23 @@ exports.createOrder = async (req, res) => {
         });
       }
 
+      const itemTotal = product.price * item.quantity;
+
       validatedItems.push({
         productId: product._id,
         name: product.name,
         price: product.price,
         emoji: product.emoji,
-        quantity: item.quantity
+        quantity: item.quantity,
+        isTaxable: product.isTaxable || false
       });
 
-      subtotal += product.price * item.quantity;
+      subtotal += itemTotal;
+      
+      // Track taxable items (non-food: soap, paper products, etc.)
+      if (product.isTaxable) {
+        taxableItemsSubtotal += itemTotal;
+      }
     }
 
     const deliveryFee = 6.99;
@@ -242,10 +251,12 @@ exports.createOrder = async (req, res) => {
     }
     
     // Calculate Washington state sales tax
-    // NOTE: Groceries are EXEMPT from sales tax in WA state
-    // Only delivery fee is taxable (RCW 82.08.0293)
-    const taxRate = parseFloat(process.env.TAX_RATE) || 0.086; // Default 8.6% for WA
-    const tax = deliveryFee * taxRate; // Tax only on delivery fee, not groceries
+    // NOTE: Groceries are EXEMPT from sales tax in WA state (RCW 82.08.0293)
+    // Taxable: delivery fee + non-food items (soap, paper products, cleaning supplies)
+    // Non-taxable: all food and food ingredients
+    const taxRate = parseFloat(process.env.TAX_RATE) || 0.084; // Chelan County: 8.4%
+    const taxableAmount = deliveryFee + taxableItemsSubtotal;
+    const tax = taxableAmount * taxRate;
     
     const total = subtotal + deliveryFee + tax - discount;
 

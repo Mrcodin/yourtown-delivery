@@ -113,10 +113,17 @@ class StripeCheckout {
                 }
             }
             
-            // Calculate Washington state sales tax
-            // Groceries are tax-exempt in WA. Only delivery fee is taxable.
-            const taxRate = 0.086;
-            const tax = deliveryFee * taxRate; // Tax only on delivery fee
+            // Calculate taxable items subtotal (non-food items)
+            const taxableItemsSubtotal = cartItems.reduce((sum, item) => {
+                return sum + (item.isTaxable ? item.price * item.quantity : 0);
+            }, 0);
+            
+            // Calculate Washington state sales tax - Chelan County 8.4%
+            // NOTE: Groceries are tax-exempt in WA (RCW 82.08.0293)
+            // Taxable: delivery fee + non-food items only
+            const taxRate = 0.084;
+            const taxableAmount = deliveryFee + taxableItemsSubtotal;
+            const tax = taxableAmount * taxRate;
             
             const total = subtotal + deliveryFee + tax - discount;
 

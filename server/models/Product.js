@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['bakery', 'dairy', 'produce', 'meat', 'pantry', 'frozen', 'beverages'],
+    enum: ['bakery', 'dairy', 'produce', 'meat', 'pantry', 'frozen', 'beverages', 'household'],
     lowercase: true
   },
   emoji: {
@@ -32,6 +32,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'out-of-stock', 'hidden'],
     default: 'active'
+  },
+  isTaxable: {
+    type: Boolean,
+    default: false, // Most items are groceries (tax-exempt in WA)
+    // Set to true for: soap, paper products, cleaning supplies, etc.
   }
 }, {
   timestamps: true

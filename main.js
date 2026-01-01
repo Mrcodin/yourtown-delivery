@@ -28,7 +28,8 @@ async function loadProducts() {
                 price: p.price,
                 category: p.category,
                 emoji: p.emoji || '📦',
-                imageUrl: p.imageUrl || null
+                imageUrl: p.imageUrl || null,
+                isTaxable: p.isTaxable || false
             }));
             
             // console.log(`✅ Loaded ${groceries.length} products from API`);
@@ -149,7 +150,8 @@ function addToCart(productId) {
             price: product.price,
             emoji: product.emoji,
             imageUrl: product.imageUrl,
-            quantity: 1
+            quantity: 1,
+            isTaxable: product.isTaxable || false
         });
     }
     
@@ -344,10 +346,17 @@ function updateOrderSummary() {
         }
     }
     
-    // Calculate Washington state sales tax
-    // NOTE: Groceries are tax-exempt in WA. Only delivery fee is taxable.
-    const taxRate = 0.086;
-    const tax = delivery * taxRate; // Tax only on delivery fee
+    // Calculate taxable items subtotal (non-food items like soap, paper products)
+    const taxableItemsSubtotal = cart.reduce((sum, item) => {
+        return sum + (item.isTaxable ? item.price * item.quantity : 0);
+    }, 0);
+    
+    // Calculate Washington state sales tax - Chelan County 8.4%
+    // NOTE: Groceries are tax-exempt in WA (RCW 82.08.0293)
+    // Taxable: delivery fee + non-food items only
+    const taxRate = 0.084;
+    const taxableAmount = delivery + taxableItemsSubtotal;
+    const tax = taxableAmount * taxRate;
     
     const total = subtotal + delivery + tax - discount;
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
