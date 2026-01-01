@@ -846,7 +846,7 @@ function resetFilters() {
     const searchFilter = document.getElementById('filter-search');
     
     if (statusFilter) statusFilter.value = 'all';
-    if (dateFilter) dateFilter.value = 'today';
+    if (dateFilter) dateFilter.value = 'all';  // Changed from 'today' to 'all'
     if (searchFilter) searchFilter.value = '';
     
     filterOrders();

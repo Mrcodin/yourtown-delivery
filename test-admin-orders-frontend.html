@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Orders Frontend</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e293b; color: #e2e8f0; }
+        .section { background: #334155; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        pre { background: #0f172a; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Admin Orders Frontend Debug</h1>
+    
+    <div class="section">
+        <h2>Step 1: Check Token</h2>
+        <button onclick="checkToken()">Check Token</button>
+        <pre id="token-result"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Login as Admin</h2>
+        <input type="text" id="username" placeholder="Username" value="admin">
+        <input type="password" id="password" placeholder="Password" value="Admin123!">
+        <button onclick="loginAdmin()">Login</button>
+        <pre id="login-result"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: Fetch Orders</h2>
+        <button onclick="fetchOrders()">Fetch Orders</button>
+        <pre id="orders-result"></pre>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        function checkToken() {
+            const token = localStorage.getItem('authToken');
+            const result = document.getElementById('token-result');
+            if (token) {
+                result.innerHTML = `<span class="success">✅ Token exists:</span>\n${token.substring(0, 50)}...`;
+            } else {
+                result.innerHTML = `<span class="error">❌ No token found in localStorage</span>`;
+            }
+        }
+        
+        async function loginAdmin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const result = document.getElementById('login-result');
+            
+            result.innerHTML = '⏳ Logging in...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    result.innerHTML = `<span class="success">✅ Login successful!</span>\nToken: ${data.token.substring(0, 50)}...\nUser: ${data.user.username}`;
+                } else {
+                    result.innerHTML = `<span class="error">❌ Login failed:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error:</span>\n${error.message}`;
+            }
+        }
+        
+        async function fetchOrders() {
+            const result = document.getElementById('orders-result');
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                result.innerHTML = '<span class="error">❌ No token! Login first.</span>';
+                return;
+            }
+            
+            result.innerHTML = '⏳ Fetching orders...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/orders`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = `<span class="success">✅ Orders fetched successfully!</span>\nCount: ${data.count}\n\nFirst 3 orders:\n${JSON.stringify(data.orders.slice(0, 3).map(o => ({
+                        orderId: o.orderId,
+                        customer: o.customerInfo.name,
+                        total: o.pricing.total,
+                        status: o.status
+                    })), null, 2)}`;
+                } else {
+                    result.innerHTML = `<span class="error">❌ Fetch failed:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error:</span>\n${error.message}`;
+            }
+        }
+        
+        // Auto-check token on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkToken();
+        });
+    </script>
+</body>
+</html>
