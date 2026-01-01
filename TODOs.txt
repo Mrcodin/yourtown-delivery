@@ -14,13 +14,22 @@ Generated: December 28, 2025
    [➕] Added: Secure password generator utility
    [➕] Added: Comprehensive SECURITY_GUIDE.md
    [➕] Updated: All documentation files
+   [✅] Implement password reset functionality (email/phone) - COMPLETED
+   [✅] Implement rate limiting on login endpoint - COMPLETED
+   [✅] Add failed login tracking with account lockout - COMPLETED
+   [✅] MongoDB injection prevention - COMPLETED
+   [✅] HTTP Parameter Pollution prevention - COMPLETED
+   [✅] Enhanced security headers (Helmet) - COMPLETED
    
    📝 See SECURITY_UPDATE.md for details
+   📝 Rate limiting: API (100/15min), Auth (5/15min), Orders (10/hr)
+   📝 Failed login lockout: 5 attempts = 15 minute lock
+   📝 Security packages: express-rate-limit, mongo-sanitize, helmet, hpp
    
-   [ ] Implement password reset functionality (email/phone)
-   [ ] Add 2FA for admin accounts
-   [ ] Add CAPTCHA on login after 3 failed attempts
-   [ ] Implement rate limiting on login endpoint
+   [ ] Add 2FA for admin accounts (future enhancement)
+   [ ] Add CAPTCHA on login after 3 failed attempts (future enhancement)
+   
+   Completion Date: January 1, 2026
 
 2. REPLACE PLACEHOLDER CONTENT ✅ COMPLETED
    [✅] Replace "[YOUR TOWN]" with actual town name or make configurable
@@ -240,17 +249,33 @@ Generated: December 28, 2025
    Cost: $20-50/month based on volume
 
 ================================================================================
-📦 ORDER MANAGEMENT IMPROVEMENTS (Priority 2)
+📦 ORDER MANAGEMENT IMPROVEMENTS (Priority 2) ✅ PARTIALLY COMPLETE
 ================================================================================
 
-   [ ] Allow customers to cancel orders (before preparation)
+   [✅] Allow customers to cancel orders (before preparation) - COMPLETED
+   [✅] Add order notes/special instructions - COMPLETED
+   [✅] Delivery tip option - COMPLETED
+   [✅] Save order as "My Usual Order" - COMPLETED
+   [✅] Send cancellation emails to customer and admin - COMPLETED
+   [➕] Added: Order cancellation endpoint with reason tracking
+   [➕] Added: Beautiful cancellation email templates
+   [➕] Added: Admin notification for cancelled orders
+   [➕] Added: Refund information in emails for card payments
+   [➕] Added: Delivery tip with preset amounts ($3, $5, $7, No Tip)
+   [➕] Added: Custom tip input (up to $100)
+   [➕] Added: Special instructions field on checkout
+   [➕] Added: My Usual Order model and reorder functionality
+   
+   📝 Cancellation emails: Professional templates with order details
+   📝 Tip feature: Integrated into totals, PDF receipts, Stripe payments
+   📝 Usual orders: Save and reorder favorite orders
+   
    [ ] Allow customers to modify orders (within time window)
-   [ ] Add order notes/special instructions
-   [ ] Delivery tip option
    [ ] Substitute product preferences
-   [ ] Save order as "My Usual Order" (currently button exists but not functional)
    [ ] Schedule recurring orders (weekly groceries)
    [ ] Order rating/review after delivery
+   
+   Completion Date: January 1, 2026
 
 ================================================================================
 🎨 UI/UX IMPROVEMENTS (Priority 2)
@@ -494,6 +519,33 @@ MONTH 2+
 - Keep accessibility as top priority
 - Get customer feedback early and often
 - Start with MVP features before adding advanced functionality
+TIP BUG FIX (January 1, 2026):
+   ✅ Fixed tip value not being saved to database
+   ✅ Tip was included in Stripe payment but showed $0 in order
+   ✅ Root cause: Tip value not passed from cart-checkout.js to checkout.js
+   ✅ Solution: Store tip in deliveryInfo object and pass explicitly
+   ✅ Now tip correctly saved in database, PDF receipts, and Stripe payments
+   ✅ Test results: All orders now show correct tip amounts
+
+ORDER CANCELLATION EMAILS COMPLETED (January 1, 2026):
+   ✅ Customer cancellation email with order details and refund info
+   ✅ Admin notification email with cancellation reason
+   ✅ Professional HTML templates with branding
+   ✅ Shows refund information for card payments
+   ✅ Lists cancelled items and order totals
+   ✅ Integrated into both customer and admin cancel endpoints
+
+SECURITY ENHANCEMENTS COMPLETED (January 1, 2026):
+   ✅ Rate limiting on all API endpoints
+   ✅ Strict rate limiting on authentication (5 attempts per 15 min)
+   ✅ Account lockout after failed login attempts
+   ✅ MongoDB injection prevention
+   ✅ HTTP Parameter Pollution prevention
+   ✅ Enhanced security headers (CSP, HSTS, etc.)
+   ✅ Failed login attempt tracking with auto-unlock
+   ✅ Rate limits: API (100/15min), Auth (5/15min), Accounts (3/hr), Orders (10/hr)
+   ✅ Security packages installed: express-rate-limit, mongo-sanitize, helmet, hpp
+
 - Monitor costs as you scale
 - Consider hiring help for specialized tasks (mobile app, advanced features)
 
