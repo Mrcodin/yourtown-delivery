@@ -2014,7 +2014,10 @@ function exportReportPDF() {
         year: 'This Year'
     };
     
-    fetch(`${API_BASE_URL}/api/reports/pdf`, {
+    // Use api.baseURL to get the correct API endpoint
+    const apiBaseURL = api.baseURL.replace('/api', '');
+    
+    fetch(`${apiBaseURL}/api/reports/pdf`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
