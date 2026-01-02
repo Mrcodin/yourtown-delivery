@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - Hometown Delivery</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Performance: Preload Critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="lazy-load.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="loading.css">
     <link rel="stylesheet" href="toast.css">
@@ -2297,5 +2301,10 @@
         }
     </style>
     <script src="back-to-top.js"></script>
+    <!-- Performance Scripts -->
+    <script src="sw-register.js" defer></script>
+    <script src="lazy-load.js" defer></script>
+    <script src="performance.js" defer></script>
+    
 </body>
 </html>

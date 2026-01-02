@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Hometown Delivery</title>
+    
+    <!-- Performance: DNS Prefetch & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.socket.io">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Performance: Preload Critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="lazy-load.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="loading.css">
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
@@ -671,5 +680,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     </script>
+    <!-- Performance Scripts -->
+    <script src="sw-register.js" defer></script>
+    <script src="lazy-load.js" defer></script>
+    <script src="performance.js" defer></script>
+    
 </body>
 </html>

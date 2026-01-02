@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers - Admin Dashboard</title>
+    
+    <!-- Performance: DNS Prefetch & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.socket.io">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Performance: Preload Critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="lazy-load.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="loading.css">
@@ -142,5 +151,10 @@
     <script src="admin.js"></script>
     <script src="admin-mobile.js"></script>
     <script src="back-to-top.js"></script>
+    <!-- Performance Scripts -->
+    <script src="sw-register.js" defer></script>
+    <script src="lazy-load.js" defer></script>
+    <script src="performance.js" defer></script>
+    
 </body>
 </html>
