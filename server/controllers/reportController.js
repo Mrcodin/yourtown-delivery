@@ -498,6 +498,31 @@ exports.generatePDFReport = async (req, res) => {
         const driverEarnings = {};
         const DRIVER_PAY_RATE = 4.00; // $4 per delivery
         
+        // First, collect all unique driver IDs and fetch their names from database
+        const driverIds = new Set();
+        orders.forEach(order => {
+            if (order.delivery?.driverId) {
+                const id = typeof order.delivery.driverId === 'object' ? 
+                    order.delivery.driverId._id?.toString() : 
+                    order.delivery.driverId.toString();
+                if (id && id !== 'unassigned') {
+                    driverIds.add(id);
+                }
+            }
+        });
+        
+        // Fetch all driver names at once
+        const driverMap = {};
+        if (driverIds.size > 0) {
+            const drivers = await Driver.find({ _id: { $in: Array.from(driverIds) } })
+                .select('firstName lastName')
+                .lean();
+            
+            drivers.forEach(driver => {
+                driverMap[driver._id.toString()] = `${driver.firstName} ${driver.lastName}`;
+            });
+        }
+        
         orders.forEach(order => {
             // Get driver info - try multiple sources
             let driverId = null;
@@ -507,10 +532,13 @@ exports.generatePDFReport = async (req, res) => {
             if (order.delivery?.driverId) {
                 if (typeof order.delivery.driverId === 'object' && order.delivery.driverId._id) {
                     driverId = order.delivery.driverId._id.toString();
-                    driverName = order.delivery.driverId.name || order.delivery.driverId.fullName || order.delivery.driverName;
+                    driverName = order.delivery.driverId.firstName ? 
+                        `${order.delivery.driverId.firstName} ${order.delivery.driverId.lastName}` :
+                        (order.delivery.driverId.name || driverMap[driverId] || order.delivery.driverName);
                 } else {
                     driverId = order.delivery.driverId.toString();
-                    driverName = order.delivery.driverName;
+                    // Look up driver name from database
+                    driverName = driverMap[driverId] || order.delivery.driverName;
                 }
             }
             
