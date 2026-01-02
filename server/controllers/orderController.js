@@ -980,14 +980,14 @@ exports.modifyOrder = async (req, res) => {
 
     // Log activity
     await ActivityLog.create({
-      type: 'order_modified',
-      description: `Order ${order.orderId} modified by customer`,
+      type: 'order_update',
+      message: `Order ${order.orderId} modified by customer - ${validatedItems.length} items, new total: $${total.toFixed(2)}`,
       userId: req.customer?._id,
-      orderId: order._id,
       metadata: {
-        previousTotal: order.pricing.total,
-        newTotal: total,
-        itemCount: validatedItems.length
+        orderId: order._id,
+        orderNumber: order.orderId,
+        itemCount: validatedItems.length,
+        newTotal: total
       }
     });
 
