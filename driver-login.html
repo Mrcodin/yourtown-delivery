@@ -294,13 +294,16 @@
             loginBtn.disabled = true;
             loginBtnText.innerHTML = '<span class="loading-spinner"></span> Logging in...';
 
+            // Clean phone number - remove all non-digit characters
+            const cleanPhone = phone.replace(/\D/g, '');
+
             try {
                 const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ phone, password })
+                    body: JSON.stringify({ phone: cleanPhone, password })
                 });
 
                 const data = await response.json();

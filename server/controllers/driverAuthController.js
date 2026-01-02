@@ -13,15 +13,26 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Please provide phone and password' });
         }
 
-        // Clean phone number (remove spaces, dashes, etc.)
+        // Clean phone number (remove spaces, dashes, parentheses, etc.)
         const cleanPhone = phone.replace(/\D/g, '');
+        
+        // Try multiple phone formats to match database
+        const phoneFormats = [
+            phone,                                    // As provided
+            cleanPhone,                               // Digits only
+        ];
+        
+        // Add formatted versions based on length
+        if (cleanPhone.length === 7) {
+            phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3)}`); // xxx-xxxx
+        } else if (cleanPhone.length === 10) {
+            phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // xxx-xxx-xxxx
+            phoneFormats.push(`(${cleanPhone.slice(0, 3)}) ${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // (xxx) xxx-xxxx
+        }
 
         // Find driver by phone and include password
         const driver = await Driver.findOne({ 
-            $or: [
-                { phone: phone },
-                { phone: cleanPhone }
-            ]
+            phone: { $in: phoneFormats }
         }).select('+password');
 
         if (!driver) {
