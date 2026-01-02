@@ -93,6 +93,31 @@ python3 -m http.server 5500
 - Admin Panel: http://localhost:5500/admin-login.html
 - API: http://localhost:3000/api
 
+## ⚡ Performance & Build Commands
+
+**Production Build:**
+```bash
+npm run build:all      # Build & minify all assets (CSS + JS)
+```
+
+**Performance Testing:**
+```bash
+npm run perf          # Full performance check (build + analyze + budget)
+npm run analyze       # Analyze bundle sizes and get recommendations
+npm run budget        # Validate assets meet performance budgets
+```
+
+**Individual Build Commands:**
+```bash
+npm run build:css     # Minify CSS files only
+npm run build:js      # Minify JavaScript files only
+```
+
+**📖 For detailed performance documentation:**
+- [Performance Optimization Guide](PERFORMANCE_OPTIMIZATION.md)
+- [Performance Testing Guide](PERFORMANCE_TESTING.md)
+- [Quick Start Performance](QUICK_START_PERFORMANCE.md)
+
 ## 🔑 Default Credentials
 
 **IMPORTANT**: The admin password is randomly generated when you run the seed script.
