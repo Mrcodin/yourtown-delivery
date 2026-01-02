@@ -296,6 +296,8 @@
 
             // Clean phone number - remove all non-digit characters
             const cleanPhone = phone.replace(/\D/g, '');
+            
+            console.log('Login attempt - Original phone:', phone, 'Cleaned phone:', cleanPhone);
 
             try {
                 const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/login`, {

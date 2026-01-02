@@ -26,8 +26,14 @@ exports.login = async (req, res) => {
         if (cleanPhone.length === 7) {
             phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3)}`); // xxx-xxxx
         } else if (cleanPhone.length === 10) {
+            // Full 10-digit formats
             phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // xxx-xxx-xxxx
             phoneFormats.push(`(${cleanPhone.slice(0, 3)}) ${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // (xxx) xxx-xxxx
+            
+            // Also try first 7 digits (for local numbers stored as 7 digits)
+            const first7 = cleanPhone.slice(0, 7);
+            phoneFormats.push(first7); // xxxxxxx
+            phoneFormats.push(`${first7.slice(0, 3)}-${first7.slice(3)}`); // xxx-xxxx
         }
 
         // Find driver by phone and include password
