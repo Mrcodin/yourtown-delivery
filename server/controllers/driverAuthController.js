@@ -303,11 +303,18 @@ exports.claimOrder = async (req, res) => {
         // Get driver info
         const driver = await Driver.findById(driverId);
         
-        // Assign the order to this driver
-        order.delivery.driverId = driverId;
-        order.delivery.driverName = `${driver.firstName} ${driver.lastName}`;
-        order.status = 'shopping'; // Update status to shopping
-        await order.save();
+        // Update order using findByIdAndUpdate to avoid full validation
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            {
+                $set: {
+                    'delivery.driverId': driverId,
+                    'delivery.driverName': `${driver.firstName} ${driver.lastName}`,
+                    status: 'shopping'
+                }
+            },
+            { new: true, runValidators: false }
+        ).populate('items.productId', 'name emoji imageUrl');
 
         // Update driver status to busy
         driver.status = 'busy';
@@ -316,7 +323,7 @@ exports.claimOrder = async (req, res) => {
         res.json({
             success: true,
             message: 'Order claimed successfully',
-            order
+            order: updatedOrder
         });
     } catch (error) {
         console.error('Claim order error:', error);
