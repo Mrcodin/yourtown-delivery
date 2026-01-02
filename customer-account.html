@@ -761,7 +761,7 @@
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
                             <h2>Create Usual Order</h2>
-                            <button class="btn-icon" onclick="this.closest('.modal-overlay').remove()">✕</button>
+                            <button class="btn-icon" onclick="closeModal(this)">✕</button>
                         </div>
                         <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                             <div style="margin-bottom: 20px;">
@@ -793,16 +793,28 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button onclick="this.closest('.modal-overlay').remove()" class="btn-large btn-outline">Cancel</button>
+                            <button onclick="closeModal(this)" class="btn-large btn-outline">Cancel</button>
                             <button onclick="saveNewUsualOrder()" class="btn-large btn-primary">Create Order</button>
                         </div>
                     </div>
                 `;
                 
                 document.body.appendChild(modal);
+                
+                // Trigger animation by adding active class after a brief delay
+                setTimeout(() => modal.classList.add('active'), 10);
             } catch (error) {
                 loading.hideOverlay();
                 toast.error(error.message || 'Failed to load products');
+            }
+        }
+
+        // Close modal with animation
+        function closeModal(element) {
+            const modal = element.closest('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
             }
         }
 
@@ -862,8 +874,12 @@
                 loading.hideOverlay();
                 toast.success('Usual order created successfully!');
                 
-                // Close modal
-                document.querySelector('.modal-overlay').remove();
+                // Close modal with animation
+                const modal = document.querySelector('.modal-overlay');
+                if (modal) {
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.remove(), 300);
+                }
                 
                 // Reload usual orders
                 loadUsualOrders();
