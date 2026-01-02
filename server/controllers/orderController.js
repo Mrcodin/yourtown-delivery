@@ -1084,9 +1084,9 @@ exports.generateOrderReceipt = async (req, res) => {
     // Generate PDF receipt
     const pdfBuffer = await generateReceipt(order);
 
-    // Set response headers for PDF download
+    // Set response headers for PDF display (inline instead of download)
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="receipt-${order.orderId}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="receipt-${order.orderId}.pdf"`);
     res.setHeader('Content-Length', pdfBuffer.length);
 
     // Send PDF buffer
