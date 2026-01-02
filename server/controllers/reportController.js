@@ -498,35 +498,45 @@ exports.generatePDFReport = async (req, res) => {
         const driverEarnings = {};
         
         orders.forEach(order => {
-            const driverId = order.delivery?.driverId?.toString() || order.delivery?.driverName || 'Unassigned';
-            const driverName = order.delivery?.driverName || 'Unassigned';
+            // Get driver info from delivery object or use 'Unassigned'
+            const driverId = order.delivery?.driverId?.toString() || 'unassigned';
+            const driverName = order.delivery?.driverName || 'Unassigned Driver';
             
-            if (!driverEarnings[driverId]) {
-                driverEarnings[driverId] = {
-                    name: driverName,
-                    deliveries: 0,
-                    deliveryFees: 0,
-                    tips: 0,
-                    total: 0,
-                    orders: []
-                };
-            }
+            // Check if order has delivery fee (meaning it was a delivery order)
+            const deliveryFee = order.pricing?.deliveryFee || 0;
+            const tip = order.pricing?.tip || 0;
             
-            // Only count delivered orders for driver pay
-            if (order.status === 'Delivered' && driverId !== 'Unassigned') {
-                const deliveryFee = order.pricing?.deliveryFee || 0;
-                const tip = order.pricing?.tip || 0;
+            // Only process orders with delivery fees
+            if (deliveryFee > 0) {
+                if (!driverEarnings[driverId]) {
+                    driverEarnings[driverId] = {
+                        name: driverName,
+                        deliveries: 0,
+                        deliveryFees: 0,
+                        tips: 0,
+                        total: 0,
+                        orders: []
+                    };
+                }
                 
-                driverEarnings[driverId].deliveries++;
-                driverEarnings[driverId].deliveryFees += deliveryFee;
-                driverEarnings[driverId].tips += tip;
-                driverEarnings[driverId].total += (deliveryFee + tip);
-                driverEarnings[driverId].orders.push({
-                    orderNum: order.orderNumber || order._id?.toString().slice(-6),
-                    date: order.createdAt || order.timestamp,
-                    deliveryFee,
-                    tip
-                });
+                // Count all delivery orders (not just completed ones for payroll purposes)
+                // Status check is case-insensitive
+                const status = (order.status || '').toLowerCase();
+                const isDeliveryComplete = status === 'delivered' || status === 'completed';
+                
+                if (isDeliveryComplete || status === 'out for delivery' || status === 'confirmed') {
+                    driverEarnings[driverId].deliveries++;
+                    driverEarnings[driverId].deliveryFees += deliveryFee;
+                    driverEarnings[driverId].tips += tip;
+                    driverEarnings[driverId].total += (deliveryFee + tip);
+                    driverEarnings[driverId].orders.push({
+                        orderNum: order.orderNumber || order._id?.toString().slice(-6),
+                        date: order.createdAt || order.timestamp,
+                        deliveryFee,
+                        tip,
+                        status: order.status
+                    });
+                }
             }
         });
 
@@ -536,9 +546,14 @@ exports.generatePDFReport = async (req, res) => {
             .sort((a, b) => b.total - a.total);
 
         if (driversArray.length === 0) {
-            doc.fontSize(14)
+            doc.fontSize(12)
+               .fillColor('#7f8c8d')
+               .text('No delivery orders found in this period', { align: 'center' });
+            
+            doc.moveDown(0.5);
+            doc.fontSize(10)
                .fillColor('#95a5a6')
-               .text('No driver deliveries completed in this period', { align: 'center' });
+               .text('Driver pay stubs will appear here when delivery orders are completed.', { align: 'center' });
         } else {
             // Summary statistics
             const totalDriverPay = driversArray.reduce((sum, d) => sum + d.total, 0);
