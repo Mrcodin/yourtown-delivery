@@ -479,6 +479,170 @@ exports.generatePDFReport = async (req, res) => {
                { align: 'center', width: 495 }
            );
 
+        // DRIVER PAY STUB PAGE (PAGE 3)
+        doc.addPage();
+        
+        doc.fillColor('#2c3e50')
+           .fontSize(20)
+           .font('Helvetica-Bold')
+           .text('DRIVER PAY STUBS', { align: 'center' });
+        
+        doc.fontSize(12)
+           .fillColor('#7f8c8d')
+           .font('Helvetica')
+           .text(period, { align: 'center' });
+        
+        doc.moveDown(2);
+
+        // Calculate driver earnings
+        const driverEarnings = {};
+        
+        orders.forEach(order => {
+            const driverId = order.delivery?.driverId?.toString() || order.delivery?.driverName || 'Unassigned';
+            const driverName = order.delivery?.driverName || 'Unassigned';
+            
+            if (!driverEarnings[driverId]) {
+                driverEarnings[driverId] = {
+                    name: driverName,
+                    deliveries: 0,
+                    deliveryFees: 0,
+                    tips: 0,
+                    total: 0,
+                    orders: []
+                };
+            }
+            
+            // Only count delivered orders for driver pay
+            if (order.status === 'Delivered' && driverId !== 'Unassigned') {
+                const deliveryFee = order.pricing?.deliveryFee || 0;
+                const tip = order.pricing?.tip || 0;
+                
+                driverEarnings[driverId].deliveries++;
+                driverEarnings[driverId].deliveryFees += deliveryFee;
+                driverEarnings[driverId].tips += tip;
+                driverEarnings[driverId].total += (deliveryFee + tip);
+                driverEarnings[driverId].orders.push({
+                    orderNum: order.orderNumber || order._id?.toString().slice(-6),
+                    date: order.createdAt || order.timestamp,
+                    deliveryFee,
+                    tip
+                });
+            }
+        });
+
+        // Convert to array and sort by earnings (highest first)
+        const driversArray = Object.values(driverEarnings)
+            .filter(d => d.deliveries > 0)
+            .sort((a, b) => b.total - a.total);
+
+        if (driversArray.length === 0) {
+            doc.fontSize(14)
+               .fillColor('#95a5a6')
+               .text('No driver deliveries completed in this period', { align: 'center' });
+        } else {
+            // Summary statistics
+            const totalDriverPay = driversArray.reduce((sum, d) => sum + d.total, 0);
+            const totalDeliveries = driversArray.reduce((sum, d) => sum + d.deliveries, 0);
+            const avgPayPerDriver = totalDriverPay / driversArray.length;
+
+            // Summary box
+            const driverSummaryY = doc.y;
+            doc.roundedRect(50, driverSummaryY, 495, 100, 5)
+               .fillAndStroke('#27ae60', '#229954');
+
+            doc.fillColor('#ffffff')
+               .fontSize(14)
+               .font('Helvetica-Bold')
+               .text('Driver Pay Summary', 60, driverSummaryY + 15);
+
+            doc.fontSize(11).font('Helvetica');
+            doc.text(`Active Drivers:`, 60, driverSummaryY + 45);
+            doc.text(`Total Deliveries:`, 60, driverSummaryY + 65);
+
+            doc.fontSize(12).font('Helvetica-Bold');
+            doc.text(`${driversArray.length}`, 200, driverSummaryY + 45);
+            doc.text(`${totalDeliveries}`, 200, driverSummaryY + 65);
+
+            doc.fillColor('#ffffff').font('Helvetica').fontSize(11);
+            doc.text(`Total Driver Pay:`, 320, driverSummaryY + 45);
+            doc.text(`Avg per Driver:`, 320, driverSummaryY + 65);
+
+            doc.fontSize(12).font('Helvetica-Bold');
+            doc.text(`$${totalDriverPay.toFixed(2)}`, 440, driverSummaryY + 45, { width: 100, align: 'right' });
+            doc.text(`$${avgPayPerDriver.toFixed(2)}`, 440, driverSummaryY + 65, { width: 100, align: 'right' });
+
+            doc.y = driverSummaryY + 120;
+            doc.moveDown(1);
+
+            // Individual driver pay stubs
+            driversArray.forEach((driver, index) => {
+                // Check if we need a new page
+                if (doc.y > 650) {
+                    doc.addPage();
+                    doc.y = 50;
+                }
+
+                const stubY = doc.y;
+                
+                // Driver card background
+                doc.roundedRect(50, stubY, 495, 85, 3)
+                   .fillAndStroke('#ecf0f1', '#bdc3c7');
+
+                // Driver name and deliveries
+                doc.fillColor('#2c3e50')
+                   .fontSize(14)
+                   .font('Helvetica-Bold')
+                   .text(driver.name, 60, stubY + 12);
+
+                doc.fontSize(10)
+                   .fillColor('#7f8c8d')
+                   .font('Helvetica')
+                   .text(`${driver.deliveries} ${driver.deliveries === 1 ? 'delivery' : 'deliveries'} completed`, 60, stubY + 32);
+
+                // Earnings breakdown
+                doc.fontSize(11)
+                   .fillColor('#34495e')
+                   .font('Helvetica');
+
+                doc.text(`Delivery Fees:`, 60, stubY + 55);
+                doc.text(`Tips Received:`, 250, stubY + 55);
+
+                doc.font('Helvetica-Bold');
+                doc.text(`$${driver.deliveryFees.toFixed(2)}`, 150, stubY + 55);
+                doc.text(`$${driver.tips.toFixed(2)}`, 340, stubY + 55);
+
+                // Total pay (prominent)
+                doc.fontSize(12)
+                   .fillColor('#ffffff');
+                
+                // Total pay box
+                doc.roundedRect(420, stubY + 10, 115, 65, 3)
+                   .fillAndStroke('#27ae60', '#229954');
+
+                doc.fontSize(9)
+                   .text('TOTAL PAY', 425, stubY + 18, { width: 105, align: 'center' });
+                
+                doc.fontSize(20)
+                   .font('Helvetica-Bold')
+                   .text(`$${driver.total.toFixed(2)}`, 425, stubY + 38, { width: 105, align: 'center' });
+
+                doc.y = stubY + 95;
+                doc.moveDown(0.5);
+            });
+
+            // Footer note
+            doc.moveDown(1);
+            doc.fontSize(9)
+               .fillColor('#7f8c8d')
+               .font('Helvetica')
+               .text(
+                   'Note: Driver pay includes delivery fees and tips from completed deliveries only.',
+                   50,
+                   doc.y,
+                   { align: 'center', width: 495 }
+               );
+        }
+
         // Finalize PDF
         doc.end();
 
