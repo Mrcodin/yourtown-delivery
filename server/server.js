@@ -71,6 +71,7 @@ app.use('/api/', apiLimiter);
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/customer-auth', require('./routes/customerAuth'));
+app.use('/api/driver-auth', require('./routes/driverAuth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/customers', require('./routes/customers'));

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const driverSchema = new mongoose.Schema({
   userId: {
@@ -18,13 +20,20 @@ const driverSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
-    trim: true
+    trim: true,
+    unique: true
   },
   email: {
     type: String,
     trim: true,
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: 6,
+    select: false
   },
   vehicle: {
     type: {
@@ -83,6 +92,29 @@ const driverSchema = new mongoose.Schema({
 driverSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`;
 });
+
+// Encrypt password before saving
+driverSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Method to compare password
+driverSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate JWT token
+driverSchema.methods.getSignedJwtToken = function() {
+  return jwt.sign(
+    { id: this._id, role: 'driver' },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '30d' }
+  );
+};
 
 // Index for search
 driverSchema.index({ firstName: 'text', lastName: 'text' });

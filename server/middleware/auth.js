@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Customer = require('../models/Customer');
+const Driver = require('../models/Driver');
+
 
 // Protect routes - accepts both admin and customer tokens
 exports.protect = async (req, res, next) => {
@@ -112,6 +114,68 @@ exports.protectCustomer = async (req, res, next) => {
     });
   }
 };
+
+// Protect driver routes
+exports.protectDriver = async (req, res, next) => {
+  try {
+    let token;
+
+    // Check for token in Authorization header
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please log in to access this feature'
+      });
+    }
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Check if it's a driver token
+      if (decoded.role !== 'driver') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid authentication. Driver access only.'
+        });
+      }
+
+      // Get driver from token
+      req.driver = await Driver.findById(decoded.id);
+
+      if (!req.driver) {
+        return res.status(401).json({
+          success: false,
+          message: 'Driver not found'
+        });
+      }
+
+      if (req.driver.status === 'inactive') {
+        return res.status(401).json({
+          success: false,
+          message: 'Driver account is inactive'
+        });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token is invalid or expired'
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication error'
+    });
+  }
+};
+
 
 // Optional customer authentication (doesn't fail if not authenticated)
 exports.optionalCustomerAuth = async (req, res, next) => {
