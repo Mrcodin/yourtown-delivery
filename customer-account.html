@@ -848,14 +848,54 @@
 
         async function saveOrderChanges() {
             if (editOrderItems.length === 0) {
-                toast.error('Order must have at least one item');
+                if (typeof toast !== 'undefined') {
+                    toast.error('Order must have at least one item');
+                } else {
+                    alert('Order must have at least one item');
+                }
                 return;
             }
 
             try {
-                loading.showOverlay('Saving changes...');
+                if (typeof loading !== 'undefined') {
+                    loading.showOverlay('Saving changes...');
+                }
 
                 const token = customerAuth.getToken();
+                
+                // Properly extract productId - handle both object and string formats
+                const itemsPayload = editOrderItems.map(item => {
+                    let productId;
+                    
+                    // If productId is an object with _id
+                    if (item.productId && typeof item.productId === 'object' && item.productId._id) {
+                        productId = item.productId._id;
+                    } 
+                    // If productId is already a string
+                    else if (item.productId && typeof item.productId === 'string') {
+                        productId = item.productId;
+                    }
+                    // Fallback - shouldn't happen but just in case
+                    else {
+                        console.error('Invalid item structure:', item);
+                        productId = null;
+                    }
+                    
+                    return {
+                        productId: productId,
+                        quantity: item.quantity
+                    };
+                });
+
+                // Filter out any items with null productId
+                const validItems = itemsPayload.filter(item => item.productId);
+                
+                if (validItems.length === 0) {
+                    throw new Error('No valid items to save');
+                }
+
+                console.log('Sending items to API:', validItems); // Debug log
+
                 const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${currentEditOrder._id}/modify`, {
                     method: 'PUT',
                     headers: {
@@ -863,29 +903,42 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        items: editOrderItems.map(item => ({
-                            productId: item.productId?._id || item.productId,
-                            quantity: item.quantity
-                        })),
+                        items: validItems,
                         notes: document.getElementById('edit-notes').value
                     })
                 });
 
                 const data = await response.json();
 
-                if (!data.success) {
+                if (!response.ok || !data.success) {
                     throw new Error(data.message || 'Failed to save changes');
                 }
 
-                loading.hideOverlay();
-                toast.success('Order updated successfully! 🎉');
+                if (typeof loading !== 'undefined') {
+                    loading.hideOverlay();
+                }
+                
+                if (typeof toast !== 'undefined') {
+                    toast.success('Order updated successfully! 🎉');
+                } else {
+                    alert('Order updated successfully! 🎉');
+                }
+                
                 closeEditOrderModal();
                 loadOrders(); // Refresh order list
 
             } catch (error) {
                 console.error('Save order error:', error);
-                loading.hideOverlay();
-                toast.error(error.message || 'Failed to save changes');
+                
+                if (typeof loading !== 'undefined') {
+                    loading.hideOverlay();
+                }
+                
+                if (typeof toast !== 'undefined') {
+                    toast.error(error.message || 'Failed to save changes');
+                } else {
+                    alert('Error: ' + (error.message || 'Failed to save changes'));
+                }
             }
         }
 
