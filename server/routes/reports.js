@@ -11,5 +11,6 @@ router.get('/daily-revenue', reportController.getDailyRevenue);
 router.get('/top-products', reportController.getTopProducts);
 router.get('/driver-performance', reportController.getDriverPerformance);
 router.get('/customer-insights', reportController.getCustomerInsights);
+router.post('/pdf', reportController.generatePDFReport);
 
 module.exports = router;

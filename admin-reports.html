@@ -127,9 +127,13 @@
                     <option value="quarter">This Quarter</option>
                     <option value="year">This Year</option>
                 </select>
-                <button class="btn btn-primary" onclick="exportReportData()" style="display: flex; align-items: center; gap: 5px;">
+                <button class="btn btn-primary" onclick="exportReportData()" style="display: flex; align-items: center; gap: 5px; margin-right: 10px;">
                     <span>📊</span>
-                    <span>Export Data</span>
+                    <span>CSV Export</span>
+                </button>
+                <button class="btn btn-success" onclick="exportReportPDF()" style="display: flex; align-items: center; gap: 5px;">
+                    <span>📄</span>
+                    <span>PDF Export</span>
                 </button>
             </div>
         </header>

@@ -1994,6 +1994,59 @@ function exportReportData() {
     showAdminToast(`Exported ${filteredOrders.length} orders successfully!`, 'success');
 }
 
+// Export PDF Report
+function exportReportPDF() {
+    const period = document.getElementById('report-period').value;
+    const filteredOrders = getOrdersByPeriod(period);
+    
+    if (!filteredOrders || filteredOrders.length === 0) {
+        showAdminToast('No orders to export', 'error');
+        return;
+    }
+    
+    showAdminToast('Generating PDF report...', 'info');
+    
+    // Call backend to generate PDF
+    const periodLabels = {
+        week: 'Last 7 Days',
+        month: 'This Month',
+        quarter: 'This Quarter',
+        year: 'This Year'
+    };
+    
+    fetch(`${API_BASE_URL}/api/reports/pdf`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+            orders: filteredOrders,
+            period: periodLabels[period] || 'Custom Period'
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to generate PDF');
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sales-report-${period}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        showAdminToast(`PDF report generated successfully!`, 'success');
+    })
+    .catch(error => {
+        console.error('PDF export error:', error);
+        showAdminToast('Failed to generate PDF report', 'error');
+    });
+}
+
 function generateReportCSV(orders, period) {
     // CSV Headers
     const headers = [
