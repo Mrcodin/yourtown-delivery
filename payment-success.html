@@ -106,7 +106,7 @@
                     <button id="download-receipt-btn" class="btn btn-primary" onclick="downloadReceipt()" style="display: none;">
                         📄 Download Receipt (PDF)
                     </button>
-                    <a href="track.html" class="btn btn-primary">Track My Order</a>
+                    <a href="track.html" id="track-order-btn" class="btn btn-primary">Track My Order</a>
                     <a href="shop.html" class="btn btn-secondary">Continue Shopping</a>
                     <a href="index.html" class="btn btn-secondary">Back to Home</a>
                 </div>
@@ -146,6 +146,11 @@
     <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
+    
+    <!-- Error Tracking & UI Modules -->
+    <script src="js/error-tracking.js"></script>
+    <script src="js/ui-helpers.js"></script>
+    
     <script src="main.js"></script>
     <script src="back-to-top.js"></script>
 
@@ -225,6 +230,13 @@
                             
                             // Show download receipt button
                             document.getElementById('download-receipt-btn').style.display = 'inline-block';
+                            
+                            // Update track order button with phone number
+                            if (order.customerInfo?.phone) {
+                                const trackBtn = document.getElementById('track-order-btn');
+                                const encodedPhone = encodeURIComponent(order.customerInfo.phone);
+                                trackBtn.href = `track.html?phone=${encodedPhone}`;
+                            }
                         }
                     } catch (err) {
                         console.log('Could not fetch order details:', err);

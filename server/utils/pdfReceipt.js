@@ -269,11 +269,13 @@ async function generateReceipt(order, outputPath = null) {
 
       // Page numbers (if multiple pages)
       const pages = doc.bufferedPageRange();
-      for (let i = 0; i < pages.count; i++) {
-        doc.switchToPage(i);
-        doc.fontSize(8)
-           .fillColor('#999999')
-           .text(`Page ${i + 1} of ${pages.count}`, 50, 770, { align: 'center', width: 495 });
+      if (pages.count > 1) {
+        for (let i = 0; i < pages.count; i++) {
+          doc.switchToPage(i);
+          doc.fontSize(8)
+             .fillColor('#999999')
+             .text(`Page ${i + 1} of ${pages.count}`, 50, 770, { align: 'center', width: 495 });
+        }
       }
 
       // Save to file if path provided
