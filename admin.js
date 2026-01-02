@@ -874,13 +874,13 @@ function updatePendingOrdersCount() {
 
 // ============ ORDER DETAIL MODAL ============
 
-let currentOrderId = null;
+let adminCurrentOrderId = null;
 
 function viewOrderDetail(orderId) {
     const order = adminOrders.find(o => o._id === orderId || o.id === orderId);
     if (!order) return;
     
-    currentOrderId = order._id || orderId;
+    adminCurrentOrderId = order._id || orderId;
     
     // Populate modal
     setElementText('modal-order-id', order.orderId || order.id);
@@ -939,9 +939,9 @@ function viewOrderDetail(orderId) {
 }
 
 async function updateOrderStatus() {
-    if (!currentOrderId) return;
+    if (!adminCurrentOrderId) return;
     
-    const order = adminOrders.find(o => o._id === currentOrderId || o.id === currentOrderId);
+    const order = adminOrders.find(o => o._id === adminCurrentOrderId || o.id === adminCurrentOrderId);
     if (!order) return;
     
     const newStatus = document.getElementById('update-status').value;
@@ -988,12 +988,12 @@ function quickUpdateStatus(orderId) {
 }
 
 async function cancelOrder() {
-    if (!currentOrderId) return;
+    if (!adminCurrentOrderId) return;
     
     if (!confirm('Are you sure you want to cancel this order?')) return;
     
     try {
-        const response = await api.updateOrderStatus(currentOrderId, 'cancelled');
+        const response = await api.updateOrderStatus(adminCurrentOrderId, 'cancelled');
         
         if (response.success) {
             showAdminToast('Order cancelled', 'warning');
@@ -1017,7 +1017,7 @@ function printOrder() {
 }
 
 function callCustomer() {
-    const order = adminOrders.find(o => o._id === currentOrderId);
+    const order = adminOrders.find(o => o._id === adminCurrentOrderId);
     if (order) {
         const phone = order.customerInfo?.phone || order.phone;
         if (phone) {
