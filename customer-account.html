@@ -420,8 +420,8 @@
                             <span class="info-item">📦 Items: <strong>${order.items.length}</strong></span>
                         </div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <a href="track.html?phone=${order.customerInfo?.phone || ''}" class="btn-large btn-secondary">
-                                👁️ View Details
+                            <a href="${API_CONFIG.BASE_URL}/orders/${order._id}/receipt" target="_blank" class="btn-large btn-secondary">
+                                📄 View Receipt
                             </a>
                             ${canModify ? `
                                 <button onclick="openEditOrderModal('${order._id}')" class="btn-large" style="background: #f59e0b; color: white;">
