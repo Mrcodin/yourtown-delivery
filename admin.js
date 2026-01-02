@@ -1923,6 +1923,174 @@ function formatReportHour(hour) {
     return h + 'a';
 }
 
+// ============ REPORT DATA EXPORT ============
+
+function updateReportsPeriod() {
+    // Get selected period
+    const period = document.getElementById('report-period')?.value || 'month';
+    
+    // Filter orders based on period
+    const filteredOrders = getOrdersByPeriod(period);
+    
+    // Update all report sections with filtered data
+    // For now, just refresh the page (full implementation would filter all charts)
+    initReportsPage();
+}
+
+function getOrdersByPeriod(period) {
+    const now = new Date();
+    let startDate;
+    
+    switch(period) {
+        case 'week':
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+        case 'month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+        case 'quarter':
+            const quarter = Math.floor(now.getMonth() / 3);
+            startDate = new Date(now.getFullYear(), quarter * 3, 1);
+            break;
+        case 'year':
+            startDate = new Date(now.getFullYear(), 0, 1);
+            break;
+        default:
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    
+    return adminOrders.filter(order => {
+        const orderDate = new Date(order.createdAt || order.timestamp);
+        return orderDate >= startDate && orderDate <= now;
+    });
+}
+
+function exportReportData() {
+    const period = document.getElementById('report-period')?.value || 'month';
+    const filteredOrders = getOrdersByPeriod(period);
+    
+    if (filteredOrders.length === 0) {
+        showAdminToast('No data to export for selected period', 'warning');
+        return;
+    }
+    
+    // Prepare CSV data
+    const csvData = generateReportCSV(filteredOrders, period);
+    
+    // Create download link
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders-report-${period}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showAdminToast(`Exported ${filteredOrders.length} orders successfully!`, 'success');
+}
+
+function generateReportCSV(orders, period) {
+    // CSV Headers
+    const headers = [
+        'Order ID',
+        'Date',
+        'Time',
+        'Customer Name',
+        'Phone',
+        'Email',
+        'Status',
+        'Payment Method',
+        'Items',
+        'Subtotal',
+        'Delivery Fee',
+        'Tip',
+        'Tax',
+        'Discount',
+        'Total',
+        'Special Instructions'
+    ];
+    
+    // Build CSV rows
+    const rows = orders.map(order => {
+        const orderDate = new Date(order.createdAt || order.timestamp);
+        const items = (order.items || []).map(item => 
+            `${item.quantity}x ${item.name} ($${item.price})`
+        ).join('; ');
+        
+        return [
+            order.orderId || order._id,
+            orderDate.toLocaleDateString(),
+            orderDate.toLocaleTimeString(),
+            order.customerInfo?.name || order.customer?.name || '',
+            order.customerInfo?.phone || order.customer?.phone || '',
+            order.customerInfo?.email || order.customer?.email || '',
+            order.status || '',
+            order.payment?.method || order.paymentMethod || '',
+            `"${items}"`,
+            order.pricing?.subtotal || 0,
+            order.pricing?.deliveryFee || order.deliveryFee || 6.99,
+            order.pricing?.tip || 0,
+            order.pricing?.tax || 0,
+            order.pricing?.discount || 0,
+            order.pricing?.total || order.total || 0,
+            `"${order.delivery?.instructions || order.notes || ''}"`
+        ];
+    });
+    
+    // Calculate summary statistics
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.pricing?.total || o.total || 0), 0);
+    const totalOrders = orders.length;
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalTips = orders.reduce((sum, o) => sum + (o.pricing?.tip || 0), 0);
+    
+    // Payment method breakdown
+    const paymentCounts = { cash: 0, card: 0, check: 0 };
+    orders.forEach(order => {
+        const method = order.payment?.method || order.paymentMethod || 'cash';
+        if (paymentCounts.hasOwnProperty(method)) {
+            paymentCounts[method]++;
+        }
+    });
+    
+    // Status breakdown
+    const statusCounts = {};
+    orders.forEach(order => {
+        const status = order.status || 'unknown';
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+    
+    // Build CSV content
+    let csv = headers.join(',') + '\n';
+    csv += rows.map(row => row.join(',')).join('\n');
+    
+    // Add summary section
+    csv += '\n\n';
+    csv += 'SUMMARY STATISTICS\n';
+    csv += `Period,${period}\n`;
+    csv += `Export Date,${new Date().toLocaleString()}\n`;
+    csv += `Total Orders,${totalOrders}\n`;
+    csv += `Total Revenue,$${totalRevenue.toFixed(2)}\n`;
+    csv += `Average Order Value,$${avgOrderValue.toFixed(2)}\n`;
+    csv += `Total Tips,$${totalTips.toFixed(2)}\n`;
+    csv += '\n';
+    csv += 'PAYMENT METHODS\n';
+    csv += `Cash,${paymentCounts.cash}\n`;
+    csv += `Card,${paymentCounts.card}\n`;
+    csv += `Check,${paymentCounts.check}\n`;
+    csv += '\n';
+    csv += 'ORDER STATUS\n';
+    Object.entries(statusCounts).forEach(([status, count]) => {
+        csv += `${status},${count}\n`;
+    });
+    
+    return csv;
+}
+
 // ============ PHONE ORDER (NEW ORDER MODAL) ============
 
 function openNewOrderModal() {

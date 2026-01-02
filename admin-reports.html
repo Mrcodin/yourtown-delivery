@@ -121,12 +121,16 @@
             <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
             <h2 class="topbar-title">Reports & Analytics</h2>
             <div class="topbar-right">
-                <select class="form-input" id="report-period" onchange="updateReports()">
+                <select class="form-input" id="report-period" onchange="updateReportsPeriod()" style="margin-right: 10px;">
                     <option value="week">Last 7 Days</option>
                     <option value="month" selected>This Month</option>
                     <option value="quarter">This Quarter</option>
                     <option value="year">This Year</option>
                 </select>
+                <button class="btn btn-primary" onclick="exportReportData()" style="display: flex; align-items: center; gap: 5px;">
+                    <span>📊</span>
+                    <span>Export Data</span>
+                </button>
             </div>
         </header>
 
