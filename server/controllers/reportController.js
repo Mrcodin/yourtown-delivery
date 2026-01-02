@@ -680,18 +680,18 @@ exports.generatePDFReport = async (req, res) => {
                 doc.text(`$${driver.basePay.toFixed(2)}`, 180, stubY + 55);
                 doc.text(`$${driver.tips.toFixed(2)}`, 340, stubY + 55);
 
-                // Total pay (prominent)
-                doc.fontSize(12)
-                   .fillColor('#ffffff');
-                
-                // Total pay box
+                // Total pay (prominent) - using high contrast for better visibility
+                // Total pay box with light background
                 doc.roundedRect(420, stubY + 10, 115, 65, 3)
-                   .fillAndStroke('#27ae60', '#229954');
+                   .fillAndStroke('#f8f9fa', '#2c3e50');
 
                 doc.fontSize(9)
+                   .fillColor('#2c3e50')
+                   .font('Helvetica-Bold')
                    .text('TOTAL PAY', 425, stubY + 18, { width: 105, align: 'center' });
                 
                 doc.fontSize(20)
+                   .fillColor('#000000')
                    .font('Helvetica-Bold')
                    .text(`$${driver.total.toFixed(2)}`, 425, stubY + 38, { width: 105, align: 'center' });
 
