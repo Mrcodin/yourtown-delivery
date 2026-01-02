@@ -102,6 +102,7 @@ exports.createDriver = async (req, res) => {
       lastName,
       phone,
       email,
+      password, // Include the default password
       vehicle,
       payRate: payRate || 4.00,
       notes
