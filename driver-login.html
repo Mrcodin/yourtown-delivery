@@ -235,9 +235,9 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
+    <script src="api.js"></script>
     <script>
-        const API_BASE_URL = window.APP_CONFIG.apiUrl;
+        const API_BASE_URL = API_CONFIG.BASE_URL.replace('/api', '');
 
         function showAlert(message, type = 'error') {
             const alertContainer = document.getElementById('alertContainer');
