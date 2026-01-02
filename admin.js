@@ -1235,6 +1235,19 @@ function formatProductStatus(status) {
 
 // ============ DRIVERS PAGE ============
 
+async function loadDrivers() {
+    try {
+        const response = await api.getDrivers({ showLoading: false });
+        if (response.success) {
+            drivers = response.drivers || [];
+            renderDriversGrid();
+            updateDriverStats();
+        }
+    } catch (error) {
+        console.error('Error loading drivers:', error);
+    }
+}
+
 function initDriversPage() {
     renderDriversGrid();
     updateDriverStats();
