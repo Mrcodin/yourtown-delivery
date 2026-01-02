@@ -199,23 +199,38 @@
                     throw new Error('No order ID provided');
                 }
 
-                // Fetch order details - use public endpoint if available
-                // For cash/check orders without payment intent, we'll use the order ID only
+                // Fetch order details - use public endpoint
+                // For cash/check orders, this works within 1 hour of order creation
                 let response;
                 try {
                     // Try public endpoint first (works for all orders)
-                    response = await fetch(`${API_BASE_URL}/orders/public/${orderId}`, {
+                    // Remove /api suffix from baseURL for public endpoint
+                    const baseURL = api.baseURL.replace(/\/api$/, '');
+                    const publicResponse = await fetch(`${baseURL}/api/orders/public/${orderId}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json'
                         }
-                    }).then(r => r.json());
+                    });
+                    
+                    if (!publicResponse.ok) {
+                        const errorData = await publicResponse.json();
+                        throw new Error(errorData.message || 'Failed to load order');
+                    }
+                    
+                    response = await publicResponse.json();
                 } catch (err) {
+                    console.error('Public endpoint error:', err);
                     // Fallback: if user is logged in, try authenticated endpoint
-                    if (customerAuth.isLoggedIn()) {
-                        response = await api.get(`/orders/${orderId}`);
+                    if (customerAuth && customerAuth.isLoggedIn()) {
+                        try {
+                            response = await api.get(`/orders/${orderId}`);
+                        } catch (authErr) {
+                            console.error('Authenticated endpoint error:', authErr);
+                            throw new Error('Unable to load order details. Please try logging in to your account.');
+                        }
                     } else {
-                        throw err;
+                        throw new Error('Unable to load order details. Please log in to view your order.');
                     }
                 }
 
@@ -228,7 +243,16 @@
 
                     // Update order details
                     document.getElementById('order-number').textContent = order.orderId || orderId;
-                    document.getElementById('total-amount').textContent = `$${order.total.toFixed(2)}`;
+                    document.getElementById('total-amount').textContent = `$${(order.pricing?.total || 0).toFixed(2)}`;
+                    
+                    // Update Track Order buttons with phone number
+                    const trackButtons = document.querySelectorAll('a[href="track.html"]');
+                    const phone = order.customerInfo?.phone;
+                    if (phone) {
+                        trackButtons.forEach(btn => {
+                            btn.href = `track.html?phone=${encodeURIComponent(phone)}`;
+                        });
+                    }
                     
                     // Update payment method display
                     const paymentDisplay = document.getElementById('payment-method');
@@ -285,17 +309,32 @@
 
                 let response;
                 try {
-                    response = await fetch(`${API_BASE_URL}/api/orders/public/${orderId}`, {
+                    // Remove /api suffix from baseURL for public endpoint
+                    const baseURL = api.baseURL.replace(/\/api$/, '');
+                    const publicResponse = await fetch(`${baseURL}/api/orders/public/${orderId}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json'
                         }
-                    }).then(r => r.json());
+                    });
+                    
+                    if (!publicResponse.ok) {
+                        const errorData = await publicResponse.json();
+                        throw new Error(errorData.message || 'Failed to load order');
+                    }
+                    
+                    response = await publicResponse.json();
                 } catch (err) {
-                    if (customerAuth.isLoggedIn()) {
-                        response = await api.get(`/orders/${orderId}`);
+                    console.error('Public endpoint error:', err);
+                    if (customerAuth && customerAuth.isLoggedIn()) {
+                        try {
+                            response = await api.get(`/orders/${orderId}`);
+                        } catch (authErr) {
+                            console.error('Authenticated endpoint error:', authErr);
+                            throw new Error('Unable to load order details. Please log in to your account.');
+                        }
                     } else {
-                        throw err;
+                        throw new Error('Unable to load order details. Please log in to view your order.');
                     }
                 }
 
@@ -306,6 +345,15 @@
 
                     document.getElementById('order-number').textContent = response.order.orderId || orderId;
                     document.getElementById('total-amount').textContent = `$${response.order.pricing.total.toFixed(2)}`;
+                    
+                    // Update Track Order buttons with phone number
+                    const trackButtons = document.querySelectorAll('a[href^="track.html"]');
+                    const phone = response.order.customerInfo?.phone;
+                    if (phone) {
+                        trackButtons.forEach(btn => {
+                            btn.href = `track.html?phone=${encodeURIComponent(phone)}`;
+                        });
+                    }
                     
                     const paymentDisplay = document.getElementById('payment-method');
                     const paymentNote = document.getElementById('payment-note');

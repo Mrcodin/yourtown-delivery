@@ -13,6 +13,7 @@ const {
 } = require('../utils/emailTemplates');
 const { logEmail } = require('./emailController');
 const { generateReceipt } = require('../utils/pdfReceipt');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -703,6 +704,39 @@ exports.cancelOrderCustomer = async (req, res) => {
 
     await order.save();
 
+    // Process Stripe refund if payment was made
+    let refundProcessed = false;
+    if (order.payment?.stripePaymentIntentId && order.payment.method === 'card') {
+      try {
+        console.log(`🔄 Processing Stripe refund for payment intent: ${order.payment.stripePaymentIntentId}`);
+        
+        const refund = await stripe.refunds.create({
+          payment_intent: order.payment.stripePaymentIntentId,
+          reason: 'requested_by_customer',
+          metadata: {
+            orderId: order.orderId,
+            cancelReason: reason
+          }
+        });
+
+        console.log(`✅ Stripe refund successful: ${refund.id} - Status: ${refund.status}`);
+        
+        // Update order with refund information
+        order.payment.refundId = refund.id;
+        order.payment.refundStatus = refund.status;
+        order.payment.refundedAt = new Date();
+        await order.save();
+        
+        refundProcessed = true;
+      } catch (stripeError) {
+        console.error('❌ Stripe refund error:', stripeError.message);
+        // Log the error but don't fail the cancellation
+        // Store the error for admin review
+        order.payment.refundError = stripeError.message;
+        await order.save();
+      }
+    }
+
     // Send cancellation emails
     try {
       const businessInfo = {
@@ -809,6 +843,38 @@ exports.cancelOrder = async (req, res) => {
     });
 
     await order.save();
+
+    // Process Stripe refund if payment was made
+    let refundProcessed = false;
+    if (order.payment?.stripePaymentIntentId && order.payment.method === 'card') {
+      try {
+        console.log(`🔄 Admin processing Stripe refund for payment intent: ${order.payment.stripePaymentIntentId}`);
+        
+        const refund = await stripe.refunds.create({
+          payment_intent: order.payment.stripePaymentIntentId,
+          reason: 'requested_by_customer',
+          metadata: {
+            orderId: order.orderId,
+            cancelReason: reason || 'Cancelled by admin',
+            cancelledBy: req.user.username
+          }
+        });
+
+        console.log(`✅ Stripe refund successful: ${refund.id} - Status: ${refund.status}`);
+        
+        // Update order with refund information
+        order.payment.refundId = refund.id;
+        order.payment.refundStatus = refund.status;
+        order.payment.refundedAt = new Date();
+        await order.save();
+        
+        refundProcessed = true;
+      } catch (stripeError) {
+        console.error('❌ Stripe refund error:', stripeError.message);
+        order.payment.refundError = stripeError.message;
+        await order.save();
+      }
+    }
 
     // Send cancellation email to customer
     try {

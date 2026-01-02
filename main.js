@@ -239,13 +239,18 @@ function renderGroceryGrid(items = groceries) {
         
         return `
         <div class="grocery-item" data-category="${item.category}">
-            <div class="item-image">${imageHtml}</div>
+            <div class="item-image" onclick="openQuickView('${item.id}')" style="cursor: pointer;">${imageHtml}</div>
             <div class="item-content">
                 <h3 class="item-name">${item.name}</h3>
                 <div class="item-price">$${item.price.toFixed(2)}</div>
-                <button class="add-btn" onclick="addToCart('${item.id}')">
-                    Add to Cart
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="add-btn" onclick="addToCart('${item.id}')" style="flex: 1;">
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-secondary" onclick="openQuickView('${item.id}')" style="padding: 12px; width: 44px;" title="Quick View">
+                        👁️
+                    </button>
+                </div>
             </div>
         </div>
         `;
@@ -282,6 +287,131 @@ function searchItems() {
     );
     
     renderGroceryGrid(filtered);
+}
+
+// Sort products
+function sortProducts() {
+    const sortValue = document.getElementById('sort-select')?.value;
+    if (!sortValue) return;
+    
+    let sortedGroceries = [...groceries];
+    
+    switch(sortValue) {
+        case 'name-asc':
+            sortedGroceries.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'name-desc':
+            sortedGroceries.sort((a, b) => b.name.localeCompare(a.name));
+            break;
+        case 'price-asc':
+            sortedGroceries.sort((a, b) => a.price - b.price);
+            break;
+        case 'price-desc':
+            sortedGroceries.sort((a, b) => b.price - a.price);
+            break;
+        case 'default':
+        default:
+            // Keep original order (as loaded from API)
+            break;
+    }
+    
+    applyFilters(sortedGroceries);
+}
+
+// Apply all filters (price, stock, search, category)
+function applyFilters(productsToFilter) {
+    const searchTerm = document.getElementById('search-input')?.value.toLowerCase().trim();
+    const priceFilter = document.getElementById('price-filter')?.value || 'all';
+    const inStockOnly = document.getElementById('in-stock-filter')?.checked;
+    const activeCategory = document.querySelector('.category-btn.active')?.textContent.trim();
+    
+    // Start with provided products or all groceries
+    let filtered = productsToFilter || [...groceries];
+    
+    // Apply category filter
+    if (activeCategory && !activeCategory.includes('All Items')) {
+        const categoryMap = {
+            '🥬 Produce': 'produce',
+            '🥛 Dairy & Eggs': 'dairy',
+            '🍞 Bakery': 'bakery',
+            '🥩 Meat': 'meat',
+            '🥫 Pantry': 'pantry',
+            '🧊 Frozen': 'frozen',
+            '🥤 Beverages': 'beverages'
+        };
+        const category = categoryMap[activeCategory];
+        if (category) {
+            filtered = filtered.filter(item => item.category === category);
+        }
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(item => 
+            item.name.toLowerCase().includes(searchTerm) ||
+            item.category.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Apply price filter
+    if (priceFilter !== 'all') {
+        const [min, max] = priceFilter.split('-').map(Number);
+        filtered = filtered.filter(item => 
+            item.price >= min && item.price <= max
+        );
+    }
+    
+    // Apply stock filter (for now, all items are in stock, but ready for future)
+    if (inStockOnly) {
+        // When we add stock field to products, filter here
+        // filtered = filtered.filter(item => item.inStock !== false);
+    }
+    
+    renderGroceryGrid(filtered);
+}
+
+// Clear all filters
+function clearFilters() {
+    // Reset sort
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) sortSelect.value = 'default';
+    
+    // Reset price filter
+    const priceFilter = document.getElementById('price-filter');
+    if (priceFilter) priceFilter.value = 'all';
+    
+    // Reset stock filter
+    const stockFilter = document.getElementById('in-stock-filter');
+    if (stockFilter) stockFilter.checked = false;
+    
+    // Reset search
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+    
+    // Reset category to "All Items"
+    const allButton = document.querySelector('.category-btn');
+    if (allButton) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        allButton.classList.add('active');
+    }
+    
+    // Show all products
+    renderGroceryGrid(groceries);
+}
+
+// Update filter category to work with new filter system
+function filterCategory(category, btn) {
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    
+    // Use the new filter system
+    applyFilters();
+}
+
+// Update search to work with new filter system
+function searchItems() {
+    applyFilters();
 }
 
 // Render cart items
@@ -762,7 +892,7 @@ let currentOrderId = null;
 function showCancelModal() {
     const modal = document.getElementById('cancel-modal');
     if (modal) {
-        modal.style.display = 'flex';
+        modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 }
@@ -770,7 +900,7 @@ function showCancelModal() {
 function closeCancelModal() {
     const modal = document.getElementById('cancel-modal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         document.body.style.overflow = '';
         
         // Reset form
@@ -779,6 +909,10 @@ function closeCancelModal() {
         document.getElementById('other-reason-container').style.display = 'none';
     }
 }
+
+// Expose functions globally for onclick attributes
+window.showCancelModal = showCancelModal;
+window.closeCancelModal = closeCancelModal;
 
 // Show/hide custom reason textarea
 document.addEventListener('DOMContentLoaded', function() {
@@ -833,9 +967,9 @@ async function confirmCancelOrder() {
     }
     
     try {
-        loading.show();
+        loading.showOverlay('Cancelling your order...');
         
-        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/cancel`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/cancel`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -852,21 +986,54 @@ async function confirmCancelOrder() {
         // Close modal
         closeCancelModal();
         
-        // Show success message
-        showToast('Your order has been cancelled successfully', 'success');
+        // Show prominent success message
+        showToast('✅ Order Cancelled Successfully', 'success');
         
-        // Refresh order status
+        // Update status display immediately
+        const statusBadge = document.querySelector('.status-badge');
+        if (statusBadge) {
+            statusBadge.textContent = '❌ CANCELLED';
+            statusBadge.style.background = '#dc2626';
+            statusBadge.style.color = 'white';
+        }
+        
+        // Hide cancel button
+        const cancelBtn = document.querySelector('button[onclick="showCancelModal()"]');
+        if (cancelBtn) {
+            cancelBtn.style.display = 'none';
+        }
+        
+        // Add cancellation notice
+        const orderInfo = document.querySelector('.order-info-card');
+        if (orderInfo) {
+            const notice = document.createElement('div');
+            notice.style.cssText = 'background: #fee2e2; border: 2px solid #dc2626; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;';
+            notice.innerHTML = `
+                <h3 style="color: #dc2626; margin: 0 0 10px 0; font-size: 22px;">
+                    ✅ Your order has been cancelled
+                </h3>
+                <p style="font-size: 18px; margin: 0; color: #1f2937;">
+                    No charges will be made to your account. You will receive a confirmation email shortly.
+                </p>
+            `;
+            orderInfo.appendChild(notice);
+        }
+        
+        // Refresh order status after showing immediate feedback
         setTimeout(() => {
             trackOrder();
-        }, 1000);
+        }, 2000);
         
     } catch (error) {
         console.error('Cancel order error:', error);
         showToast(error.message || 'Failed to cancel order. Please contact us directly.', 'error');
     } finally {
-        loading.hide();
+        loading.hideOverlay();
     }
 }
+
+// Expose globally for onclick attribute
+window.confirmCancelOrder = confirmCancelOrder;
 
 // ============ ACCESSIBILITY ============
 function toggleLargeText() {
@@ -1023,4 +1190,196 @@ function updateTipDisplay(amount) {
             tipDisplay.style.display = 'none';
         }
     }
+}
+
+// ============ QUICK VIEW MODAL ============
+
+function openQuickView(itemId) {
+    try {
+        const item = groceries.find(g => g.id === itemId);
+        if (!item) {
+            console.error('Product not found:', itemId);
+            return;
+        }
+        
+        const modal = document.getElementById('quick-view-modal');
+        if (!modal) {
+            console.error('Quick view modal not found. This feature is only available on the shop page.');
+            showToast('⚠️ Quick view not available on this page', 'error');
+            return;
+        }
+        
+        // Check if all required elements exist
+        const requiredElements = ['qv-image', 'qv-name', 'qv-price', 'qv-category', 'qv-quantity', 'qv-add-btn'];
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missingElements.length > 0) {
+            console.error('Missing quick view elements:', missingElements);
+            showToast('⚠️ Quick view is not properly configured', 'error');
+            return;
+        }
+        
+        // Populate modal
+        const imageHtml = item.imageUrl 
+            ? `<img src="${item.imageUrl}" alt="${item.name}">`
+            : item.emoji;
+        
+        document.getElementById('qv-image').innerHTML = imageHtml;
+        document.getElementById('qv-name').textContent = item.name;
+        document.getElementById('qv-price').textContent = `$${item.price.toFixed(2)}`;
+        document.getElementById('qv-category').textContent = item.category;
+        document.getElementById('qv-quantity').value = 1;
+        
+        // Set up add to cart button
+        const addBtn = document.getElementById('qv-add-btn');
+        addBtn.onclick = () => {
+            const quantity = parseInt(document.getElementById('qv-quantity').value);
+            for (let i = 0; i < quantity; i++) {
+                addToCart(itemId);
+            }
+            closeQuickView();
+            showToast(`✅ Added ${quantity} ${item.name} to cart!`, 'success');
+        };
+        
+        // Show modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Close on ESC
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeQuickView();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        // Close on outside click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeQuickView();
+            }
+        };
+    } catch (error) {
+        console.error('Error opening quick view:', error);
+        showToast('⚠️ Unable to open quick view', 'error');
+        // Ensure scrolling is restored even if there's an error
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function closeQuickView() {
+    const modal = document.getElementById('quick-view-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    // Always restore scrolling, even if modal doesn't exist
+    document.body.style.overflow = 'auto';
+}
+
+function adjustQvQuantity(delta) {
+    const input = document.getElementById('qv-quantity');
+    const current = parseInt(input.value);
+    const newValue = Math.max(1, Math.min(99, current + delta));
+    input.value = newValue;
+}
+
+// ============ SEARCH AUTOCOMPLETE ============
+
+let searchTimeout;
+function setupSearchAutocomplete() {
+    const searchInput = document.getElementById('search-input');
+    if (!searchInput) return;
+    
+    // Create autocomplete container
+    const autocompleteContainer = document.createElement('div');
+    autocompleteContainer.id = 'search-autocomplete';
+    autocompleteContainer.className = 'search-autocomplete';
+    searchInput.parentNode.style.position = 'relative';
+    searchInput.parentNode.appendChild(autocompleteContainer);
+    
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            autocompleteContainer.innerHTML = '';
+            autocompleteContainer.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            const matches = groceries
+                .filter(item => 
+                    item.name.toLowerCase().includes(query) ||
+                    item.category.toLowerCase().includes(query)
+                )
+                .slice(0, 5);
+            
+            if (matches.length === 0) {
+                autocompleteContainer.innerHTML = '';
+                autocompleteContainer.style.display = 'none';
+                return;
+            }
+            
+            autocompleteContainer.innerHTML = matches.map(item => {
+                const imageHtml = item.imageUrl 
+                    ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">`
+                    : `<span style="font-size: 32px;">${item.emoji}</span>`;
+                
+                return `
+                    <div class="autocomplete-item" onclick="selectSearchItem('${item.id}', '${item.name.replace(/'/g, "\\'")}')">
+                        <div class="autocomplete-image">${imageHtml}</div>
+                        <div class="autocomplete-details">
+                            <div class="autocomplete-name">${highlightMatch(item.name, query)}</div>
+                            <div class="autocomplete-meta">${item.category} • $${item.price.toFixed(2)}</div>
+                        </div>
+                        <button class="autocomplete-add" onclick="event.stopPropagation(); addToCart('${item.id}'); closeAutocomplete();">+</button>
+                    </div>
+                `;
+            }).join('');
+            
+            autocompleteContainer.style.display = 'block';
+        }, 300);
+    });
+    
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+            autocompleteContainer.style.display = 'none';
+        }
+    });
+}
+
+function highlightMatch(text, query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<strong>$1</strong>');
+}
+
+function selectSearchItem(itemId, itemName) {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.value = itemName;
+        applyFilters();
+        closeAutocomplete();
+    }
+}
+
+function closeAutocomplete() {
+    const autocomplete = document.getElementById('search-autocomplete');
+    if (autocomplete) {
+        autocomplete.style.display = 'none';
+    }
+}
+
+// Initialize autocomplete on shop page
+if (document.getElementById('search-input') && groceries.length === 0) {
+    // Wait for products to load
+    setTimeout(() => {
+        if (groceries.length > 0) {
+            setupSearchAutocomplete();
+        }
+    }, 1000);
+} else if (document.getElementById('search-input')) {
+    setupSearchAutocomplete();
 }

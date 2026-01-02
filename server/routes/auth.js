@@ -13,5 +13,8 @@ router.post('/logout', protect, authController.logout);
 router.get('/me', protect, authController.getMe);
 router.get('/verify', protect, authController.verifyToken);
 router.post('/refresh', protect, authController.refreshToken);
+router.put('/profile', protect, authController.updateProfile);
+router.put('/password', protect, authController.changePassword);
+router.put('/preferences', protect, authController.updatePreferences);
 
 module.exports = router;

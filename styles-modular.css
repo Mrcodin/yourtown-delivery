@@ -1,0 +1,34 @@
+/* ===================================
+   HOMETOWN DELIVERY - MODULAR CSS
+   Version 4.0 - Performance Optimized
+   =================================== */
+
+/* Import modular CSS components */
+@import url('css/base.css');         /* Variables, reset, typography */
+@import url('css/layout.css');       /* Header, footer, navigation */
+@import url('css/components.css');   /* Buttons, forms, modals, cards */
+@import url('css/shop.css');         /* Products, cart, filters */
+@import url('css/responsive.css');   /* Media queries */
+
+/* 
+   BENEFITS OF MODULAR CSS:
+   - Faster development (edit specific components)
+   - Better caching (only changed files reload)
+   - Easier maintenance (find styles quickly)
+   - Smaller file downloads (load only what's needed)
+   
+   FILE STRUCTURE:
+   css/
+   ├── base.css         (100 lines) - CSS variables, reset, typography
+   ├── layout.css       (577 lines) - Page layout, header, footer
+   ├── components.css   (568 lines) - Reusable UI components
+   ├── shop.css         (674 lines) - E-commerce specific styles
+   └── responsive.css   (383 lines) - Mobile/tablet breakpoints
+   
+   Total: 2,302 lines (split from original 2,323 lines)
+   
+   USAGE:
+   Just link to styles.css as before - all modules load automatically!
+   
+   For production, run: npm run minify-css (coming soon)
+*/

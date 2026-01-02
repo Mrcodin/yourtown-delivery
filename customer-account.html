@@ -164,13 +164,16 @@
 
                     <!-- Usual Orders Tab -->
                     <div id="tab-usual-orders" class="account-tab">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <div>
-                                <h2 class="section-title">⭐ My Usual Orders</h2>
-                                <p class="page-subtitle">Save your favorite orders for quick reordering</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                            <div style="color: white;">
+                                <h2 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+                                    <span>⭐</span> My Usual Orders
+                                </h2>
+                                <p style="margin: 0; font-size: 16px; opacity: 0.95;">Save your favorite orders for quick reordering</p>
                             </div>
-                            <button onclick="showCreateUsualOrder()" class="btn-large btn-primary" style="white-space: nowrap;">
-                                ➕ Create New
+                            <button onclick="showCreateUsualOrder()" style="padding: 14px 28px; font-size: 18px; font-weight: 600; border-radius: 8px; border: 2px solid white; background: white; color: #667eea; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.15)'">
+                                <span style="font-size: 20px;">➕</span>
+                                <span>Create New</span>
                             </button>
                         </div>
                         
@@ -197,6 +200,28 @@
                     <!-- Settings Tab -->
                     <div id="tab-settings" class="account-tab">
                         <h2 class="section-title">⚙️ Account Settings</h2>
+                        
+                        <!-- Profile Information -->
+                        <div class="settings-section-large">
+                            <h3 class="settings-heading">👤 Profile Information</h3>
+                            <form id="profile-form" class="form-large">
+                                <div class="form-group-large">
+                                    <label>Full Name</label>
+                                    <input type="text" id="profile-name" required class="input-large">
+                                </div>
+                                <div class="form-group-large">
+                                    <label>Email Address</label>
+                                    <input type="email" id="profile-email" required class="input-large">
+                                    <small class="input-hint">Used for order confirmations and receipts</small>
+                                </div>
+                                <div class="form-group-large">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="profile-phone" required class="input-large">
+                                    <small class="input-hint">Used for order updates and delivery coordination</small>
+                                </div>
+                                <button type="submit" class="btn-large btn-primary">💾 Save Changes</button>
+                            </form>
+                        </div>
                         
                         <div class="settings-section-large">
                             <h3 class="settings-heading">🔒 Change Password</h3>
@@ -228,6 +253,9 @@
                                 <input type="checkbox" id="sms-notifications" class="checkbox-large">
                                 <span>💬 Receive text message updates</span>
                             </label>
+                            <button onclick="saveNotificationPreferences()" class="btn-large btn-secondary" style="margin-top: 15px;">
+                                💾 Save Preferences
+                            </button>
                         </div>
 
                         <div class="logout-section">
@@ -295,6 +323,55 @@
         </div>
     </div>
 
+    <!-- CANCEL ORDER MODAL -->
+    <div id="account-cancel-modal" class="modal-overlay" onclick="if(event.target === this) closeCancelModal()">
+        <div class="modal" style="display: block; max-width: 500px; width: 90%; background: white; position: relative; z-index: 3001; box-shadow: 0 25px 50px rgba(0,0,0,0.3); padding: 40px; border-radius: 16px; transform: scale(1) !important;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;">
+                <h2 style="margin: 0; font-size: 24px; color: #1f2937;">Cancel Order</h2>
+                <span class="close" onclick="closeCancelModal()" style="cursor: pointer; font-size: 32px; line-height: 1; color: #6b7280; font-weight: bold; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#6b7280'">&times;</span>
+            </div>
+            <div class="modal-body" style="color: #1f2937;">
+                <p style="margin-bottom: 20px; font-size: 16px;">
+                    Are you sure you want to cancel this order? <strong>This action cannot be undone.</strong>
+                </p>
+                
+                <label for="account-cancel-reason" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    Please tell us why you're cancelling:
+                </label>
+                <select id="account-cancel-reason" class="form-input" style="width: 100%; margin-bottom: 20px;">
+                    <option value="">-- Select a reason --</option>
+                    <option value="Changed my mind">Changed my mind</option>
+                    <option value="Ordered by mistake">Ordered by mistake</option>
+                    <option value="Too expensive">Too expensive</option>
+                    <option value="Taking too long">Taking too long</option>
+                    <option value="other">Other (please specify)</option>
+                </select>
+                
+                <div id="account-other-reason-container" style="display: none; margin-bottom: 20px;">
+                    <label for="account-other-reason" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        Please specify:
+                    </label>
+                    <textarea 
+                        id="account-other-reason" 
+                        class="form-input" 
+                        rows="3" 
+                        placeholder="Tell us more..."
+                        style="width: 100%; resize: vertical;"
+                    ></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeCancelModal()" class="btn btn-outline" style="flex: 1;">
+                        Keep Order
+                    </button>
+                    <button onclick="confirmCancelOrder()" class="btn" style="flex: 1; background: #ef4444; color: white;">
+                        Yes, Cancel Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
@@ -352,6 +429,8 @@
                 displayProfile(customer);
                 loadOrders();
                 checkEmailVerification();
+                loadProfileForm(customer);
+                loadNotificationPreferences(customer);
             } catch (error) {
                 message.showError('Failed to load profile');
                 console.error(error);
@@ -369,6 +448,31 @@
             if (customer.createdAt) {
                 const date = new Date(customer.createdAt);
                 document.getElementById('profile-since').textContent = date.toLocaleDateString();
+            }
+        }
+
+        // Load profile form in settings
+        function loadProfileForm(customer) {
+            const profileNameInput = document.getElementById('profile-name');
+            const profileEmailInput = document.getElementById('profile-email');
+            const profilePhoneInput = document.getElementById('profile-phone');
+            
+            // Check if we're in settings tab (inputs exist)
+            if (profileNameInput && profileNameInput.tagName === 'INPUT') {
+                profileNameInput.value = customer.name || '';
+                profileEmailInput.value = customer.email || '';
+                profilePhoneInput.value = customer.phone || '';
+            }
+        }
+
+        // Load notification preferences
+        function loadNotificationPreferences(customer) {
+            const emailCheckbox = document.getElementById('email-notifications');
+            const smsCheckbox = document.getElementById('sms-notifications');
+            
+            if (customer.preferences?.notifications) {
+                emailCheckbox.checked = customer.preferences.notifications.email !== false;
+                smsCheckbox.checked = customer.preferences.notifications.sms === true;
             }
         }
 
@@ -419,13 +523,16 @@
                             <span class="info-item">💰 Total: <strong>$${total.toFixed(2)}</strong></span>
                             <span class="info-item">📦 Items: <strong>${order.items.length}</strong></span>
                         </div>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
                             <a href="${API_CONFIG.BASE_URL}/orders/${order._id}/receipt" target="_blank" class="btn-large btn-secondary">
                                 📄 View Receipt
                             </a>
                             ${canModify ? `
                                 <button onclick="openEditOrderModal('${order._id}')" class="btn-large" style="background: #f59e0b; color: white;">
                                     ✏️ Edit Order
+                                </button>
+                                <button onclick="openCancelModal('${order._id}')" class="btn-large" style="background: #ef4444; color: white;">
+                                    ❌ Cancel Order
                                 </button>
                             ` : ''}
                         </div>
@@ -908,13 +1015,13 @@
                                     <div style="font-weight: 600; margin-bottom: 5px;">${product.name || item.name}</div>
                                     <div style="color: #6b7280;">$${(product.price || item.price).toFixed(2)} each</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <button onclick="updateEditItemQuantity(${index}, -1)" style="width: 32px; height: 32px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer;">−</button>
+                                <div style="display: flex; align-items: center; gap: 8px; background: #f3f4f6; padding: 8px; border-radius: 8px;">
+                                    <button onclick="updateEditItemQuantity(${index}, -1)" style="width: 36px; height: 36px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer; font-size: 18px; font-weight: bold;">−</button>
                                     <input type="number" value="${item.quantity}" min="1" max="99" 
                                         onchange="setEditItemQuantity(${index}, this.value)"
-                                        style="width: 60px; text-align: center; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
-                                    <button onclick="updateEditItemQuantity(${index}, 1)" style="width: 32px; height: 32px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer;">+</button>
-                                    <button onclick="removeEditItem(${index})" style="width: 32px; height: 32px; border: 1px solid #ef4444; color: #ef4444; background: white; border-radius: 4px; cursor: pointer; margin-left: 10px;">🗑️</button>
+                                        style="width: 60px; text-align: center; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 16px; font-weight: 600;">
+                                    <button onclick="updateEditItemQuantity(${index}, 1)" style="width: 36px; height: 36px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer; font-size: 18px; font-weight: bold;">+</button>
+                                    <button onclick="removeEditItem(${index})" style="width: 36px; height: 36px; border: 1px solid #ef4444; color: #ef4444; background: white; border-radius: 4px; cursor: pointer; font-size: 18px;">🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -1145,6 +1252,133 @@
             }
         }
 
+        // ============ CANCEL ORDER MODAL ============
+        let currentCancelOrderId = null;
+
+        function openCancelModal(orderId) {
+            console.log('Opening cancel modal for order:', orderId);
+            currentCancelOrderId = orderId;
+            const modal = document.getElementById('account-cancel-modal');
+            console.log('Modal element:', modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('Modal classes:', modal.className);
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.error('Cancel modal not found!');
+            }
+        }
+
+        function closeCancelModal() {
+            console.log('Closing cancel modal');
+            const modal = document.getElementById('account-cancel-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // Reset form
+                const reasonSelect = document.getElementById('account-cancel-reason');
+                const otherReason = document.getElementById('account-other-reason');
+                const otherContainer = document.getElementById('account-other-reason-container');
+                
+                if (reasonSelect) reasonSelect.value = '';
+                if (otherReason) otherReason.value = '';
+                if (otherContainer) otherContainer.style.display = 'none';
+            }
+            currentCancelOrderId = null;
+        }
+
+        // ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('account-cancel-modal');
+                if (modal && modal.classList.contains('active')) {
+                    closeCancelModal();
+                }
+            }
+        });
+
+        // Show/hide custom reason textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelReasonSelect = document.getElementById('account-cancel-reason');
+            if (cancelReasonSelect) {
+                cancelReasonSelect.addEventListener('change', function() {
+                    const otherContainer = document.getElementById('account-other-reason-container');
+                    if (this.value === 'other') {
+                        otherContainer.style.display = 'block';
+                    } else {
+                        otherContainer.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        async function confirmCancelOrder() {
+            const reasonSelect = document.getElementById('account-cancel-reason');
+            const otherReasonInput = document.getElementById('account-other-reason');
+            
+            let reason = reasonSelect.value;
+            
+            if (!reason) {
+                toast.error('Please select a cancellation reason');
+                return;
+            }
+            
+            if (reason === 'other') {
+                const otherReason = otherReasonInput.value.trim();
+                if (!otherReason) {
+                    toast.error('Please specify your reason');
+                    return;
+                }
+                reason = otherReason;
+            }
+            
+            if (!currentCancelOrderId) {
+                toast.error('Order information not found');
+                return;
+            }
+            
+            try {
+                loading.showOverlay('Cancelling your order...');
+                
+                const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${currentCancelOrderId}/cancel`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('customerToken')}`
+                    },
+                    body: JSON.stringify({ 
+                        reason, 
+                        phone: customer?.phone 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to cancel order');
+                }
+                
+                // Close modal
+                closeCancelModal();
+                
+                loading.hideOverlay();
+                
+                // Show success message
+                toast.success('✅ Order Cancelled Successfully - Refund will be processed within 5-7 business days');
+                
+                // Refresh order list
+                setTimeout(() => {
+                    loadOrders();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Cancel order error:', error);
+                loading.hideOverlay();
+                toast.error(error.message || 'Failed to cancel order. Please contact us directly.');
+            }
+        }
+
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1284,6 +1518,61 @@
             } catch (error) {
                 loading.hideOverlay();
                 message.showError(error.message || 'Failed to delete address');
+            }
+        }
+
+        // Update profile form
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('profile-name').value.trim();
+            const email = document.getElementById('profile-email').value.trim();
+            const phone = document.getElementById('profile-phone').value.trim();
+            
+            if (!name || !email || !phone) {
+                message.showError('All fields are required');
+                return;
+            }
+            
+            try {
+                loading.showOverlay('Updating profile...');
+                const response = await api.put('/auth/profile', { name, email, phone });
+                
+                if (response.success) {
+                    loading.hideOverlay();
+                    message.showSuccess('Profile updated successfully');
+                    // Reload customer data to update display
+                    await loadCustomerData();
+                } else {
+                    throw new Error(response.message || 'Failed to update profile');
+                }
+            } catch (error) {
+                loading.hideOverlay();
+                message.showError(error.message || 'Failed to update profile');
+            }
+        });
+
+        // Save notification preferences
+        async function saveNotificationPreferences() {
+            try {
+                const emailNotifications = document.getElementById('email-notifications').checked;
+                const smsNotifications = document.getElementById('sms-notifications').checked;
+                
+                loading.showOverlay('Saving preferences...');
+                const response = await api.put('/auth/preferences', {
+                    emailNotifications,
+                    smsNotifications
+                });
+                
+                if (response.success) {
+                    loading.hideOverlay();
+                    message.showSuccess('Preferences saved successfully');
+                } else {
+                    throw new Error(response.message || 'Failed to save preferences');
+                }
+            } catch (error) {
+                loading.hideOverlay();
+                message.showError(error.message || 'Failed to save preferences');
             }
         }
 

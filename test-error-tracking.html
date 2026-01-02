@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Error Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .info {
+            background: #e0e7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #dc2626;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .step::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 Error Tracking Test Page</h1>
+        
+        <div class="info">
+            <strong>📊 What is this?</strong><br>
+            This page demonstrates the error tracking system that monitors your website for problems.
+        </div>
+
+        <h2>How to Use:</h2>
+        <div class="step">
+            <strong>Step 1:</strong> Open the Console
+            <br>Press <code>F12</code> or right-click → Inspect
+        </div>
+        
+        <div class="step">
+            <strong>Step 2:</strong> Click the "Console" tab at the top
+        </div>
+        
+        <div class="step">
+            <strong>Step 3:</strong> Click one of the buttons below to generate test errors
+        </div>
+        
+        <div class="step">
+            <strong>Step 4:</strong> In the Console, type:
+            <br><code>ErrorTracker.showDashboard()</code>
+            <br>and press Enter
+        </div>
+
+        <h2>Test Buttons:</h2>
+        <button onclick="testError1()">🔴 Trigger Test Error</button>
+        <button onclick="testError2()">⚠️ Trigger API Error</button>
+        <button onclick="testError3()">💥 Trigger Promise Rejection</button>
+        <button onclick="showDashboard()">📊 Show Dashboard</button>
+
+        <div class="info" style="margin-top: 30px;">
+            <strong>💡 Pro Tips:</strong><br>
+            • The error tracker runs on ALL your website pages<br>
+            • Errors are saved even if you refresh the page<br>
+            • Use <code>ErrorTracker.clearErrors()</code> to reset<br>
+            • Check <code>ErrorTracker.getStats()</code> for quick stats
+        </div>
+    </div>
+
+    <!-- Load Error Tracking Module -->
+    <script src="js/error-tracking.js"></script>
+    
+    <script>
+        // Test error functions
+        function testError1() {
+            throw new Error('This is a test error from the button!');
+        }
+
+        function testError2() {
+            ErrorTracker.captureError(new Error('Simulated API failure'), {
+                context: 'Test Page',
+                action: 'API Call',
+                endpoint: '/api/test'
+            });
+            alert('✅ API error logged! Check the console dashboard.');
+        }
+
+        function testError3() {
+            Promise.reject(new Error('Test promise rejection'));
+            setTimeout(() => {
+                alert('✅ Promise error logged! Check the console dashboard.');
+            }, 100);
+        }
+
+        function showDashboard() {
+            ErrorTracker.showDashboard();
+            alert('📊 Dashboard displayed in console! Press F12 to see it.');
+        }
+
+        // Welcome message
+        console.log('%c🎉 Error Tracking Test Page Loaded!', 'color: #667eea; font-size: 16px; font-weight: bold;');
+        console.log('%cTry these commands:', 'color: #764ba2; font-size: 14px;');
+        console.log('  ErrorTracker.showDashboard()  - View all errors');
+        console.log('  ErrorTracker.getStats()       - Get error statistics');
+        console.log('  ErrorTracker.clearErrors()    - Clear error log');
+    </script>
+</body>
+</html>

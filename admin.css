@@ -687,6 +687,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
 }
 
 .filter-group label {
@@ -714,26 +718,49 @@
 }
 
 .order-stat {
+    flex: 1;
+    min-width: 150px;
     background: white;
-    padding: 15px 25px;
-    border-radius: 10px;
+    padding: 20px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-left: 4px solid #94a3b8;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.order-stat:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
 }
 
 .order-stat.new {
-    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border-color: #fed7aa;
+}
+
+.order-stat.new .order-stat-count {
+    color: #f59e0b;
 }
 
 .order-stat.in-progress {
-    border-left-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #bfdbfe;
+}
+
+.order-stat.in-progress .order-stat-count {
+    color: #3b82f6;
 }
 
 .order-stat.delivered {
-    border-left-color: #16a34a;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #bbf7d0;
+}
+
+.order-stat.delivered .order-stat-count {
+    color: #16a34a;
 }
 
 .order-stat-count {
@@ -750,13 +777,44 @@
 .table-container {
     background: white;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    -webkit-overflow-scrolling: touch;
+    /* Mobile scroll hint */
+    position: relative;
+}
+
+.table-container::after {
+    content: '👉 Scroll →';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(to left, rgba(255,255,255,0.95), transparent);
+    padding: 10px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6366f1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+    .table-container::after {
+        opacity: 1;
+    }
+    
+    .table-container.scrolled::after {
+        opacity: 0;
+    }
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px; /* Ensure table doesn't compress too much */
 }
 
 .data-table th,

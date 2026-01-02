@@ -202,7 +202,7 @@ class CustomerAuth {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/change-password`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/auth/password`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,

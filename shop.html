@@ -139,6 +139,49 @@
                 </button>
             </div>
 
+            <!-- SORTING & FILTERING -->
+            <div class="filters-toolbar">
+                <div class="filters-left">
+                    <!-- Sort Dropdown -->
+                    <div class="filter-group">
+                        <label for="sort-select" class="filter-label">🔢 Sort by:</label>
+                        <select id="sort-select" class="filter-select" onchange="sortProducts()">
+                            <option value="default">Featured</option>
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="price-asc">Price (Low to High)</option>
+                            <option value="price-desc">Price (High to Low)</option>
+                        </select>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div class="filter-group">
+                        <label for="price-filter" class="filter-label">💰 Price:</label>
+                        <select id="price-filter" class="filter-select" onchange="applyFilters()">
+                            <option value="all">All Prices</option>
+                            <option value="0-5">Under $5</option>
+                            <option value="5-10">$5 - $10</option>
+                            <option value="10-20">$10 - $20</option>
+                            <option value="20-999">$20+</option>
+                        </select>
+                    </div>
+
+                    <!-- Stock Filter -->
+                    <div class="filter-group">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="in-stock-filter" onchange="applyFilters()">
+                            <span>✅ In Stock Only</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filters-right">
+                    <button onclick="clearFilters()" class="btn-clear-filters">
+                        🔄 Clear Filters
+                    </button>
+                </div>
+            </div>
+
             <!-- ITEM COUNT -->
             <div class="results-info">
                 <span id="results-count">Showing all items</span>
@@ -158,6 +201,37 @@
             </div>
         </div>
     </main>
+
+    <!-- QUICK VIEW MODAL -->
+    <div id="quick-view-modal" class="modal-overlay">
+        <div class="modal quick-view-content">
+            <span class="close" onclick="closeQuickView()">&times;</span>
+            <div class="quick-view-body">
+                <div class="quick-view-image">
+                    <div id="qv-image"></div>
+                </div>
+                <div class="quick-view-details">
+                    <h2 id="qv-name"></h2>
+                    <div class="qv-price-section">
+                        <span class="qv-price" id="qv-price"></span>
+                        <span class="qv-category" id="qv-category"></span>
+                    </div>
+                    <div class="qv-quantity-section">
+                        <label for="qv-quantity">Quantity:</label>
+                        <div class="quantity-controls">
+                            <button onclick="adjustQvQuantity(-1)" class="qty-btn">−</button>
+                            <input type="number" id="qv-quantity" value="1" min="1" max="99" class="qty-input">
+                            <button onclick="adjustQvQuantity(1)" class="qty-btn">+</button>
+                        </div>
+                    </div>
+                    <button id="qv-add-btn" class="btn btn-primary btn-large">
+                        Add to Cart
+                    </button>
+                    <p class="qv-hint">💡 Click outside or press ESC to close</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- CART PREVIEW -->
     <div class="cart-preview" id="cart-preview">
@@ -184,6 +258,14 @@
     <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
+    
+    <!-- Modular JavaScript -->
+    <script src="js/error-tracking.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/ui-helpers.js"></script>
+    
     <script src="main.js"></script>
     <script>
         // Update navigation

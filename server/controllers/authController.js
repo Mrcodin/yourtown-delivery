@@ -204,3 +204,173 @@ exports.refreshToken = async (req, res) => {
     });
   }
 };
+
+// @desc    Update customer profile
+// @route   PUT /api/auth/profile
+// @access  Private (Customer)
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const customer = await Customer.findById(req.user._id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer not found'
+      });
+    }
+
+    // Check if email is being changed and already exists
+    if (email && email !== customer.email) {
+      const emailExists = await Customer.findOne({ email, _id: { $ne: req.user._id } });
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email already in use'
+        });
+      }
+      customer.email = email;
+      customer.isEmailVerified = false; // Reset verification if email changes
+    }
+
+    // Check if phone is being changed and already exists
+    if (phone && phone !== customer.phone) {
+      const phoneExists = await Customer.findOne({ phone, _id: { $ne: req.user._id } });
+      if (phoneExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'Phone number already in use'
+        });
+      }
+      customer.phone = phone;
+    }
+
+    if (name) customer.name = name;
+
+    await customer.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      customer: {
+        id: customer._id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Change password
+// @route   PUT /api/auth/password
+// @access  Private (Customer)
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide current and new password'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters'
+      });
+    }
+
+    // Get customer with password field
+    const customer = await Customer.findById(req.user._id).select('+password');
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer not found'
+      });
+    }
+
+    // Check current password
+    const isMatch = await customer.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Set new password (will be hashed by pre-save hook)
+    customer.password = newPassword;
+    await customer.save();
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing password',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Update notification preferences
+// @route   PUT /api/auth/preferences
+// @access  Private (Customer)
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { emailNotifications, smsNotifications } = req.body;
+    
+    const customer = await Customer.findById(req.user._id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer not found'
+      });
+    }
+
+    // Update preferences
+    if (!customer.preferences) {
+      customer.preferences = { notifications: {} };
+    }
+    if (!customer.preferences.notifications) {
+      customer.preferences.notifications = {};
+    }
+
+    if (typeof emailNotifications === 'boolean') {
+      customer.preferences.notifications.email = emailNotifications;
+    }
+    if (typeof smsNotifications === 'boolean') {
+      customer.preferences.notifications.sms = smsNotifications;
+    }
+
+    await customer.save();
+
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      preferences: customer.preferences
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating preferences',
+      error: error.message
+    });
+  }
+};
