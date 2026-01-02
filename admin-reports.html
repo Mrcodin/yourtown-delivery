@@ -297,8 +297,9 @@
             const paymentCounts = { cash: 0, card: 0, check: 0 };
             
             adminOrders.forEach(order => {
-                if (paymentCounts.hasOwnProperty(order.payment)) {
-                    paymentCounts[order.payment]++;
+                const paymentMethod = order.payment?.method || order.paymentMethod || 'cash';
+                if (paymentCounts.hasOwnProperty(paymentMethod)) {
+                    paymentCounts[paymentMethod]++;
                 }
             });
             
@@ -338,7 +339,9 @@
             }
             
             adminOrders.forEach(order => {
-                const hour = new Date(order.timestamp).getHours();
+                const orderDate = order.createdAt || order.timestamp;
+                if (!orderDate) return;
+                const hour = new Date(orderDate).getHours();
                 if (hourCounts.hasOwnProperty(hour)) {
                     hourCounts[hour]++;
                 }
