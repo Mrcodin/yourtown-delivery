@@ -489,18 +489,24 @@ exports.uploadDeliveryProof = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this order' });
         }
 
-        // Update delivery proof
-        order.delivery.proofPhoto = {
-            url: photoUrl,
-            uploadedAt: new Date()
-        };
-
-        await order.save();
+        // Update delivery proof using findByIdAndUpdate
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            {
+                $set: {
+                    'delivery.proofPhoto': {
+                        url: photoUrl,
+                        uploadedAt: new Date()
+                    }
+                }
+            },
+            { new: true, runValidators: false }
+        );
 
         res.json({
             success: true,
             message: 'Delivery proof uploaded successfully',
-            proofPhoto: order.delivery.proofPhoto
+            proofPhoto: updatedOrder.delivery.proofPhoto
         });
     } catch (error) {
         console.error('Upload proof error:', error);
