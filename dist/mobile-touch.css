@@ -1,0 +1,305 @@
+@media (max-width:768px) {
+  .access-btn,
+  .add-btn,
+  .btn,
+  .category-btn,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 20px;
+    font-size: 16px;
+    line-height: 1.2
+  }
+  .btn-block,
+  .btn-primary,
+  .cart-preview .btn {
+    min-height: 52px;
+    font-size: 18px;
+    padding: 14px 24px
+  }
+  .cart-item button,
+  .quantity-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+    font-size: 18px
+  }
+  .grocery-item .add-btn {
+    min-height: 48px;
+    width: 100%;
+    font-size: 17px;
+    padding: 12px;
+    margin-top: 10px
+  }
+  .nav-link,
+  .site-nav a {
+    min-height: 44px;
+    padding: 12px 16px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 16px
+  }
+  .mobile-menu-toggle {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px
+  }
+  input[type=email],
+  input[type=number],
+  input[type=password],
+  input[type=tel],
+  input[type=text],
+  select,
+  textarea {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+    line-height: 1.5
+  }
+  textarea {
+    min-height: 100px
+  }
+  .quantity-input {
+    min-height: 44px;
+    min-width: 60px;
+    font-size: 18px;
+    text-align: center
+  }
+  input[type=checkbox],
+  input[type=radio] {
+    min-height: 24px;
+    min-width: 24px;
+    cursor: pointer
+  }
+  .checkbox-group label,
+  .radio-group label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+    cursor: pointer
+  }
+  .close-btn,
+  .delete-btn,
+  .icon-btn,
+  .remove-btn {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px
+  }
+  .access-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 15px
+  }
+  .category-btn {
+    min-height: 48px;
+    padding: 12px 20px;
+    font-size: 16px;
+    margin: 4px;
+    white-space: nowrap
+  }
+  .cart-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap
+  }
+  .cart-item-quantity button {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 20px;
+    padding: 10px;
+    flex-shrink: 0
+  }
+  .cart-item-quantity input {
+    min-height: 44px;
+    min-width: 50px;
+    font-size: 18px;
+    text-align: center;
+    flex: 0 0 auto
+  }
+  .auth-footer a,
+  p a {
+    padding: 4px 8px;
+    margin: -4px -8px;
+    display: inline-block;
+    min-height: 44px;
+    line-height: 36px
+  }
+  .breadcrumb a,
+  .phone-bar a {
+    display: inline-flex;
+    min-height: 44px
+  }
+  .breadcrumb a {
+    padding: 10px 12px;
+    align-items: center
+  }
+  .order-actions button,
+  .order-card button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+    font-size: 16px;
+    margin: 4px
+  }
+  .search-input {
+    min-height: 52px;
+    padding: 14px 20px;
+    font-size: 17px
+  }
+  .search-btn {
+    min-height: 52px;
+    min-width: 52px;
+    padding: 12px
+  }
+  .grocery-item {
+    padding: 16px;
+    cursor: pointer
+  }
+  .item-image {
+    font-size: 60px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer
+  }
+  .saved-address {
+    padding: 16px;
+    min-height: 60px
+  }
+  .saved-address button {
+    min-height: 44px;
+    min-width: 44px;
+    margin: 4px
+  }
+  .phone-bar a {
+    padding: 10px 16px;
+    align-items: center
+  }
+  .footer a {
+    min-height: 44px;
+    padding: 10px 12px;
+    display: inline-block;
+    line-height: 24px
+  }
+  .form-group {
+    margin-bottom: 24px
+  }
+  .btn + .btn,
+  button + button {
+    margin-left: 12px
+  }
+  @media (max-width:480px) {
+    .btn-group,
+    .cart-actions,
+    .order-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+    .btn-group .btn,
+    .cart-actions .btn,
+    .order-actions .btn {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0
+    }
+  }
+  .tab-button,
+  .tabs button {
+    min-height: 48px;
+    padding: 12px 20px;
+    font-size: 16px
+  }
+  .pagination a,
+  .pagination button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+    font-size: 16px;
+    margin: 4px
+  }
+  #resend-verification-btn,
+  .dialog button,
+  .modal button {
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 16px
+  }
+  .dialog button,
+  .modal button {
+    min-width: 100px;
+    margin: 8px
+  }
+  .back-to-top {
+    width: 56px;
+    height: 56px;
+    bottom: 20px;
+    right: 20px;
+    font-size: 24px
+  }
+  .toast-close {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 6px;
+    font-size: 18px
+  }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: #667eea solid 3px;
+    outline-offset: 3px
+  }
+  a:focus,
+  button:focus,
+  input:focus,
+  select:focus {
+    outline: #667eea solid 2px;
+    outline-offset: 2px
+  }
+}
+@media (max-width:375px) {
+  .add-btn,
+  .btn-block,
+  .btn-primary {
+    min-height: 56px;
+    font-size: 18px
+  }
+  .category-btn {
+    width: 100%;
+    margin: 6px 0
+  }
+  .cart-item-quantity button {
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 22px
+  }
+}
+@media (max-width:768px) and (orientation:landscape) {
+  .btn,
+  button {
+    min-height: 40px
+  }
+  input,
+  select,
+  textarea {
+    min-height: 44px
+  }
+}
+@media (prefers-contrast:high) and (max-width:768px) {
+  .btn,
+  button,
+  input,
+  select {
+    border-width: 3px
+  }
+}

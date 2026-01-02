@@ -4,14 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hometown Grocery Delivery - Your Neighbors, Your Groceries</title>
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.socket.io">
+    
+    <!-- Critical Resources -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Stylesheets with preload for critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="loading.css">
+    <link rel="stylesheet" href="lazy-load.css">
     <link rel="stylesheet" href="back-to-top.css">
     <link rel="stylesheet" href="card-hover.css">
     <link rel="stylesheet" href="mobile-touch.css">
     <link rel="stylesheet" href="mobile-improvements.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    
+    <!-- Fonts with font-display swap -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -359,6 +371,11 @@
     <script src="toast.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
+    
+    <!-- Performance Optimization Scripts -->
+    <script src="sw-register.js" defer></script>
+    <script src="lazy-load.js" defer></script>
+    <script src="performance.js" defer></script>
     
     <!-- Error Tracking & UI Modules -->
     <script src="js/error-tracking.js"></script>

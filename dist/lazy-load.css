@@ -1,0 +1,56 @@
+img[data-src],
+img[data-srcset] {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: 1.5s infinite shimmer
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0
+  }
+  100% {
+    background-position: 200% 0
+  }
+}
+img.lazy-loading {
+  opacity: .6;
+  filter: blur(5px);
+  transition: opacity .3s,filter .3s
+}
+img.lazy-loaded {
+  opacity: 1;
+  filter: blur(0);
+  animation: .3s fadeIn
+}
+@keyframes fadeIn {
+  from {
+    opacity: .6
+  }
+  to {
+    opacity: 1
+  }
+}
+img.lazy-error {
+  background: #f8d7da;
+  border: 2px dashed #dc3545;
+  opacity: .5
+}
+img[data-src].has-lqip {
+  filter: blur(10px);
+  transform: scale(1.05)
+}
+img[data-src].has-lqip.lazy-loaded {
+  filter: blur(0);
+  transform: scale(1);
+  transition: filter .5s,transform .5s
+}
+@media (prefers-reduced-motion:reduce) {
+  img[data-src],
+  img[data-srcset] {
+    animation: none
+  }
+  img.lazy-loaded,
+  img.lazy-loading {
+    transition: none
+  }
+}

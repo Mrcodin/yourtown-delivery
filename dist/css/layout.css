@@ -1,0 +1,467 @@
+.header,
+.step-card,
+.testimonial-card {
+  box-shadow: var(--shadow)
+}
+.cta-section,
+.feature-card,
+.footer-bottom,
+.footer-simple,
+.hero,
+.phone-bar,
+.section-subtitle,
+.section-title,
+.stat-card,
+.step-card {
+  text-align: center
+}
+.accessibility-bar {
+  background-color: #1f2937;
+  padding: 8px 0
+}
+.accessibility-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center
+}
+.accessibility-bar span {
+  color: #9ca3af;
+  font-size: 14px
+}
+.access-btn {
+  background: #374151;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .2s
+}
+.btn,
+.nav-link {
+  transition: .2s;
+  text-decoration: none
+}
+.access-btn:hover {
+  background: #4b5563
+}
+.phone-bar {
+  background-color: var(--accent);
+  color: #000;
+  padding: 12px 0;
+  font-size: 18px;
+  font-weight: 500
+}
+.phone-bar a {
+  color: #000;
+  font-weight: 700;
+  text-decoration: underline
+}
+.header {
+  background-color: var(--white);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100
+}
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+.logo,
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px
+}
+.logo {
+  text-decoration: none;
+  color: var(--text)
+}
+.logo-icon {
+  font-size: 32px
+}
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary)
+}
+.nav-link {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text)
+}
+.btn,
+.mobile-menu-btn {
+  border: none;
+  cursor: pointer
+}
+.btn-outline:hover,
+.btn-white:hover,
+.nav-link:hover {
+  background-color: var(--bg);
+  text-decoration: none
+}
+.btn-primary,
+.nav-link.active {
+  background-color: var(--primary);
+  color: #fff
+}
+.mobile-menu-btn {
+  display: none;
+  background: 0 0;
+  font-size: 28px
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  white-space: nowrap
+}
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 20px
+}
+.btn-xl {
+  padding: 20px 40px;
+  font-size: 22px
+}
+.btn-block {
+  width: 100%
+}
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  text-decoration: none
+}
+.btn-secondary {
+  background-color: var(--secondary);
+  color: #fff
+}
+.btn-secondary:hover {
+  background-color: var(--secondary-dark);
+  text-decoration: none
+}
+.btn-white {
+  background-color: #fff;
+  color: var(--primary)
+}
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--border);
+  color: var(--text)
+}
+.btn-outline-white {
+  background-color: transparent;
+  border: 2px solid #fff;
+  color: #fff
+}
+.btn-outline-white:hover {
+  background-color: rgba(255,255,255,.1);
+  text-decoration: none
+}
+.btn-danger {
+  color: var(--danger);
+  border-color: var(--danger)
+}
+.hero {
+  background: linear-gradient(135deg,var(--primary) 0,var(--primary-dark) 100%);
+  color: #fff;
+  padding: 80px 0
+}
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto
+}
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.2
+}
+.hero-subtitle {
+  font-size: 22px;
+  opacity: .9;
+  margin-bottom: 40px;
+  line-height: 1.5
+}
+.hero-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 40px
+}
+.section-title,
+.stat-number {
+  margin-bottom: 10px;
+  font-weight: 700
+}
+.cta-buttons,
+.trust-badges {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap
+}
+.badge {
+  background: rgba(255,255,255,.2);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 500
+}
+.stats-section {
+  background-color: var(--white);
+  padding: 60px 0;
+  margin-top: -40px;
+  position: relative;
+  z-index: 10;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 30px
+}
+.stat-card {
+  padding: 20px
+}
+.stat-number {
+  font-size: 48px;
+  color: var(--primary);
+  line-height: 1
+}
+.stat-label {
+  font-size: 18px;
+  color: var(--text-light)
+}
+.section {
+  padding: 80px 0
+}
+.section-title {
+  font-size: 36px
+}
+.section-subtitle {
+  font-size: 20px;
+  color: var(--text-light);
+  margin-bottom: 50px
+}
+.how-it-works,
+.testimonials-section {
+  background-color: var(--bg)
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 40px
+}
+.step-card {
+  background: var(--white);
+  padding: 40px 30px;
+  border-radius: var(--radius-lg);
+  position: relative
+}
+.step-number {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700
+}
+.author-avatar,
+.author-name,
+.feature-title,
+.step-title {
+  font-weight: 600
+}
+.step-icon {
+  font-size: 60px;
+  margin: 20px 0
+}
+.step-title {
+  font-size: 24px;
+  margin-bottom: 15px
+}
+.step-description {
+  font-size: 18px;
+  color: var(--text-light);
+  margin-bottom: 15px
+}
+.step-tip {
+  background: var(--primary-light);
+  padding: 10px 15px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--primary-dark)
+}
+.feature-card,
+.testimonial-card {
+  padding: 30px;
+  border-radius: var(--radius-lg)
+}
+.features-section {
+  background-color: var(--white)
+}
+.features-grid,
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 30px
+}
+.feature-card {
+  background: var(--bg);
+  transition: transform .2s,box-shadow .2s
+}
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md)
+}
+.feature-icon {
+  font-size: 50px;
+  margin-bottom: 20px
+}
+.feature-title,
+.footer-links li {
+  margin-bottom: 10px
+}
+.feature-title {
+  font-size: 22px
+}
+.feature-description {
+  font-size: 16px;
+  color: var(--text-light)
+}
+.footer-simple a,
+.testimonial-stars {
+  color: var(--accent)
+}
+.testimonial-card {
+  background: var(--white)
+}
+.testimonial-stars {
+  font-size: 24px;
+  margin-bottom: 15px
+}
+.testimonial-text {
+  font-size: 18px;
+  font-style: italic;
+  margin-bottom: 20px;
+  line-height: 1.6
+}
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 15px
+}
+.author-avatar {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+.author-detail {
+  font-size: 14px;
+  color: var(--text-light)
+}
+.footer,
+.footer-links a:hover {
+  color: #fff
+}
+.cta-section {
+  background: linear-gradient(135deg,var(--secondary) 0,var(--secondary-dark) 100%);
+  color: #fff;
+  padding: 80px 0
+}
+.cta-title {
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 15px
+}
+.cta-subtitle {
+  font-size: 22px;
+  opacity: .9;
+  margin-bottom: 40px
+}
+.footer {
+  background-color: #1f2937;
+  padding: 60px 0 30px;
+  margin-top: auto
+}
+.footer-simple {
+  padding: 30px 0
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 40px;
+  margin-bottom: 40px
+}
+.footer-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px
+}
+.footer-links {
+  list-style: none
+}
+.footer-links a {
+  color: #9ca3af;
+  transition: color .2s
+}
+.footer-bottom {
+  border-top: 1px solid #374151;
+  padding-top: 30px;
+  color: #9ca3af
+}
+.floating-call-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: var(--accent);
+  color: #000;
+  padding: 18px 30px;
+  border-radius: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  animation: 2s infinite pulse
+}
+.floating-call-btn:hover {
+  transform: scale(1.05);
+  text-decoration: none
+}
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1)
+  }
+  50% {
+    transform: scale(1.03)
+  }
+}

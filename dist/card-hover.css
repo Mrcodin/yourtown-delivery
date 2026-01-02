@@ -1,0 +1,200 @@
+.cart-item:hover,
+.product-row:hover {
+  background: linear-gradient(135deg,#f9fafb 0,#f3f4f6 100%)
+}
+.grocery-item {
+  transition: .3s cubic-bezier(.4, 0, .2, 1);
+  cursor: pointer
+}
+.grocery-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0,0,0,.15),0 4px 12px rgba(0,0,0,.1)
+}
+.grocery-item:active {
+  transform: translateY(-4px) scale(1.01)
+}
+.cart-item-image,
+.feature-icon,
+.item-image {
+  transition: transform .3s cubic-bezier(.4, 0, .2, 1)
+}
+.grocery-item:hover .item-image {
+  transform: scale(1.15) rotate(5deg)
+}
+.btn,
+.cart-item,
+.category-btn,
+.driver-card,
+.feature,
+.feature-box,
+.feature-card,
+.grocery-item .add-btn,
+.order-card,
+.product-row,
+.stat,
+.stat-card,
+button {
+  transition: .3s cubic-bezier(.4, 0, .2, 1)
+}
+.grocery-item:hover .add-btn {
+  background: linear-gradient(135deg,#5b21b6 0,#7c3aed 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(124,58,237,.3)
+}
+.grocery-item .add-btn:active {
+  transform: scale(.98)
+}
+.cart-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transform: translateX(4px)
+}
+.cart-item:hover .cart-item-image {
+  transform: scale(1.1) rotate(-5deg)
+}
+.feature-box:hover,
+.feature-card:hover,
+.feature:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(102,126,234,.2),0 4px 12px rgba(102,126,234,.1)
+}
+.feature-box:active,
+.feature-card:active,
+.feature:active {
+  transform: translateY(-4px)
+}
+.feature-box:hover .feature-icon,
+.feature-card:hover .feature-icon,
+.feature:hover .feature-icon {
+  transform: scale(1.2) rotate(10deg)
+}
+.stat-card:hover,
+.stat:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(102,126,234,.2)
+}
+.stat-number,
+.stat-value {
+  transition: color .3s
+}
+.stat-card:hover .stat-value,
+.stat:hover .stat-number {
+  color: #667eea
+}
+.driver-card:hover,
+.order-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+  transform: translateY(-4px)
+}
+.category-btn:hover:not(.active) {
+  background: linear-gradient(135deg,#667eea 0,#764ba2 100%);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102,126,234,.3)
+}
+.category-btn:active {
+  transform: translateY(0) scale(.98)
+}
+.btn:hover,
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.15)
+}
+.btn:active,
+button:active {
+  transform: translateY(0)
+}
+.btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(102,126,234,.3)
+}
+.btn-secondary:hover {
+  box-shadow: 0 6px 16px rgba(107,114,128,.3)
+}
+.product-row:hover {
+  transform: translateX(4px)
+}
+.nav-link {
+  transition: .3s cubic-bezier(.4, 0, .2, 1);
+  position: relative
+}
+.nav-link:hover {
+  color: #667eea;
+  transform: translateY(-2px)
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg,#667eea 0,#764ba2 100%);
+  transition: width .3s cubic-bezier(.4, 0, .2, 1)
+}
+.nav-link:hover::after {
+  width: 100%
+}
+@media (max-width:768px) {
+  .grocery-item:hover {
+    transform: translateY(-4px) scale(1.01)
+  }
+  .feature-card:hover,
+  .feature:hover {
+    transform: translateY(-4px)
+  }
+  .btn:hover,
+  button:hover {
+    transform: none
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .btn,
+  .cart-item,
+  .cart-item-image,
+  .category-btn,
+  .feature,
+  .feature-card,
+  .feature-icon,
+  .grocery-item,
+  .item-image,
+  .nav-link,
+  .order-card,
+  .stat,
+  button {
+    transition: none
+  }
+  .cart-item:hover .cart-item-image,
+  .feature-card:hover,
+  .feature-card:hover .feature-icon,
+  .feature:hover,
+  .feature:hover .feature-icon,
+  .grocery-item:hover,
+  .grocery-item:hover .item-image,
+  .nav-link:hover,
+  .stat:hover {
+    transform: none
+  }
+}
+@media (prefers-contrast:high) {
+  .cart-item:hover,
+  .feature-card:hover,
+  .grocery-item:hover {
+    box-shadow: 0 0 0 3px currentColor
+  }
+}
+@media (prefers-color-scheme:dark) {
+  .cart-item:hover,
+  .product-row:hover {
+    background: linear-gradient(135deg,#1f2937 0,#111827 100%)
+  }
+}
+.cart-item:focus-within,
+.feature-card:focus-within,
+.grocery-item:focus-within,
+.order-card:focus-within {
+  outline: #667eea solid 3px;
+  outline-offset: 2px
+}
+.cart-item:focus-within button,
+.grocery-item:focus-within .add-btn {
+  box-shadow: 0 0 0 3px rgba(102,126,234,.3)
+}
