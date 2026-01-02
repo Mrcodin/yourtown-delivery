@@ -394,22 +394,22 @@ exports.updateOrderStatus = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this order' });
         }
 
-        // Update order status
-        order.status = status;
+        // Build the update object based on status
+        const updateData = { status };
 
         // Update timestamps and driver status based on action
         if (status === 'picked-up') {
-            order.delivery.pickedUpAt = new Date();
+            updateData['delivery.pickedUpAt'] = new Date();
             // Driver is now busy with this order
             await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
         } else if (status === 'delivering') {
             if (!order.delivery.pickedUpAt) {
-                order.delivery.pickedUpAt = new Date();
+                updateData['delivery.pickedUpAt'] = new Date();
             }
             // Update driver status to busy
             await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
         } else if (status === 'delivered') {
-            order.delivery.actualTime = new Date();
+            updateData['delivery.actualTime'] = new Date();
             
             // Update driver's total deliveries and earnings
             const driver = await Driver.findById(driverId);
@@ -419,7 +419,12 @@ exports.updateOrderStatus = async (req, res) => {
             await driver.save();
         }
 
-        await order.save();
+        // Use findByIdAndUpdate to avoid validation errors on legacy orders
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { $set: updateData },
+            { new: true, runValidators: false }
+        ).populate('items.productId', 'name emoji imageUrl');
 
         // Send status update email to customer
         // (You can implement this later with your email service)
@@ -427,7 +432,7 @@ exports.updateOrderStatus = async (req, res) => {
         res.json({
             success: true,
             message: `Order marked as ${status}`,
-            order
+            order: updatedOrder
         });
     } catch (error) {
         console.error('Update order status error:', error);
