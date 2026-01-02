@@ -882,12 +882,16 @@
 
         // Create delivery card HTML
         function createDeliveryCard(order, isActive) {
+            // Handle both customer and customerInfo field names
+            const customer = order.customerInfo || order.customer || {};
+            const delivery = order.delivery || {};
+            
             const statusClass = `status-${order.status}`;
             const itemsList = order.items.map(item => `
                 <div class="item">
                     <div class="item-name">
-                        <span class="item-emoji">${item.emoji || '📦'}</span>
-                        <span>${item.name} × ${item.quantity}</span>
+                        <span class="item-emoji">${item.emoji || item.productId?.emoji || '📦'}</span>
+                        <span>${item.name || item.productId?.name || 'Item'} × ${item.quantity}</span>
                     </div>
                 </div>
             `).join('');
@@ -896,6 +900,9 @@
             const basePay = 4.00;
             const tip = order.pricing?.tip || 0;
             const totalPay = basePay + tip;
+            
+            const customerPhone = customer.phone || 'N/A';
+            const customerAddress = customer.address || delivery.address || 'N/A';
 
             let actions = '';
             if (isActive) {
@@ -905,7 +912,7 @@
                             <button class="btn btn-primary" onclick="updateOrderStatus('${order._id}', 'picked-up')">
                                 📦 Mark as Picked Up
                             </button>
-                            <a href="tel:${order.customerInfo.phone}" class="btn btn-secondary">
+                            <a href="tel:${customerPhone}" class="btn btn-secondary">
                                 📞 Call Customer
                             </a>
                         </div>
@@ -913,14 +920,14 @@
                 } else if (order.status === 'picked-up') {
                     actions = `
                         <div class="delivery-actions">
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.customerInfo.address)}" 
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(customerAddress)}" 
                                target="_blank" class="btn btn-secondary">
                                 🗺️ Navigate
                             </a>
                             <button class="btn btn-primary" onclick="updateOrderStatus('${order._id}', 'delivering')">
                                 🚗 Start Delivery
                             </button>
-                            <a href="tel:${order.customerInfo.phone}" class="btn btn-outline">
+                            <a href="tel:${customerPhone}" class="btn btn-outline">
                                 📞 Call
                             </a>
                         </div>
@@ -928,7 +935,7 @@
                 } else if (order.status === 'delivering') {
                     actions = `
                         <div class="delivery-actions">
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.customerInfo.address)}" 
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(customerAddress)}" 
                                target="_blank" class="btn btn-secondary">
                                 🗺️ Navigate
                             </a>
@@ -938,7 +945,7 @@
                             <button class="btn btn-success" onclick="updateOrderStatus('${order._id}', 'delivered')">
                                 ✅ Mark Delivered
                             </button>
-                            <a href="tel:${order.customerInfo.phone}" class="btn btn-outline">
+                            <a href="tel:${customerPhone}" class="btn btn-outline">
                                 📞 Call
                             </a>
                         </div>
@@ -950,7 +957,7 @@
                 <div class="delivery-card">
                     <div class="delivery-header">
                         <div>
-                            <div class="order-number">Order #${order.orderNumber || order._id.slice(-6)}</div>
+                            <div class="order-number">Order #${order.orderId || order._id.slice(-6)}</div>
                             <small style="color: #999;">${orderDate}</small>
                         </div>
                         <span class="order-status ${statusClass}">${order.status}</span>
@@ -958,10 +965,10 @@
 
                     <div class="customer-info">
                         <h4>📍 Customer Information</h4>
-                        <p><strong>${order.customerInfo.name}</strong></p>
-                        <p>📞 ${order.customerInfo.phone}</p>
-                        <p>🏠 ${order.customerInfo.address}</p>
-                        ${order.delivery?.instructions ? `<p>📝 ${order.delivery.instructions}</p>` : ''}
+                        <p><strong>${customer.name || 'Customer'}</strong></p>
+                        <p>📞 ${customerPhone}</p>
+                        <p>🏠 ${customerAddress}</p>
+                        ${delivery.instructions || delivery.deliveryInstructions ? `<p>📝 ${delivery.instructions || delivery.deliveryInstructions}</p>` : ''}
                     </div>
 
                     <div class="items-list">
