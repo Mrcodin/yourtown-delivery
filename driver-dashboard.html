@@ -467,11 +467,18 @@
         <h2 class="section-title">My Deliveries</h2>
 
         <div class="delivery-tabs">
-            <button class="tab-btn active" onclick="switchTab('active')">Active</button>
+            <button class="tab-btn active" onclick="switchTab('available')">Available Orders</button>
+            <button class="tab-btn" onclick="switchTab('active')">My Active</button>
             <button class="tab-btn" onclick="switchTab('history')">History</button>
         </div>
 
-        <div id="activeTab" class="tab-content active">
+        <div id="availableTab" class="tab-content active">
+            <div id="availableOrders">
+                <!-- Available orders will be loaded here -->
+            </div>
+        </div>
+
+        <div id="activeTab" class="tab-content">
             <div id="activeDeliveries">
                 <!-- Active deliveries will be loaded here -->
             </div>
@@ -500,6 +507,25 @@
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeProofModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="uploadProof()" id="uploadBtn">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="orderDetailsTitle">📦 Order Details</h2>
+                <span class="close" onclick="closeOrderDetails()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetailsContent" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Order details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeOrderDetails()">Cancel</button>
+                <button id="claimOrderBtn" class="btn btn-primary" onclick="claimOrder()">🛒 Claim Order for Shopping</button>
             </div>
         </div>
     </div>
@@ -640,6 +666,214 @@
             }
 
             container.innerHTML = orders.map(order => createDeliveryCard(order, false)).join('');
+        }
+
+        // Fetch available orders
+        async function fetchAvailableOrders() {
+            try {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/available-orders`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayAvailableOrders(data.orders || []);
+                } else {
+                    console.error('Error fetching available orders');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display available orders
+        function displayAvailableOrders(orders) {
+            const container = document.getElementById('availableOrders');
+            
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3>No Available Orders</h3>
+                        <p>There are no orders waiting to be claimed right now.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => {
+                const itemCount = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+                const totalAmount = order.payment?.amount || 0;
+                
+                return `
+                    <div class="delivery-card" onclick="showOrderDetails('${order._id}')" style="cursor: pointer;">
+                        <div class="delivery-header">
+                            <div>
+                                <h3>Order #${order._id.slice(-6)}</h3>
+                                <p style="margin: 5px 0; color: #666;">
+                                    <strong>${order.customer?.name || 'Customer'}</strong>
+                                </p>
+                            </div>
+                            <div class="status-badge" style="background: #f39c12;">
+                                Waiting
+                            </div>
+                        </div>
+                        
+                        <div class="delivery-details">
+                            <div class="detail-item">
+                                <span class="icon">📞</span>
+                                <span>${order.customer?.phone || 'No phone'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="icon">📍</span>
+                                <span>${order.delivery?.address || 'No address'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="icon">🛒</span>
+                                <span>${itemCount} items</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="icon">💰</span>
+                                <span><strong>$${totalAmount.toFixed(2)}</strong></span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #667eea;">
+                            <strong>👆 Click to see products and claim this order</strong>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let currentOrderForClaim = null;
+
+        // Show order details modal
+        async function showOrderDetails(orderId) {
+            try {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/available-orders`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const order = data.orders.find(o => o._id === orderId);
+                    
+                    if (!order) {
+                        alert('Order not found or no longer available');
+                        return;
+                    }
+
+                    currentOrderForClaim = orderId;
+                    
+                    const itemsHtml = order.items.map(item => {
+                        const product = item.productId;
+                        const price = item.price || 0;
+                        const quantity = item.quantity || 0;
+                        const subtotal = price * quantity;
+                        
+                        return `
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        ${product?.emoji || '📦'}
+                                        <span>${product?.name || 'Product'}</span>
+                                    </div>
+                                </td>
+                                <td>x${quantity}</td>
+                                <td>$${price.toFixed(2)}</td>
+                                <td><strong>$${subtotal.toFixed(2)}</strong></td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    const modalContent = `
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="margin: 0 0 10px 0; color: #667eea;">Customer Information</h3>
+                            <p style="margin: 5px 0;"><strong>Name:</strong> ${order.customer?.name || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.customer?.phone || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Address:</strong> ${order.delivery?.address || 'N/A'}</p>
+                            ${order.delivery?.deliveryInstructions ? `<p style="margin: 5px 0;"><strong>Instructions:</strong> ${order.delivery.deliveryInstructions}</p>` : ''}
+                        </div>
+
+                        <div>
+                            <h3 style="margin: 0 0 10px 0; color: #667eea;">Products to Shop</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; text-align: left;">
+                                        <th style="padding: 10px; border-bottom: 2px solid #e0e0e0;">Item</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e0e0e0;">Qty</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e0e0e0;">Price</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e0e0e0;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHtml}
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: #f8f9fa; font-weight: bold;">
+                                        <td colspan="3" style="padding: 10px; border-top: 2px solid #e0e0e0; text-align: right;">Total Amount:</td>
+                                        <td style="padding: 10px; border-top: 2px solid #e0e0e0; color: #667eea; font-size: 1.2em;">$${(order.payment?.amount || 0).toFixed(2)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    `;
+
+                    document.getElementById('orderDetailsContent').innerHTML = modalContent;
+                    document.getElementById('orderDetailsModal').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                alert('Failed to load order details');
+            }
+        }
+
+        // Close order details modal
+        function closeOrderDetails() {
+            document.getElementById('orderDetailsModal').style.display = 'none';
+            currentOrderForClaim = null;
+        }
+
+        // Claim order
+        async function claimOrder() {
+            if (!currentOrderForClaim) return;
+
+            const btn = document.getElementById('claimOrderBtn');
+            btn.disabled = true;
+            btn.textContent = 'Claiming...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/orders/${currentOrderForClaim}/claim`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('✅ Order claimed successfully! You can now start shopping.');
+                    closeOrderDetails();
+                    // Refresh all tabs
+                    fetchAvailableOrders();
+                    fetchActiveDeliveries();
+                    fetchDriverProfile(); // Update status
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to claim order');
+                }
+            } catch (error) {
+                console.error('Error claiming order:', error);
+                alert('Failed to claim order. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🛒 Claim Order for Shopping';
+            }
         }
 
         // Create delivery card HTML
@@ -894,12 +1128,14 @@
             if (checkAuth()) {
                 await Promise.all([
                     fetchDriverProfile(),
+                    fetchAvailableOrders(),
                     fetchActiveDeliveries(),
                     fetchDeliveryHistory()
                 ]);
 
                 // Refresh data every 30 seconds
                 setInterval(() => {
+                    fetchAvailableOrders();
                     fetchActiveDeliveries();
                     fetchDeliveryHistory();
                 }, 30000);

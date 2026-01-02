@@ -12,6 +12,8 @@ router.get('/me', protectDriver, driverAuthController.getMe);
 router.put('/profile', protectDriver, driverAuthController.updateProfile);
 router.put('/password', protectDriver, driverAuthController.changePassword);
 router.get('/deliveries', protectDriver, driverAuthController.getAssignedDeliveries);
+router.get('/available-orders', protectDriver, driverAuthController.getAvailableOrders);
+router.post('/orders/:orderId/claim', protectDriver, driverAuthController.claimOrder);
 router.get('/history', protectDriver, driverAuthController.getDeliveryHistory);
 router.put('/orders/:orderId/status', protectDriver, driverAuthController.updateOrderStatus);
 router.post('/orders/:orderId/proof', protectDriver, driverAuthController.uploadDeliveryProof);

@@ -230,7 +230,7 @@ exports.getAssignedDeliveries = async (req, res) => {
         // Get orders assigned to this driver that are not delivered or cancelled
         const orders = await Order.find({
             'delivery.driverId': driverId,
-            status: { $in: ['confirmed', 'shopping', 'delivering'] }
+            status: { $in: ['confirmed', 'shopping', 'delivering', 'picked-up'] }
         })
         .sort({ createdAt: -1 })
         .populate('items.productId', 'name emoji imageUrl');
@@ -242,6 +242,84 @@ exports.getAssignedDeliveries = async (req, res) => {
         });
     } catch (error) {
         console.error('Get assigned deliveries error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Get available orders (not assigned to any driver)
+// @route   GET /api/driver-auth/available-orders
+// @access  Private (Driver)
+exports.getAvailableOrders = async (req, res) => {
+    try {
+        // Get orders that don't have a driver assigned yet and are confirmed
+        const orders = await Order.find({
+            $or: [
+                { 'delivery.driverId': { $exists: false } },
+                { 'delivery.driverId': null }
+            ],
+            status: { $in: ['confirmed', 'shopping'] },
+            'payment.status': 'completed'
+        })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .populate('items.productId', 'name emoji imageUrl');
+
+        res.json({
+            success: true,
+            count: orders.length,
+            orders
+        });
+    } catch (error) {
+        console.error('Get available orders error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Claim an available order
+// @route   POST /api/driver-auth/orders/:orderId/claim
+// @access  Private (Driver)
+exports.claimOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const driverId = req.driver.id;
+
+        // Find the order
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Check if order is already assigned
+        if (order.delivery.driverId) {
+            return res.status(400).json({ message: 'Order already assigned to another driver' });
+        }
+
+        // Check if order status is appropriate
+        if (!['confirmed', 'shopping'].includes(order.status)) {
+            return res.status(400).json({ message: 'Order is not available for claiming' });
+        }
+
+        // Get driver info
+        const driver = await Driver.findById(driverId);
+        
+        // Assign the order to this driver
+        order.delivery.driverId = driverId;
+        order.delivery.driverName = `${driver.firstName} ${driver.lastName}`;
+        order.status = 'shopping'; // Update status to shopping
+        await order.save();
+
+        // Update driver status to busy
+        driver.status = 'busy';
+        await driver.save();
+
+        res.json({
+            success: true,
+            message: 'Order claimed successfully',
+            order
+        });
+    } catch (error) {
+        console.error('Claim order error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
