@@ -78,7 +78,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['placed', 'confirmed', 'shopping', 'delivering', 'delivered', 'cancelled'],
+    enum: ['placed', 'confirmed', 'shopping', 'picked-up', 'delivering', 'delivered', 'cancelled'],
     default: 'placed',
     index: true
   },
@@ -105,7 +105,12 @@ const orderSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Driver'
     },
-    driverName: String
+    driverName: String,
+    proofPhoto: {
+      url: String,
+      uploadedAt: Date
+    },
+    pickedUpAt: Date
   },
   shopper: {
     shopperId: {

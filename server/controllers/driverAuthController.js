@@ -293,9 +293,9 @@ exports.updateOrderStatus = async (req, res) => {
         const driverId = req.driver.id;
 
         // Validate status
-        const validStatuses = ['delivering', 'delivered'];
+        const validStatuses = ['picked-up', 'delivering', 'delivered'];
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({ message: 'Invalid status' });
+            return res.status(400).json({ message: 'Invalid status. Must be picked-up, delivering, or delivered.' });
         }
 
         // Find order and verify it's assigned to this driver
@@ -312,8 +312,18 @@ exports.updateOrderStatus = async (req, res) => {
         // Update order status
         order.status = status;
 
-        // If delivered, update delivery time and driver stats
-        if (status === 'delivered') {
+        // Update timestamps and driver status based on action
+        if (status === 'picked-up') {
+            order.delivery.pickedUpAt = new Date();
+            // Driver is now busy with this order
+            await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
+        } else if (status === 'delivering') {
+            if (!order.delivery.pickedUpAt) {
+                order.delivery.pickedUpAt = new Date();
+            }
+            // Update driver status to busy
+            await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
+        } else if (status === 'delivered') {
             order.delivery.actualTime = new Date();
             
             // Update driver's total deliveries and earnings
@@ -322,9 +332,6 @@ exports.updateOrderStatus = async (req, res) => {
             driver.earnings += driver.payRate + (order.pricing?.tip || 0);
             driver.status = 'online'; // Set back to online after delivery
             await driver.save();
-        } else if (status === 'delivering') {
-            // Update driver status to busy
-            await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
         }
 
         await order.save();
@@ -369,5 +376,44 @@ exports.updateStatus = async (req, res) => {
     } catch (error) {
         console.error('Update status error:', error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Upload delivery proof photo
+// @route   POST /api/driver-auth/orders/:orderId/proof
+// @access  Private (Driver)
+exports.uploadDeliveryProof = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { photoUrl } = req.body;
+        const driverId = req.driver.id;
+
+        // Find order and verify it's assigned to this driver
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (order.delivery.driverId.toString() !== driverId) {
+            return res.status(403).json({ message: 'Not authorized to update this order' });
+        }
+
+        // Update delivery proof
+        order.delivery.proofPhoto = {
+            url: photoUrl,
+            uploadedAt: new Date()
+        };
+
+        await order.save();
+
+        res.json({
+            success: true,
+            message: 'Delivery proof uploaded successfully',
+            proofPhoto: order.delivery.proofPhoto
+        });
+    } catch (error) {
+        console.error('Upload proof error:', error);
+        res.status(500).json({ message: 'Server error uploading proof' });
     }
 };
