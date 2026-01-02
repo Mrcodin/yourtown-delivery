@@ -43,6 +43,11 @@ class API {
         this.token = null;
     }
 
+    // Alias for removeToken (for backward compatibility)
+    clearToken() {
+        this.removeToken();
+    }
+
     // Get default headers
     getHeaders(includeAuth = true) {
         const headers = {

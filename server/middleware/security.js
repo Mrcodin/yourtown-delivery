@@ -6,10 +6,11 @@ const hpp = require('hpp');
 /**
  * General API rate limiter
  * Prevents abuse of API endpoints
+ * Increased limit for admin dashboard usage
  */
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 500, // Limit each IP to 500 requests per windowMs (increased for admin dashboard)
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again after 15 minutes'
