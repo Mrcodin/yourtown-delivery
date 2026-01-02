@@ -164,8 +164,15 @@
 
                     <!-- Usual Orders Tab -->
                     <div id="tab-usual-orders" class="account-tab">
-                        <h2 class="section-title">⭐ My Usual Orders</h2>
-                        <p class="page-subtitle">Save your favorite orders for quick reordering</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div>
+                                <h2 class="section-title">⭐ My Usual Orders</h2>
+                                <p class="page-subtitle">Save your favorite orders for quick reordering</p>
+                            </div>
+                            <button onclick="showCreateUsualOrder()" class="btn-large btn-primary" style="white-space: nowrap;">
+                                ➕ Create New
+                            </button>
+                        </div>
                         
                         <div id="usual-orders-container">
                             <p class="loading-text-large">⏳ Loading saved orders...</p>
@@ -446,7 +453,16 @@
                 const response = await fetch(`${API_CONFIG.BASE_URL}/usual-orders?phone=${encodeURIComponent(phone)}`);
                 const data = await response.json();
                 
-                if (data.success && data.usualOrders && data.usualOrders.length > 0) {
+                // If no usual orders exist, create a default one with essential groceries
+                if (data.success && (!data.usualOrders || data.usualOrders.length === 0)) {
+                    await createDefaultUsualOrder(phone);
+                    // Reload to show the newly created default order
+                    const retryResponse = await fetch(`${API_CONFIG.BASE_URL}/usual-orders?phone=${encodeURIComponent(phone)}`);
+                    const retryData = await retryResponse.json();
+                    if (retryData.success && retryData.usualOrders && retryData.usualOrders.length > 0) {
+                        displayUsualOrders(retryData.usualOrders);
+                    }
+                } else if (data.success && data.usualOrders && data.usualOrders.length > 0) {
                     displayUsualOrders(data.usualOrders);
                 } else {
                     document.getElementById('usual-orders-container').innerHTML = `
@@ -465,6 +481,56 @@
                         <p>Error loading saved orders.</p>
                     </div>
                 `;
+            }
+        }
+
+        // Create default usual order with essential groceries
+        async function createDefaultUsualOrder(phone) {
+            try {
+                // Get products to find IDs for essential items
+                const productsResponse = await fetch(`${API_CONFIG.BASE_URL}/products`);
+                const productsData = await productsResponse.json();
+                
+                if (!productsData.products) return;
+                
+                // Find essential grocery items - pick the 6 most important
+                const essentialItems = [];
+                const itemsToFind = [
+                    { name: 'Milk', qty: 2 },
+                    { name: 'Bread', qty: 1 },
+                    { name: 'Large Eggs', qty: 1 },
+                    { name: 'Bottled Water', qty: 1 },
+                    { name: 'Chicken Breast', qty: 2 },
+                    { name: 'Bananas', qty: 1 }
+                ];
+                
+                for (const item of itemsToFind) {
+                    const product = productsData.products.find(p => 
+                        p.name.includes(item.name) && p.status === 'active'
+                    );
+                    if (product) {
+                        essentialItems.push({
+                            productId: product._id,
+                            quantity: item.qty
+                        });
+                    }
+                    if (essentialItems.length >= 6) break;
+                }
+                
+                // If we found at least 3 items, create the default order
+                if (essentialItems.length >= 3) {
+                    await fetch(`${API_CONFIG.BASE_URL}/usual-orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: '🛒 Essential Groceries',
+                            phone: phone,
+                            items: essentialItems
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error('Error creating default usual order:', error);
             }
         }
 
@@ -556,6 +622,143 @@
                 console.error('Reorder error:', error);
                 loading.hideOverlay();
                 toast.error(error.message || 'Failed to reorder');
+            }
+        }
+
+        // Show create usual order modal
+        async function showCreateUsualOrder() {
+            try {
+                loading.showOverlay('Loading products...');
+                
+                // Get all products
+                const response = await fetch(`${API_CONFIG.BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.products) {
+                    throw new Error('Failed to load products');
+                }
+                
+                const activeProducts = data.products.filter(p => p.status === 'active');
+                
+                loading.hideOverlay();
+                
+                // Show modal with product selection
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2>Create Usual Order</h2>
+                            <button class="btn-icon" onclick="this.closest('.modal-overlay').remove()">✕</button>
+                        </div>
+                        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Order Name</label>
+                                <input type="text" id="new-usual-order-name" 
+                                       placeholder="e.g., Weekly Essentials" 
+                                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            </div>
+                            
+                            <h3 style="margin-bottom: 15px;">Select Products</h3>
+                            <div id="create-usual-products-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                ${activeProducts.map(product => `
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                                        <div style="flex: 1;">
+                                            <span style="font-size: 20px; margin-right: 8px;">${product.emoji || '📦'}</span>
+                                            <strong>${product.name}</strong>
+                                            <span style="color: #666; margin-left: 8px;">$${product.price.toFixed(2)}</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <input type="number" 
+                                                   id="qty-${product._id}" 
+                                                   min="0" 
+                                                   max="99" 
+                                                   value="0" 
+                                                   style="width: 60px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button onclick="this.closest('.modal-overlay').remove()" class="btn-large btn-outline">Cancel</button>
+                            <button onclick="saveNewUsualOrder()" class="btn-large btn-primary">Create Order</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            } catch (error) {
+                loading.hideOverlay();
+                toast.error(error.message || 'Failed to load products');
+            }
+        }
+
+        // Save new usual order
+        async function saveNewUsualOrder() {
+            try {
+                const name = document.getElementById('new-usual-order-name').value.trim();
+                
+                if (!name) {
+                    toast.error('Please enter a name for this order');
+                    return;
+                }
+                
+                // Collect selected products
+                const items = [];
+                const productsResponse = await fetch(`${API_CONFIG.BASE_URL}/products`);
+                const productsData = await productsResponse.json();
+                
+                for (const product of productsData.products) {
+                    const qtyInput = document.getElementById(`qty-${product._id}`);
+                    if (qtyInput) {
+                        const qty = parseInt(qtyInput.value) || 0;
+                        if (qty > 0) {
+                            items.push({
+                                productId: product._id,
+                                quantity: qty
+                            });
+                        }
+                    }
+                }
+                
+                if (items.length === 0) {
+                    toast.error('Please select at least one product');
+                    return;
+                }
+                
+                loading.showOverlay('Creating order...');
+                
+                const response = await fetch(`${API_CONFIG.BASE_URL}/usual-orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: customer?.phone,
+                        items: items
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to create usual order');
+                }
+                
+                loading.hideOverlay();
+                toast.success('Usual order created successfully!');
+                
+                // Close modal
+                document.querySelector('.modal-overlay').remove();
+                
+                // Reload usual orders
+                loadUsualOrders();
+                
+            } catch (error) {
+                loading.hideOverlay();
+                toast.error(error.message || 'Failed to create usual order');
             }
         }
 
