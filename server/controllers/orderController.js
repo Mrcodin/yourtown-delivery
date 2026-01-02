@@ -959,20 +959,24 @@ exports.modifyOrder = async (req, res) => {
     
     const total = subtotal + deliveryFee + tip + tax - discount;
 
-    // Update order
-    order.items = validatedItems;
-    order.pricing.subtotal = subtotal;
-    order.pricing.tax = tax;
-    order.pricing.total = total;
+    // Build update object
+    const updateData = {
+      items: validatedItems,
+      'pricing.subtotal': subtotal,
+      'pricing.tax': tax,
+      'pricing.total': total
+    };
     
     if (notes !== undefined) {
-      order.notes = notes;
+      updateData.notes = notes;
     }
 
-    await order.save();
-
-    // Populate product details for response
-    await order.populate('items.productId');
+    // Use findByIdAndUpdate to avoid validation issues with legacy orders
+    order = await Order.findByIdAndUpdate(
+      order._id,
+      { $set: updateData },
+      { new: true, runValidators: false }
+    ).populate('items.productId');
 
     // Log activity
     await ActivityLog.create({
