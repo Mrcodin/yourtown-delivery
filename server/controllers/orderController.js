@@ -353,6 +353,7 @@ exports.createOrder = async (req, res) => {
         instructions: delivery?.instructions
       },
       notes,
+      substitutionPreference: req.body.substitutionPreference || 'call-me',
       statusHistory: [{
         status: 'placed',
         timestamp: new Date()
@@ -863,6 +864,194 @@ exports.cancelOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error cancelling order',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Modify order (add/remove items, update quantities)
+// @route   PUT /api/orders/:id/modify
+// @access  Private (Customer who owns the order)
+exports.modifyOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { items, notes } = req.body;
+
+    // Find order
+    let order = await Order.findById(orderId);
+    if (!order) {
+      order = await Order.findOne({ orderId });
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if customer owns this order
+    if (req.customer && order.customerId && order.customerId.toString() !== req.customer._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to modify this order'
+      });
+    }
+
+    // Check if order can be modified (not picked up, not cancelled, not delivered)
+    const modifiableStatuses = ['placed', 'confirmed', 'shopping'];
+    if (!modifiableStatuses.includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be modified. Current status: ${order.status}. Orders can only be modified before pickup.`
+      });
+    }
+
+    // Check if driver already picked up
+    if (order.delivery.pickedUpAt) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order has already been picked up and cannot be modified'
+      });
+    }
+
+    // Validate and process new items
+    let subtotal = 0;
+    let taxableItemsSubtotal = 0;
+    const validatedItems = [];
+
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+      
+      if (!product || product.status !== 'active') {
+        return res.status(400).json({
+          success: false,
+          message: `Product ${item.name || 'Unknown'} is not available`
+        });
+      }
+
+      const itemTotal = product.price * item.quantity;
+
+      validatedItems.push({
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        emoji: product.emoji,
+        quantity: item.quantity,
+        isTaxable: product.isTaxable || false
+      });
+
+      subtotal += itemTotal;
+      
+      if (product.isTaxable) {
+        taxableItemsSubtotal += itemTotal;
+      }
+    }
+
+    // Recalculate pricing (keep existing delivery fee, tip, promo code)
+    const deliveryFee = order.pricing.deliveryFee || 6.99;
+    const tip = order.pricing.tip || 0;
+    const discount = order.pricing.discount || 0;
+    
+    // Calculate tax on taxable items only
+    const TAX_RATE = parseFloat(process.env.TAX_RATE) || 0.086;
+    const tax = parseFloat((taxableItemsSubtotal * TAX_RATE).toFixed(2));
+    
+    const total = subtotal + deliveryFee + tip + tax - discount;
+
+    // Update order
+    order.items = validatedItems;
+    order.pricing.subtotal = subtotal;
+    order.pricing.tax = tax;
+    order.pricing.total = total;
+    
+    if (notes !== undefined) {
+      order.notes = notes;
+    }
+
+    await order.save();
+
+    // Populate product details for response
+    await order.populate('items.productId');
+
+    // Log activity
+    await ActivityLog.create({
+      type: 'order_modified',
+      description: `Order ${order.orderId} modified by customer`,
+      userId: req.customer?._id,
+      orderId: order._id,
+      metadata: {
+        previousTotal: order.pricing.total,
+        newTotal: total,
+        itemCount: validatedItems.length
+      }
+    });
+
+    // Send email notification to customer
+    if (order.customerInfo?.email) {
+      try {
+        await sendEmail({
+          to: order.customerInfo.email,
+          subject: `Order Modified - ${order.orderId}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #10b981;">Order Successfully Modified</h2>
+              <p>Your order has been updated with the following changes:</p>
+              
+              <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="margin-top: 0;">Order #${order.orderId}</h3>
+                <p><strong>Items:</strong> ${validatedItems.length}</p>
+                <p><strong>New Total:</strong> $${total.toFixed(2)}</p>
+              </div>
+              
+              <h3>Updated Items:</h3>
+              <ul style="list-style: none; padding: 0;">
+                ${validatedItems.map(item => `
+                  <li style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                    ${item.emoji || '📦'} ${item.name} - Qty: ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}
+                  </li>
+                `).join('')}
+              </ul>
+              
+              <p style="margin-top: 20px;">If you have any questions, please contact us at ${process.env.BUSINESS_PHONE || '555-123-4567'}.</p>
+            </div>
+          `
+        });
+
+        await logEmail({
+          to: order.customerInfo.email,
+          subject: `Order Modified - ${order.orderId}`,
+          type: 'order_modified',
+          orderId: order._id,
+          status: 'sent'
+        });
+      } catch (emailError) {
+        console.error('Error sending modification email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
+    // Send notification to admin
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order-modified', {
+        orderId: order.orderId,
+        itemCount: validatedItems.length,
+        total: total
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Order modified successfully',
+      order
+    });
+
+  } catch (error) {
+    console.error('Modify order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error modifying order',
       error: error.message
     });
   }

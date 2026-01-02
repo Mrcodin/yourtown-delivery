@@ -19,6 +19,7 @@ router.get('/public/:id', orderController.getOrderPublic); // Public order retri
 router.get('/:id/receipt', orderController.generateOrderReceipt); // PDF receipt generation
 router.post('/', orderLimiter, orderValidation, validate, orderController.createOrder); // Order creation with rate limit
 router.put('/:id/cancel', orderController.cancelOrderCustomer); // Customer self-service cancellation
+router.put('/:id/modify', protect, orderController.modifyOrder); // Customer order modification
 
 // Protected routes
 router.get('/', protect, orderController.getOrders); // Allow both admin and customer

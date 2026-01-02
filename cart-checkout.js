@@ -210,6 +210,7 @@ async function processCashOrCheckOrder(deliveryInfo, cartItems, paymentMethod) {
                 method: paymentMethod
             },
             notes: deliveryInfo.instructions || '',
+            substitutionPreference: document.getElementById('substitution-preference')?.value || 'call-me',
             tip: tip
         };
         

@@ -120,6 +120,11 @@ const orderSchema = new mongoose.Schema({
     shopperName: String
   },
   notes: String,
+  substitutionPreference: {
+    type: String,
+    enum: ['call-me', 'choose-similar', 'refund', 'none'],
+    default: 'call-me'
+  },
   orderType: {
     type: String,
     enum: ['online', 'phone'],

@@ -234,6 +234,60 @@
         </div>
     </main>
 
+    <!-- EDIT ORDER MODAL -->
+    <div id="edit-order-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>✏️ Edit Order</h2>
+                <span class="close" onclick="closeEditOrderModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="edit-order-loading" style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading order...</p>
+                </div>
+                <div id="edit-order-content" style="display: none;">
+                    <div class="order-info-banner" style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #92400e;">
+                            ⚠️ You can modify this order until it's picked up by the driver.
+                        </p>
+                    </div>
+                    <div id="edit-order-items"></div>
+                    <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Subtotal:</span>
+                            <span id="edit-subtotal">$0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Delivery Fee:</span>
+                            <span id="edit-delivery-fee">$6.99</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Tip:</span>
+                            <span id="edit-tip">$0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Tax:</span>
+                            <span id="edit-tax">$0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; padding-top: 10px; border-top: 2px solid #d1d5db;">
+                            <span>New Total:</span>
+                            <span id="edit-total">$0.00</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Special Instructions</label>
+                        <textarea id="edit-notes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="edit-order-footer" style="display: none;">
+                <button onclick="closeEditOrderModal()" class="btn-large btn-outline">Cancel</button>
+                <button onclick="saveOrderChanges()" class="btn-large btn-primary">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
@@ -340,6 +394,10 @@
                 // Use pricing.total if available, fallback to totalAmount or total
                 const total = order.pricing?.total || order.totalAmount || order.total || 0;
                 
+                // Check if order can be modified
+                const modifiableStatuses = ['placed', 'confirmed', 'shopping'];
+                const canModify = modifiableStatuses.includes(order.status) && !order.delivery?.pickedUpAt;
+                
                 return `
                 <div class="order-card-large">
                     <div class="order-card-header">
@@ -354,9 +412,16 @@
                             <span class="info-item">💰 Total: <strong>$${total.toFixed(2)}</strong></span>
                             <span class="info-item">📦 Items: <strong>${order.items.length}</strong></span>
                         </div>
-                        <a href="track.html?phone=${order.customerInfo?.phone || ''}" class="btn-large btn-secondary">
-                            👁️ View Details
-                        </a>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="track.html?phone=${order.customerInfo?.phone || ''}" class="btn-large btn-secondary">
+                                👁️ View Details
+                            </a>
+                            ${canModify ? `
+                                <button onclick="openEditOrderModal('${order._id}')" class="btn-large" style="background: #f59e0b; color: white;">
+                                    ✏️ Edit Order
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -565,6 +630,193 @@
                 console.error('Edit error:', error);
                 loading.hideOverlay();
                 toast.error(error.message || 'Failed to load order');
+            }
+        }
+
+        // ============ EDIT ORDER MODAL ============
+        let currentEditOrder = null;
+        let editOrderItems = [];
+
+        async function openEditOrderModal(orderId) {
+            const modal = document.getElementById('edit-order-modal');
+            modal.style.display = 'flex';
+            document.getElementById('edit-order-loading').style.display = 'block';
+            document.getElementById('edit-order-content').style.display = 'none';
+            document.getElementById('edit-order-footer').style.display = 'none';
+
+            try {
+                const token = customerAuth.getToken();
+                const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data.success || !data.order) {
+                    throw new Error(data.message || 'Failed to load order');
+                }
+
+                currentEditOrder = data.order;
+                editOrderItems = [...data.order.items]; // Clone items array
+
+                // Load all products for selection
+                const productsResponse = await fetch(`${API_CONFIG.BASE_URL}/products`);
+                const productsData = await productsResponse.json();
+                const allProducts = productsData.products || [];
+
+                displayEditOrderItems(allProducts);
+                updateEditOrderTotals();
+
+                // Set notes
+                document.getElementById('edit-notes').value = currentEditOrder.notes || '';
+
+                document.getElementById('edit-order-loading').style.display = 'none';
+                document.getElementById('edit-order-content').style.display = 'block';
+                document.getElementById('edit-order-footer').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Load order error:', error);
+                toast.error(error.message || 'Failed to load order');
+                closeEditOrderModal();
+            }
+        }
+
+        function closeEditOrderModal() {
+            document.getElementById('edit-order-modal').style.display = 'none';
+            currentEditOrder = null;
+            editOrderItems = [];
+        }
+
+        function displayEditOrderItems(allProducts) {
+            const container = document.getElementById('edit-order-items');
+            container.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Order Items</h3>
+                    ${editOrderItems.map((item, index) => {
+                        const product = item.productId || item;
+                        return `
+                            <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px;">
+                                <span style="font-size: 2em;">${product.emoji || '📦'}</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 5px;">${product.name || item.name}</div>
+                                    <div style="color: #6b7280;">$${(product.price || item.price).toFixed(2)} each</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button onclick="updateEditItemQuantity(${index}, -1)" style="width: 32px; height: 32px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer;">−</button>
+                                    <input type="number" value="${item.quantity}" min="1" max="99" 
+                                        onchange="setEditItemQuantity(${index}, this.value)"
+                                        style="width: 60px; text-align: center; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                                    <button onclick="updateEditItemQuantity(${index}, 1)" style="width: 32px; height: 32px; border: 1px solid #d1d5db; background: white; border-radius: 4px; cursor: pointer;">+</button>
+                                    <button onclick="removeEditItem(${index})" style="width: 32px; height: 32px; border: 1px solid #ef4444; color: #ef4444; background: white; border-radius: 4px; cursor: pointer; margin-left: 10px;">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="showAddItemsSection(${JSON.stringify(allProducts).replace(/"/g, '&quot;')})" class="btn-large" style="background: #10b981; color: white;">
+                        ➕ Add More Items
+                    </button>
+                    <div id="add-items-section" style="display: none; margin-top: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;"></div>
+                </div>
+            `;
+        }
+
+        function updateEditItemQuantity(index, change) {
+            if (editOrderItems[index]) {
+                editOrderItems[index].quantity = Math.max(1, Math.min(99, editOrderItems[index].quantity + change));
+                displayEditOrderItems([]); // Will fetch products again
+                updateEditOrderTotals();
+            }
+        }
+
+        function setEditItemQuantity(index, value) {
+            const qty = parseInt(value) || 1;
+            if (editOrderItems[index]) {
+                editOrderItems[index].quantity = Math.max(1, Math.min(99, qty));
+                updateEditOrderTotals();
+            }
+        }
+
+        function removeEditItem(index) {
+            if (editOrderItems.length <= 1) {
+                toast.error('Order must have at least one item');
+                return;
+            }
+            editOrderItems.splice(index, 1);
+            fetch(`${API_CONFIG.BASE_URL}/products`)
+                .then(r => r.json())
+                .then(data => displayEditOrderItems(data.products || []));
+            updateEditOrderTotals();
+        }
+
+        function updateEditOrderTotals() {
+            let subtotal = 0;
+            editOrderItems.forEach(item => {
+                const product = item.productId || item;
+                const price = product.price || item.price || 0;
+                subtotal += price * item.quantity;
+            });
+
+            const deliveryFee = currentEditOrder?.pricing?.deliveryFee || 6.99;
+            const tip = currentEditOrder?.pricing?.tip || 0;
+            const discount = currentEditOrder?.pricing?.discount || 0;
+            
+            // Calculate tax (8.6%)
+            const taxRate = 0.086;
+            const tax = subtotal * taxRate;
+            
+            const total = subtotal + deliveryFee + tip + tax - discount;
+
+            document.getElementById('edit-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('edit-delivery-fee').textContent = `$${deliveryFee.toFixed(2)}`;
+            document.getElementById('edit-tip').textContent = `$${tip.toFixed(2)}`;
+            document.getElementById('edit-tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('edit-total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        async function saveOrderChanges() {
+            if (editOrderItems.length === 0) {
+                toast.error('Order must have at least one item');
+                return;
+            }
+
+            try {
+                loading.showOverlay('Saving changes...');
+
+                const token = customerAuth.getToken();
+                const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${currentEditOrder._id}/modify`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        items: editOrderItems.map(item => ({
+                            productId: item.productId?._id || item.productId,
+                            quantity: item.quantity
+                        })),
+                        notes: document.getElementById('edit-notes').value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to save changes');
+                }
+
+                loading.hideOverlay();
+                toast.success('Order updated successfully! 🎉');
+                closeEditOrderModal();
+                loadOrders(); // Refresh order list
+
+            } catch (error) {
+                console.error('Save order error:', error);
+                loading.hideOverlay();
+                toast.error(error.message || 'Failed to save changes');
             }
         }
 
@@ -1296,6 +1548,87 @@
         textarea.input-large {
             resize: vertical;
             font-family: inherit;
+        }
+
+        /* Edit Order Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 30px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 28px;
+            color: #1f2937;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            padding: 20px 30px;
+            border-top: 2px solid #e5e7eb;
+            background: #f9fafb;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .close {
+            font-size: 36px;
+            font-weight: bold;
+            color: #9ca3af;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #1f2937;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Mobile Responsive */
