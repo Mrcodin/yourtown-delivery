@@ -252,6 +252,35 @@
             }
         }
         updateCustomerNav();
+        
+        // Auto-fill phone from URL and track immediately
+        function initializeTracking() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('phone');
+            
+            if (phone) {
+                const phoneInput = document.getElementById('track-phone');
+                if (phoneInput) {
+                    phoneInput.value = phone;
+                    // Auto-track after a brief delay
+                    setTimeout(() => trackOrder(), 500);
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeTracking);
+        } else {
+            initializeTracking();
+        }
+        
+        // Allow Enter key to track
+        document.getElementById('track-phone')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                trackOrder();
+            }
+        });
     </script>
     <script src="back-to-top.js"></script>
 </body>

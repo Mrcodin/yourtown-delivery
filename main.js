@@ -525,108 +525,177 @@ async function handleCheckout(e) {
 
 // ============ ORDER TRACKING ============
 async function trackOrder() {
-    const phone = document.getElementById('track-phone').value.trim();
-    const trackBtn = document.querySelector('.track-form button[type="submit"]');
+    const phoneInput = document.getElementById('track-phone');
+    const phone = phoneInput ? phoneInput.value.trim() : '';
     
     if (!phone) {
-        message.showError('Please enter your phone number to track your order.', 'Phone Number Required');
+        toast.error('Please enter your phone number');
         return;
     }
     
     const statusContainer = document.getElementById('order-status');
     const noOrderMessage = document.getElementById('no-order');
     
-    // Show loading state
-    if (trackBtn) {
-        loading.buttonLoading(trackBtn, true);
-    }
-    
-    // Clear previous messages
-    message.clearMessages();
+    loading.showOverlay('Finding your order...');
     
     try {
         // Call API to track order
-        const response = await api.trackOrder(phone, { showLoading: false });
+        const response = await fetch(`${API_CONFIG.BASE_URL}/orders/track/${encodeURIComponent(phone)}`);
+        const data = await response.json();
         
-        if (!response.success || !response.order) {
+        if (!response.ok || !data.success || !data.order) {
             if (statusContainer) statusContainer.style.display = 'none';
             if (noOrderMessage) {
                 noOrderMessage.style.display = 'block';
             } else {
-                message.showInfo(
-                    'We couldn\'t find any recent orders for this phone number. Please check the number and try again.',
-                    'No Orders Found'
-                );
+                toast.info('No recent orders found for this phone number');
             }
+            loading.hideOverlay();
             return;
         }
         
-        const order = response.order;
+        const order = data.order;
         
         if (noOrderMessage) noOrderMessage.style.display = 'none';
         if (statusContainer) statusContainer.style.display = 'block';
         
         // Fill in order details
         const orderIdEl = document.getElementById('order-id');
-        orderIdEl.textContent = order.orderId;
-        orderIdEl.dataset.mongoId = order._id; // Store MongoDB ID for cancellation
-        document.getElementById('order-date').textContent = new Date(order.createdAt).toLocaleDateString();
-        document.getElementById('order-total').textContent = `$${order.total.toFixed(2)}`;
-        document.getElementById('placed-time').textContent = new Date(order.createdAt).toLocaleTimeString();
-        
-        // Display assigned staff if available
-        if (order.assignedShopper) {
-            document.getElementById('shopper-name').textContent = order.assignedShopper.name || 'Your shopper';
+        if (orderIdEl) {
+            orderIdEl.textContent = order.orderId || order._id.substring(0, 8);
+            orderIdEl.dataset.mongoId = order._id; // Store MongoDB ID
         }
-        if (order.assignedDriver) {
-            document.getElementById('driver-name').textContent = order.assignedDriver.name || 'Your driver';
-            
-            // Show driver info if out for delivery
-            if (order.status === 'out_for_delivery' || order.status === 'delivered') {
-                const driverInfo = document.getElementById('driver-info');
-                if (driverInfo) {
+        
+        const orderDateEl = document.getElementById('order-date');
+        if (orderDateEl) {
+            orderDateEl.textContent = new Date(order.createdAt).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+        
+        const orderTotalEl = document.getElementById('order-total');
+        if (orderTotalEl) {
+            const total = order.pricing?.total || order.totalAmount || order.total || 0;
+            orderTotalEl.textContent = total.toFixed(2);
+        }
+        
+        const placedTimeEl = document.getElementById('placed-time');
+        if (placedTimeEl) {
+            placedTimeEl.textContent = new Date(order.createdAt).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+        
+        // Display driver info if available
+        if (order.delivery && order.delivery.driverId) {
+            const driverInfo = document.getElementById('driver-info');
+            if (driverInfo) {
+                const driver = order.delivery.driverId;
+                const driverName = `${driver.firstName || ''} ${driver.lastName || ''}`.trim() || 'Your Driver';
+                
+                const driverNameEl = document.getElementById('driver-full-name');
+                if (driverNameEl) driverNameEl.textContent = driverName;
+                
+                const driverVehicleEl = document.getElementById('driver-vehicle');
+                if (driverVehicleEl) {
+                    driverVehicleEl.textContent = driver.vehicle || 'On the way';
+                }
+                
+                // Show driver info if order is picked up
+                if (order.delivery.pickedUpAt) {
                     driverInfo.style.display = 'block';
-                    document.getElementById('driver-full-name').textContent = order.assignedDriver.name;
-                    document.getElementById('driver-vehicle').textContent = order.assignedDriver.vehicle || 'Vehicle';
                     
-                    // Calculate ETA
-                    const eta = new Date(Date.now() + 15 * 60000);
-                    document.getElementById('eta-time').textContent = eta.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                    // Show driver phone if available
+                    const contactBtn = driverInfo.querySelector('a[href^="tel:"]');
+                    if (contactBtn && driver.phone) {
+                        contactBtn.href = `tel:${driver.phone}`;
+                    }
                 }
             }
         }
         
         // Update status timeline
-        updateStatusTimeline(order.status);
+        updateStatusTimeline(order.status, order);
+        
+        // Handle cancel button visibility
+        updateCancelButton(order);
         
         // Connect to Socket.io for real-time updates
-        if (window.socketManager) {
-            socketManager.connect();
-            socketManager.joinTracking(phone);
-            
-            // Listen for status updates
-            socketManager.on('order-status-changed', (data) => {
-                if (data.orderId === order.orderId) {
-                    updateStatusTimeline(data.status);
-                    message.showSuccess(`Your order status has been updated to: ${formatStatus(data.status)}`, 'Order Updated');
-                }
-            });
-        }
+        connectOrderTracking(order);
+        
+        loading.hideOverlay();
+        toast.success('Order found!');
+        
     } catch (error) {
         console.error('Track order error:', error);
-        message.showError(
-            message.getUserFriendlyError(error),
-            'Tracking Error'
-        );
-    } finally {
-        // Always remove loading state
-        if (trackBtn) {
-            loading.buttonLoading(trackBtn, false);
-        }
+        loading.hideOverlay();
+        toast.error('Error tracking order. Please try again.');
     }
 }
 
-function updateStatusTimeline(status) {
+// Update cancel button based on order status
+function updateCancelButton(order) {
+    const cancelSection = document.getElementById('cancel-order-section');
+    if (!cancelSection) return;
+    
+    // Allow cancellation only for placed and confirmed orders
+    const cancelableStatuses = ['placed', 'confirmed'];
+    if (cancelableStatuses.includes(order.status) && !order.delivery?.pickedUpAt) {
+        cancelSection.style.display = 'block';
+    } else {
+        cancelSection.style.display = 'none';
+    }
+}
+
+// Connect to Socket.io for real-time tracking
+function connectOrderTracking(order) {
+    if (!window.io) return;
+    
+    try {
+        const socket = io(API_CONFIG.SOCKET_URL || 'http://localhost:3000');
+        
+        socket.on('connect', () => {
+            console.log('Connected to order tracking');
+            // Join tracking room for this phone number
+            socket.emit('track-order', { phone: order.customerInfo?.phone });
+        });
+        
+        socket.on('order-status-changed', (data) => {
+            if (data.orderId === order.orderId || data._id === order._id) {
+                console.log('Order status updated:', data.status);
+                updateStatusTimeline(data.status, data);
+                toast.success(`Order status updated: ${formatStatus(data.status)}`);
+                
+                // Reload if status changed significantly
+                if (window.location.pathname.includes('track.html')) {
+                    setTimeout(() => trackOrder(), 1000);
+                }
+            }
+        });
+        
+        socket.on('driver-assigned', (data) => {
+            if (data.orderId === order.orderId || data._id === order._id) {
+                toast.success('A driver has been assigned to your order!');
+                setTimeout(() => trackOrder(), 1000);
+            }
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('Disconnected from order tracking');
+        });
+        
+    } catch (error) {
+        console.error('Socket.io connection error:', error);
+    }
+}
+
+function updateStatusTimeline(status, order) {
     // Map API status to timeline elements
     const statusMapping = {
         'placed': ['status-confirmed'],
