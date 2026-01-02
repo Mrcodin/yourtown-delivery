@@ -396,6 +396,30 @@
             gap: 10px;
         }
 
+        @keyframes bounceIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -988,9 +1012,75 @@
             `;
         }
 
+        // Trigger confetti animation for successful status updates
+        function triggerConfetti() {
+            // Create confetti container
+            const confettiContainer = document.createElement('div');
+            confettiContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 9999;
+            `;
+            document.body.appendChild(confettiContainer);
+            
+            // Create confetti pieces
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#667eea'];
+            const confettiCount = 60;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    top: -10px;
+                    left: ${Math.random() * 100}%;
+                    opacity: 1;
+                    transform: rotate(${Math.random() * 360}deg);
+                    border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                `;
+                confettiContainer.appendChild(confetti);
+                
+                // Animate
+                const duration = 2000 + Math.random() * 1000;
+                const fallDistance = window.innerHeight + 20;
+                const rotation = Math.random() * 720 - 360;
+                
+                confetti.animate([
+                    { 
+                        transform: `translateY(0) rotate(0deg)`,
+                        opacity: 1
+                    },
+                    { 
+                        transform: `translateY(${fallDistance}px) rotate(${rotation}deg)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: duration,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                });
+            }
+            
+            // Remove container after animation
+            setTimeout(() => {
+                document.body.removeChild(confettiContainer);
+            }, 3500);
+        }
+
         // Update order status
         async function updateOrderStatus(orderId, status) {
-            if (!confirm(`Are you sure you want to mark this order as ${status}?`)) {
+            const statusMessages = {
+                'picked-up': 'Mark this order as Picked Up?',
+                'delivering': 'Start delivery to customer?',
+                'delivered': 'Confirm delivery completion?'
+            };
+
+            if (!confirm(statusMessages[status] || `Mark this order as ${status}?`)) {
                 return;
             }
 
@@ -1005,7 +1095,39 @@
                 });
 
                 if (response.ok) {
-                    alert(`Order marked as ${status} successfully!`);
+                    // Trigger confetti for picked-up status
+                    if (status === 'picked-up') {
+                        triggerConfetti();
+                        
+                        // Show success message with emoji
+                        const successMsg = document.createElement('div');
+                        successMsg.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            padding: 30px 50px;
+                            border-radius: 20px;
+                            font-size: 24px;
+                            font-weight: bold;
+                            z-index: 10000;
+                            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                            animation: bounceIn 0.6s ease-out;
+                        `;
+                        successMsg.innerHTML = '📦 Order Picked Up! 🎉';
+                        document.body.appendChild(successMsg);
+                        
+                        // Remove message after animation
+                        setTimeout(() => {
+                            successMsg.style.animation = 'fadeOut 0.5s ease-out';
+                            setTimeout(() => document.body.removeChild(successMsg), 500);
+                        }, 2000);
+                    } else {
+                        alert(`✅ Order marked as ${status} successfully!`);
+                    }
+                    
                     // Reload data
                     await Promise.all([
                         fetchActiveDeliveries(),
