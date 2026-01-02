@@ -415,7 +415,7 @@
 
     <script src="api.js"></script>
     <script>
-        const API_BASE_URL = API_CONFIG.BASE_URL.replace('/api', '');
+        const API_BASE_URL = API_CONFIG.BASE_URL;
         let driverData = null;
         let token = null;
 
@@ -450,7 +450,7 @@
         // Fetch driver profile
         async function fetchDriverProfile() {
             try {
-                const response = await fetch(`${API_BASE_URL}/driver-auth/me`, {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/me`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -472,7 +472,7 @@
         // Fetch active deliveries
         async function fetchActiveDeliveries() {
             try {
-                const response = await fetch(`${API_BASE_URL}/driver-auth/deliveries`, {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/deliveries`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -491,7 +491,7 @@
         // Fetch delivery history
         async function fetchDeliveryHistory() {
             try {
-                const response = await fetch(`${API_BASE_URL}/driver-auth/history`, {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/history`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -634,7 +634,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/driver-auth/orders/${orderId}/status`, {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/orders/${orderId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -675,7 +675,7 @@
         // Logout
         async function logout() {
             try {
-                await fetch(`${API_BASE_URL}/driver-auth/logout`, {
+                await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
