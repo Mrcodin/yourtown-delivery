@@ -496,11 +496,35 @@ exports.generatePDFReport = async (req, res) => {
 
         // Calculate driver earnings
         const driverEarnings = {};
+        const DRIVER_PAY_RATE = 4.00; // $4 per delivery
         
         orders.forEach(order => {
-            // Get driver info from delivery object or use 'Unassigned'
-            const driverId = order.delivery?.driverId?.toString() || 'unassigned';
-            const driverName = order.delivery?.driverName || 'Unassigned Driver';
+            // Get driver info - try multiple sources
+            let driverId = null;
+            let driverName = null;
+            
+            // Check delivery.driverId first (populated object or string)
+            if (order.delivery?.driverId) {
+                if (typeof order.delivery.driverId === 'object' && order.delivery.driverId._id) {
+                    driverId = order.delivery.driverId._id.toString();
+                    driverName = order.delivery.driverId.name || order.delivery.driverId.fullName || order.delivery.driverName;
+                } else {
+                    driverId = order.delivery.driverId.toString();
+                    driverName = order.delivery.driverName;
+                }
+            }
+            
+            // If still no driver info, check driverName field
+            if (!driverId && order.delivery?.driverName) {
+                driverId = order.delivery.driverName; // Use name as ID if no ID
+                driverName = order.delivery.driverName;
+            }
+            
+            // Default to unassigned if no driver found
+            if (!driverId) {
+                driverId = 'unassigned';
+                driverName = 'Unassigned';
+            }
             
             // Check if order has delivery fee (meaning it was a delivery order)
             const deliveryFee = order.pricing?.deliveryFee || 0;
@@ -512,7 +536,7 @@ exports.generatePDFReport = async (req, res) => {
                     driverEarnings[driverId] = {
                         name: driverName,
                         deliveries: 0,
-                        deliveryFees: 0,
+                        basePay: 0,
                         tips: 0,
                         total: 0,
                         orders: []
@@ -525,14 +549,16 @@ exports.generatePDFReport = async (req, res) => {
                 const isDeliveryComplete = status === 'delivered' || status === 'completed';
                 
                 if (isDeliveryComplete || status === 'out for delivery' || status === 'confirmed') {
+                    const driverPay = DRIVER_PAY_RATE; // $4 per delivery
+                    
                     driverEarnings[driverId].deliveries++;
-                    driverEarnings[driverId].deliveryFees += deliveryFee;
+                    driverEarnings[driverId].basePay += driverPay;
                     driverEarnings[driverId].tips += tip;
-                    driverEarnings[driverId].total += (deliveryFee + tip);
+                    driverEarnings[driverId].total += (driverPay + tip);
                     driverEarnings[driverId].orders.push({
                         orderNum: order.orderNumber || order._id?.toString().slice(-6),
                         date: order.createdAt || order.timestamp,
-                        deliveryFee,
+                        basePay: driverPay,
                         tip,
                         status: order.status
                     });
@@ -619,11 +645,11 @@ exports.generatePDFReport = async (req, res) => {
                    .fillColor('#34495e')
                    .font('Helvetica');
 
-                doc.text(`Delivery Fees:`, 60, stubY + 55);
+                doc.text(`Base Pay ($4/delivery):`, 60, stubY + 55);
                 doc.text(`Tips Received:`, 250, stubY + 55);
 
                 doc.font('Helvetica-Bold');
-                doc.text(`$${driver.deliveryFees.toFixed(2)}`, 150, stubY + 55);
+                doc.text(`$${driver.basePay.toFixed(2)}`, 180, stubY + 55);
                 doc.text(`$${driver.tips.toFixed(2)}`, 340, stubY + 55);
 
                 // Total pay (prominent)
@@ -651,7 +677,7 @@ exports.generatePDFReport = async (req, res) => {
                .fillColor('#7f8c8d')
                .font('Helvetica')
                .text(
-                   'Note: Driver pay includes delivery fees and tips from completed deliveries only.',
+                   'Note: Driver base pay is $4.00 per delivery plus tips. Only completed deliveries are included.',
                    50,
                    doc.y,
                    { align: 'center', width: 495 }
