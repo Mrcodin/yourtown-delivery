@@ -636,6 +636,7 @@
         // ============ EDIT ORDER MODAL ============
         let currentEditOrder = null;
         let editOrderItems = [];
+        let allProductsCache = []; // Cache products for easier access
 
         async function openEditOrderModal(orderId) {
             const modal = document.getElementById('edit-order-modal');
@@ -664,9 +665,9 @@
                 // Load all products for selection
                 const productsResponse = await fetch(`${API_CONFIG.BASE_URL}/products`);
                 const productsData = await productsResponse.json();
-                const allProducts = productsData.products || [];
+                allProductsCache = productsData.products || [];
 
-                displayEditOrderItems(allProducts);
+                displayEditOrderItems();
                 updateEditOrderTotals();
 
                 // Set notes
@@ -687,9 +688,10 @@
             document.getElementById('edit-order-modal').style.display = 'none';
             currentEditOrder = null;
             editOrderItems = [];
+            allProductsCache = [];
         }
 
-        function displayEditOrderItems(allProducts) {
+        function displayEditOrderItems() {
             const container = document.getElementById('edit-order-items');
             container.innerHTML = `
                 <div style="margin-bottom: 20px;">
@@ -716,7 +718,7 @@
                     }).join('')}
                 </div>
                 <div style="margin-top: 20px;">
-                    <button onclick="showAddItemsSection(${JSON.stringify(allProducts).replace(/"/g, '&quot;')})" class="btn-large" style="background: #10b981; color: white;">
+                    <button onclick="toggleAddItemsSection()" class="btn-large" style="background: #10b981; color: white;">
                         ➕ Add More Items
                     </button>
                     <div id="add-items-section" style="display: none; margin-top: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;"></div>
@@ -727,7 +729,7 @@
         function updateEditItemQuantity(index, change) {
             if (editOrderItems[index]) {
                 editOrderItems[index].quantity = Math.max(1, Math.min(99, editOrderItems[index].quantity + change));
-                displayEditOrderItems([]); // Will fetch products again
+                displayEditOrderItems();
                 updateEditOrderTotals();
             }
         }
@@ -746,10 +748,77 @@
                 return;
             }
             editOrderItems.splice(index, 1);
-            fetch(`${API_CONFIG.BASE_URL}/products`)
-                .then(r => r.json())
-                .then(data => displayEditOrderItems(data.products || []));
+            displayEditOrderItems();
             updateEditOrderTotals();
+        }
+
+        function toggleAddItemsSection() {
+            const section = document.getElementById('add-items-section');
+            if (section.style.display === 'none') {
+                // Show add items section
+                section.style.display = 'block';
+                displayAddItemsSection();
+            } else {
+                // Hide add items section
+                section.style.display = 'none';
+            }
+        }
+
+        function displayAddItemsSection() {
+            const section = document.getElementById('add-items-section');
+            
+            // Filter out items already in order
+            const existingProductIds = editOrderItems.map(item => 
+                (item.productId?._id || item.productId)?.toString()
+            );
+            
+            const availableProducts = allProductsCache.filter(product => 
+                product.status === 'active' && !existingProductIds.includes(product._id.toString())
+            );
+
+            if (availableProducts.length === 0) {
+                section.innerHTML = '<p style="color: #6b7280;">All available products are already in your order.</p>';
+                return;
+            }
+
+            section.innerHTML = `
+                <h4 style="margin-bottom: 15px;">Select Products to Add</h4>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${availableProducts.map(product => `
+                        <div style="display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 1.5em;">${product.emoji || '📦'}</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600;">${product.name}</div>
+                                <div style="color: #6b7280; font-size: 0.9em;">$${product.price.toFixed(2)}</div>
+                            </div>
+                            <button onclick="addItemToOrder('${product._id}')" class="btn-large" style="background: #10b981; color: white; padding: 8px 16px; font-size: 14px;">
+                                ➕ Add
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function addItemToOrder(productId) {
+            const product = allProductsCache.find(p => p._id === productId);
+            if (!product) {
+                toast.error('Product not found');
+                return;
+            }
+
+            // Add to order items
+            editOrderItems.push({
+                productId: product,
+                name: product.name,
+                price: product.price,
+                emoji: product.emoji,
+                quantity: 1
+            });
+
+            displayEditOrderItems();
+            updateEditOrderTotals();
+            toast.success(`${product.name} added!`);
         }
 
         function updateEditOrderTotals() {
