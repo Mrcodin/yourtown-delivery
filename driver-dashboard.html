@@ -852,17 +852,21 @@
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': application/json'
                     }
                 });
 
                 if (response.ok) {
-                    alert('✅ Order claimed successfully! You can now start shopping.');
                     closeOrderDetails();
                     // Refresh all tabs
-                    fetchAvailableOrders();
-                    fetchActiveDeliveries();
-                    fetchDriverProfile(); // Update status
+                    await Promise.all([
+                        fetchAvailableOrders(),
+                        fetchActiveDeliveries(),
+                        fetchDriverProfile()
+                    ]);
+                    // Switch to My Active tab to show the claimed order
+                    switchTab('active');
+                    alert('✅ Order claimed successfully! You can now start shopping.');
                 } else {
                     const error = await response.json();
                     alert(error.message || 'Failed to claim order');
@@ -1097,8 +1101,15 @@
         // Switch tabs
         function switchTab(tab) {
             // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                // Check if this button matches the tab we're switching to
+                if (btn.textContent.toLowerCase().includes(tab) || 
+                    (tab === 'active' && btn.textContent.includes('My Active')) ||
+                    (tab === 'available' && btn.textContent.includes('Available'))) {
+                    btn.classList.add('active');
+                }
+            });
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
