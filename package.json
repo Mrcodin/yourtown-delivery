@@ -1,0 +1,23 @@
+{
+  "name": "yourtown-delivery-frontend",
+  "version": "1.0.0",
+  "description": "Frontend build tools for Hometown Delivery",
+  "scripts": {
+    "build": "node build-scripts/build.js",
+    "build:css": "node build-scripts/minify-css.js",
+    "build:js": "node build-scripts/minify-js.js",
+    "build:images": "node build-scripts/optimize-images.js",
+    "build:all": "npm run build:css && npm run build:js && npm run build:images",
+    "analyze": "node build-scripts/analyze-bundle.js",
+    "lighthouse": "lighthouse http://localhost:5500 --output html --output-path ./lighthouse-report.html"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "imagemin-webp": "^8.0.0",
+    "lighthouse": "^11.4.0",
+    "terser": "^5.44.1"
+  }
+}

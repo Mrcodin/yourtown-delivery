@@ -65,6 +65,22 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON bodies with 10MB limit f
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 app.use(morgan('dev')); // HTTP request logger
 
+// Compression middleware for responses
+const compression = require('compression');
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Balance between speed and compression
+}));
+
+// Cache control middleware
+const cacheControl = require('./middleware/cache');
+app.use(cacheControl.autoCache);
+
 // Apply general rate limiting to all API routes
 app.use('/api/', apiLimiter);
 
