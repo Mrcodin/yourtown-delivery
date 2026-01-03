@@ -1601,10 +1601,62 @@ function renderCustomersTable() {
         return;
     }
 
-    // console.log(`Rendering ${customers.length} customers`);
+    // Get search and sort values
+    const searchTerm = document.getElementById('customer-search')?.value.toLowerCase() || '';
+    const sortBy = document.getElementById('customer-sort')?.value || 'recent';
 
-    if (customers.length === 0) {
-        container.innerHTML = `
+    // Filter customers based on search
+    let filteredCustomers = customers.filter(customer => {
+        if (!searchTerm) return true;
+        
+        const name = (customer.name || '').toLowerCase();
+        const phone = (customer.phone || '').toLowerCase();
+        const email = (customer.email || '').toLowerCase();
+        const address = (customer.address || customer.addresses?.[0]?.street || '').toLowerCase();
+        
+        return name.includes(searchTerm) || 
+               phone.includes(searchTerm) || 
+               email.includes(searchTerm) || 
+               address.includes(searchTerm);
+    });
+
+    // Sort customers
+    filteredCustomers.sort((a, b) => {
+        switch (sortBy) {
+            case 'orders':
+                return (b.totalOrders || 0) - (a.totalOrders || 0);
+            case 'spent':
+                return (b.totalSpent || 0) - (a.totalSpent || 0);
+            case 'name':
+                return (a.name || '').localeCompare(b.name || '');
+            case 'recent':
+            default:
+                // Find last order date for each customer
+                const getLastOrderDate = (customer) => {
+                    const orders = adminOrders.filter(o => 
+                        o.customerInfo?.phone === customer.phone ||
+                        o.customerId?._id === customer._id ||
+                        o.customerId === customer._id
+                    );
+                    const lastOrder = orders.sort((x, y) => 
+                        new Date(y.createdAt) - new Date(x.createdAt)
+                    )[0];
+                    return lastOrder ? new Date(lastOrder.createdAt) : new Date(customer.createdAt || 0);
+                };
+                return getLastOrderDate(b) - getLastOrderDate(a);
+        }
+    });
+
+    // console.log(`Rendering ${filteredCustomers.length} customers`);
+
+    if (filteredCustomers.length === 0) {
+        container.innerHTML = searchTerm ? `
+            <div class="admin-empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>No Customers Found</h3>
+                <p>No customers match "${searchTerm}"</p>
+            </div>
+        ` : `
             <div class="admin-empty-state">
                 <div class="empty-icon">👥</div>
                 <h3>No Customers Yet</h3>
@@ -1614,7 +1666,7 @@ function renderCustomersTable() {
         return;
     }
 
-    container.innerHTML = customers
+    container.innerHTML = filteredCustomers
         .map(customer => {
             try {
                 const orderCount = customer.totalOrders || 0;
