@@ -1562,6 +1562,13 @@ async function deactivateDriver() {
 // ============ CUSTOMERS PAGE ============
 
 function initCustomersPage() {
+    // Reset search and sort inputs
+    const searchInput = document.getElementById('customer-search');
+    const sortSelect = document.getElementById('customer-sort');
+    
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'recent';
+    
     updateCustomerStats();
     renderCustomersTable();
 }
