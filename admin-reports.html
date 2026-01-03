@@ -133,8 +133,12 @@
     <main class="admin-main">
         <header class="admin-topbar">
             <button class="mobile-sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
-            <h2 class="topbar-title">Reports & Analytics</h2>
+            <h2 class="topbar-title">📋 Reports & Data Export</h2>
             <div class="topbar-right">
+                <a href="admin-analytics.html" class="btn btn-secondary" style="margin-right: 10px; display: flex; align-items: center; gap: 5px;">
+                    <span>📊</span>
+                    <span>Analytics</span>
+                </a>
                 <select class="form-input" id="report-period" onchange="updateReportsPeriod()" style="margin-right: 10px;">
                     <option value="week">Last 7 Days</option>
                     <option value="month" selected>This Month</option>
@@ -153,6 +157,21 @@
         </header>
 
         <div class="admin-content">
+            <!-- INFO BOX -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 25px; color: white;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 40px;">📋</div>
+                    <div>
+                        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Quick Reports & Data Export</h3>
+                        <p style="margin: 0; opacity: 0.9; font-size: 14px;">
+                            This page shows summary statistics and allows you to export data (CSV/PDF). 
+                            For interactive charts and deep analytics, visit 
+                            <a href="admin-analytics.html" style="color: white; text-decoration: underline; font-weight: 600;">Analytics Dashboard →</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
             <!-- SUMMARY STATS -->
             <div class="stats-row">
                 <div class="stat-card stat-primary">
