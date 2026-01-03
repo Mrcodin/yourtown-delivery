@@ -1739,7 +1739,7 @@ function viewCustomerOrders(phone) {
                                     <td>${formatDateTime(order.createdAt || order.timestamp)}</td>
                                     <td>${(order.items || []).length} items</td>
                                     <td><strong>$${(order.pricing?.total || order.total || 0).toFixed(2)}</strong></td>
-                                    <td><span class="order-status ${order.status}">${formatOrderStatus(order.status)}</span></td>
+                                    <td><span class="order-status ${order.status}">${formatStatus(order.status)}</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline" onclick="viewOrderReceipt('${order._id || order.id}')">📄 Receipt</button>
                                         <button class="btn btn-sm btn-outline" onclick="closeCustomerOrdersModal(); viewOrderDetail('${order._id || order.id}')">👁️ Details</button>
