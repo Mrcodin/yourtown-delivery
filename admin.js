@@ -1605,6 +1605,10 @@ function renderCustomersTable() {
     const searchTerm = document.getElementById('customer-search')?.value.toLowerCase() || '';
     const sortBy = document.getElementById('customer-sort')?.value || 'recent';
 
+    console.log('Search term:', searchTerm);
+    console.log('Sort by:', sortBy);
+    console.log('Total customers before filter:', customers.length);
+
     // Filter customers based on search
     let filteredCustomers = customers.filter(customer => {
         if (!searchTerm) return true;
@@ -1646,6 +1650,8 @@ function renderCustomersTable() {
                 return getLastOrderDate(b) - getLastOrderDate(a);
         }
     });
+
+    console.log('Filtered customers:', filteredCustomers.length);
 
     // console.log(`Rendering ${filteredCustomers.length} customers`);
 
@@ -1738,6 +1744,8 @@ function renderCustomersTable() {
 }
 
 function filterCustomers() {
+    console.log('filterCustomers called');
+    console.log('Customers array length:', customers.length);
     renderCustomersTable();
 }
 
