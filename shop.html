@@ -210,6 +210,9 @@
                 <p>Try a different search or category</p>
                 <button onclick="filterCategory('all')" class="btn btn-primary">View All Items</button>
             </div>
+            
+            <!-- RECENTLY VIEWED -->
+            <div id="recently-viewed-container" style="display: none;"></div>
         </div>
     </main>
 
@@ -275,6 +278,11 @@
     <script src="lazy-load.js" defer></script>
     <script src="performance.js" defer></script>
     
+    <!-- UI/UX Enhancement Scripts -->
+    <script src="wishlist.js"></script>
+    <script src="recently-viewed.js"></script>
+    <script src="frequently-bought.js"></script>
+    
     <!-- Modular JavaScript -->
     <script src="js/error-tracking.js"></script>
     <script src="js/products.js"></script>
@@ -311,6 +319,11 @@
         
         // Delay check to ensure customer data is loaded
         setTimeout(checkEmailVerificationBanner, 100);
+        
+        // Display recently viewed products
+        document.addEventListener('DOMContentLoaded', () => {
+            displayRecentlyViewed();
+        });
     </script>
     <script src="back-to-top.js"></script>
 </body>

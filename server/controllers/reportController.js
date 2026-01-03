@@ -722,3 +722,72 @@ exports.generatePDFReport = async (req, res) => {
         }
     }
 };
+
+// @desc    Get frequently bought together products
+// @route   GET /api/reports/frequently-bought-together/:productId
+// @access  Public
+exports.getFrequentlyBoughtTogether = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const limit = parseInt(req.query.limit) || 4;
+
+        // Find all completed orders containing this product
+        const ordersWithProduct = await Order.find({
+            'items.product': productId,
+            status: 'delivered'
+        }).populate('items.product');
+
+        if (ordersWithProduct.length === 0) {
+            return res.json([]);
+        }
+
+        // Count co-occurrences
+        const coOccurrences = {};
+
+        ordersWithProduct.forEach(order => {
+            order.items.forEach(item => {
+                const itemId = item.product._id.toString();
+                
+                // Skip if it's the same product
+                if (itemId === productId) {
+                    return;
+                }
+
+                if (!coOccurrences[itemId]) {
+                    coOccurrences[itemId] = {
+                        product: item.product,
+                        count: 0
+                    };
+                }
+                coOccurrences[itemId].count++;
+            });
+        });
+
+        // Calculate confidence and sort
+        const totalOrders = ordersWithProduct.length;
+        const suggestions = Object.values(coOccurrences)
+            .map(item => ({
+                product: {
+                    _id: item.product._id,
+                    name: item.product.name,
+                    price: item.product.price,
+                    unit: item.product.unit,
+                    category: item.product.category,
+                    imageUrl: item.product.imageUrl,
+                    emoji: item.product.emoji
+                },
+                count: item.count,
+                confidence: (item.count / totalOrders) * 100
+            }))
+            .sort((a, b) => b.confidence - a.confidence)
+            .slice(0, limit);
+
+        res.json(suggestions);
+    } catch (error) {
+        console.error('Frequently bought together error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error analyzing purchase patterns'
+        });
+    }
+};

@@ -32,17 +32,25 @@ function renderGroceryGrid(items = groceries) {
             ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">`
             : item.emoji;
         
+        const inWishlist = wishlistManager.isInWishlist(item._id || item.id);
+        const heartIcon = inWishlist ? '❤️' : '🤍';
+        
         return `
-        <div class="grocery-item" data-category="${item.category}">
-            <div class="item-image" onclick="openQuickView('${item.id}')" style="cursor: pointer;">${imageHtml}</div>
+        <div class="grocery-item" data-category="${item.category}" data-product-id="${item._id || item.id}">
+            <button class="wishlist-btn ${inWishlist ? 'active' : ''}" 
+                    onclick="toggleWishlist(event, '${item._id || item.id}')"
+                    title="${inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">
+                ${heartIcon}
+            </button>
+            <div class="item-image" onclick="viewProduct('${item._id || item.id}')" style="cursor: pointer;">${imageHtml}</div>
             <div class="item-content">
                 <h3 class="item-name">${item.name}</h3>
                 <div class="item-price">$${item.price.toFixed(2)}</div>
                 <div style="display: flex; gap: 8px;">
-                    <button class="add-btn" onclick="addToCart('${item.id}')" style="flex: 1;">
+                    <button class="add-btn" onclick="addToCart('${item._id || item.id}')" style="flex: 1;">
                         Add to Cart
                     </button>
-                    <button class="btn btn-secondary" onclick="openQuickView('${item.id}')" style="padding: 12px; width: 44px;" title="Quick View">
+                    <button class="btn btn-secondary" onclick="viewProduct('${item._id || item.id}')" style="padding: 12px; width: 44px;" title="Quick View">
                         👁️
                     </button>
                 </div>
@@ -500,6 +508,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ============ EXPORTS ============
 
+// Wishlist toggle helper
+function toggleWishlist(event, productId) {
+    event.stopPropagation();
+    
+    const product = groceries.find(p => (p._id || p.id) === productId);
+    if (!product) return;
+    
+    if (wishlistManager.isInWishlist(productId)) {
+        wishlistManager.removeFromWishlist(productId);
+    } else {
+        wishlistManager.addToWishlist(product);
+    }
+    
+    // Re-render to update heart icons
+    const currentFilters = {
+        search: document.getElementById('search-input')?.value,
+        price: document.getElementById('price-filter')?.value,
+        inStock: document.getElementById('in-stock-filter')?.checked,
+        category: document.querySelector('.category-btn.active')?.textContent
+    };
+    applyFilters();
+}
+
+// View product (tracks view and opens quick view)
+function viewProduct(productId) {
+    const product = groceries.find(p => (p._id || p.id) === productId);
+    if (product && recentlyViewedTracker) {
+        recentlyViewedTracker.addProduct(product);
+    }
+    openQuickView(productId);
+}
+
 // Expose functions globally for onclick handlers
 window.renderGroceryGrid = renderGroceryGrid;
 window.renderCartItems = renderCartItems;
@@ -508,6 +548,8 @@ window.filterCategory = filterCategory;
 window.searchItems = searchItems;
 window.sortProducts = sortProducts;
 window.applyFilters = applyFilters;
+window.toggleWishlist = toggleWishlist;
+window.viewProduct = viewProduct;
 window.clearFilters = clearFilters;
 window.openQuickView = openQuickView;
 window.closeQuickView = closeQuickView;

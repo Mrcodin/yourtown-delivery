@@ -383,9 +383,35 @@ CUSTOMER PAGES - SHOP IMPROVEMENTS (January 2, 2026):
    📝 Mobile-optimized with full-width controls
    📝 Zero cost - all frontend improvements
    
-   [ ] Show recently viewed products
-   [ ] Add "Frequently Bought Together" suggestions
-   [ ] Wishlist/Save for Later functionality
+   [✅] Show recently viewed products - COMPLETED (January 3, 2026)
+   [✅] Add "Frequently Bought Together" suggestions - COMPLETED (January 3, 2026)
+   [✅] Wishlist/Save for Later functionality - COMPLETED (January 3, 2026)
+   
+   RECENT ENHANCEMENTS (January 3, 2026):
+   [➕] Added: wishlist.js - WishlistManager class with localStorage persistence
+   [➕] Added: recently-viewed.js - RecentlyViewedTracker with max 12 items
+   [➕] Added: frequently-bought.js - FrequentlyBoughtTogether with confidence scores
+   [➕] Added: Wishlist heart buttons (🤍/❤️) on every product card
+   [➕] Added: Recently Viewed section on shop page (horizontal scroll, 6 items)
+   [➕] Added: Frequently Bought Together API endpoint (public, no auth)
+   [➕] Added: getFrequentlyBoughtTogether() in reportController.js
+   [➕] Added: Co-occurrence analysis based on delivered orders
+   [➕] Added: Confidence scores (% of customers who buy together)
+   [➕] Added: 24-hour cache in localStorage for FBT suggestions
+   [➕] Added: "Add All to Cart" button for FBT items
+   [➕] Added: Clear recently viewed button
+   [➕] Updated: shop.html - Recently viewed container, new script includes
+   [➕] Updated: js/shop.js - toggleWishlist(), viewProduct(), wishlist icons
+   [➕] Updated: styles.css - Wishlist buttons, recently viewed section, FBT section
+   [➕] Updated: server/routes/reports.js - Public FBT endpoint before auth middleware
+   
+   📝 Wishlist: Heart buttons on products, localStorage, badge counters, move to cart
+   📝 Recently Viewed: Auto-tracks views, displays last 6 items, quick add to cart
+   📝 Frequently Bought Together: Smart suggestions based on real order data
+   📝 All features are 100% FREE - no external services or APIs
+   📝 localStorage-based with efficient caching
+   📝 Increases engagement and conversion rates
+   📝 Time: 1 hour, Cost: $0
 
 BACK TO TOP BUTTON ENHANCEMENT (January 2, 2026):
    [✅] Added to admin-orders.html - COMPLETED

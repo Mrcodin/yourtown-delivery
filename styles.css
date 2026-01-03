@@ -2321,3 +2321,231 @@ a:hover {
         max-width: 100%;
     }
 }
+
+/* ===================================
+   WISHLIST & RECENTLY VIEWED STYLES
+   =================================== */
+
+/* Wishlist Heart Button */
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    font-size: 20px;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--secondary);
+    box-shadow: var(--shadow-md);
+}
+
+.wishlist-btn.active {
+    background: var(--secondary);
+    border-color: var(--secondary);
+    color: white;
+}
+
+.wishlist-btn.active:hover {
+    background: var(--secondary-dark);
+}
+
+/* Wishlist Badge in Nav */
+.wishlist-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--secondary);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Recently Viewed Section */
+.recently-viewed-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.recently-viewed-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.recently-viewed-section h2 {
+    font-size: 28px;
+    color: var(--text);
+    margin: 0;
+}
+
+.clear-recent-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-light);
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.clear-recent-btn:hover {
+    background: var(--bg);
+    border-color: var(--text-light);
+    color: var(--text);
+}
+
+/* Frequently Bought Together */
+.frequently-bought-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9f3 100%);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--accent);
+}
+
+.frequently-bought-section h3 {
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 20px;
+}
+
+.fbt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.fbt-item {
+    background: white;
+    border-radius: var(--radius);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+.fbt-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.fbt-image {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg);
+}
+
+.fbt-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fbt-image .product-emoji {
+    font-size: 48px;
+}
+
+.fbt-info h4 {
+    font-size: 16px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.fbt-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 0;
+}
+
+.fbt-confidence {
+    font-size: 13px;
+    color: var(--success);
+    margin: 0;
+    font-weight: 500;
+}
+
+.fbt-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.fbt-actions .btn-primary {
+    padding: 12px 30px;
+    font-size: 16px;
+}
+
+/* Product Card Position for Wishlist Button */
+.product-card {
+    position: relative;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .recently-viewed-section,
+    .frequently-bought-section {
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .recently-viewed-section h2,
+    .frequently-bought-section h3 {
+        font-size: 22px;
+    }
+    
+    .fbt-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .wishlist-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fbt-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recently-viewed-section .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}

@@ -3,7 +3,10 @@ const router = express.Router();
 const reportController = require('../controllers/reportController');
 const { protect, authorize } = require('../middleware/auth');
 
-// All report routes require admin or manager role
+// Public endpoint for frequently bought together (no auth required)
+router.get('/frequently-bought-together/:productId', reportController.getFrequentlyBoughtTogether);
+
+// All other report routes require admin or manager role
 router.use(protect, authorize('admin', 'manager'));
 
 router.get('/summary', reportController.getSummary);
