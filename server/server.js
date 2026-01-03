@@ -116,6 +116,7 @@ app.use('/api/usual-orders', require('./routes/usualOrders'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/email', require('./routes/email'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
