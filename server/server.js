@@ -81,6 +81,14 @@ app.use(compression({
 const cacheControl = require('./middleware/cache');
 app.use(cacheControl.autoCache);
 
+// Swagger API Documentation
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Hometown Delivery API Docs'
+}));
+
 // Apply general rate limiting to all API routes
 app.use('/api/', apiLimiter);
 

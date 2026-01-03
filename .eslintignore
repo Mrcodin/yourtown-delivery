@@ -1,0 +1,16 @@
+# Ignore build output and dependencies
+node_modules/
+dist/
+build/
+
+# Ignore minified files
+*.min.js
+*.min.css
+
+# Ignore vendor libraries
+vendor/
+libs/
+
+# Ignore specific files
+checkout.js
+cart-checkout.js

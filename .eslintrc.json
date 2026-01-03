@@ -1,0 +1,53 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": ["warn", 4, { "SwitchCase": 1 }],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["warn", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    "semi": ["error", "always"],
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "no-undef": "error",
+    "no-unreachable": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "brace-style": ["warn", "1tbs"],
+    "comma-dangle": ["warn", "never"],
+    "no-trailing-spaces": "warn",
+    "no-multiple-empty-lines": ["warn", { "max": 2 }],
+    "space-before-function-paren": ["warn", {
+      "anonymous": "always",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "arrow-spacing": ["warn", { "before": true, "after": true }],
+    "keyword-spacing": ["warn", { "before": true, "after": true }],
+    "space-infix-ops": "warn",
+    "no-var": "error",
+    "prefer-const": "warn",
+    "prefer-arrow-callback": "warn",
+    "no-duplicate-imports": "error",
+    "no-template-curly-in-string": "warn"
+  },
+  "globals": {
+    "config": "readonly",
+    "api": "readonly",
+    "auth": "readonly",
+    "customerAuth": "readonly",
+    "LoadingManager": "readonly",
+    "showToast": "readonly",
+    "showMessage": "readonly",
+    "io": "readonly",
+    "Stripe": "readonly",
+    "Chart": "readonly"
+  }
+}
