@@ -1696,8 +1696,83 @@ function exportCustomers() {
 }
 
 function viewCustomerOrders(phone) {
-    // Navigate to orders page with filter
-    window.location.href = `admin-orders.html?search=${encodeURIComponent(phone)}`;
+    // Find all orders for this customer
+    const customerOrders = adminOrders.filter(order => 
+        order.customerInfo?.phone === phone ||
+        order.customer?.phone === phone ||
+        order.phone === phone
+    );
+    
+    if (customerOrders.length === 0) {
+        showAdminToast('No orders found for this customer', 'info');
+        return;
+    }
+    
+    // Create modal content
+    const customer = customers.find(c => c.phone === phone);
+    const customerName = customer?.name || customerOrders[0]?.customerInfo?.name || 'Customer';
+    
+    const modalHTML = `
+        <div class="modal-overlay active" id="customer-orders-modal" onclick="if(event.target === this) closeCustomerOrdersModal()">
+            <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>📦 Orders for ${customerName}</h2>
+                    <button class="modal-close" onclick="closeCustomerOrdersModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 20px; color: #666;">Phone: ${phone}</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${customerOrders.map(order => `
+                                <tr>
+                                    <td><strong>${order.orderId || order._id}</strong></td>
+                                    <td>${formatDateTime(order.createdAt || order.timestamp)}</td>
+                                    <td>${(order.items || []).length} items</td>
+                                    <td><strong>$${(order.pricing?.total || order.total || 0).toFixed(2)}</strong></td>
+                                    <td><span class="order-status ${order.status}">${formatOrderStatus(order.status)}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" onclick="viewOrderReceipt('${order._id || order.id}')">📄 Receipt</button>
+                                        <button class="btn btn-sm btn-outline" onclick="closeCustomerOrdersModal(); viewOrderDetail('${order._id || order.id}')">👁️ Details</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('customer-orders-modal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCustomerOrdersModal() {
+    const modal = document.getElementById('customer-orders-modal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+}
+
+function viewOrderReceipt(orderId) {
+    // Open receipt in new tab
+    window.open(`order-receipt.html?id=${orderId}`, '_blank');
 }
 
 function callCustomerDirect(phone) {

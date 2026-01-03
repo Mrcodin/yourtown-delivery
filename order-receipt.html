@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Receipt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .receipt {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .items-table th {
+            text-align: left;
+            border-bottom: 1px solid #333;
+            padding: 8px 0;
+            font-size: 12px;
+        }
+        
+        .items-table td {
+            padding: 8px 0;
+            font-size: 13px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .items-table .item-name {
+            width: 50%;
+        }
+        
+        .items-table .item-qty {
+            width: 15%;
+            text-align: center;
+        }
+        
+        .items-table .item-price {
+            width: 20%;
+            text-align: right;
+        }
+        
+        .items-table .item-total {
+            width: 25%;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .totals {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .total-row.grand-total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px dashed #333;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #333;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        
+        .status-badge.delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.placed,
+        .status-badge.confirmed {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .print-button:hover {
+            background: #5568d3;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .receipt {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .print-button {
+                display: none;
+            }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button" onclick="window.print()">🖨️ Print Receipt</button>
+    
+    <div class="receipt" id="receipt">
+        <div class="loading">Loading receipt...</div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Get order ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        
+        if (!orderId) {
+            document.getElementById('receipt').innerHTML = '<div class="loading">❌ No order ID provided</div>';
+        } else {
+            loadReceipt(orderId);
+        }
+        
+        async function loadReceipt(orderId) {
+            try {
+                // API Configuration
+                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3000'
+                    : 'https://yourtown-delivery.onrender.com';
+                
+                const token = localStorage.getItem('authToken');
+                
+                if (!token) {
+                    throw new Error('Not authenticated');
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load order');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success || !data.order) {
+                    throw new Error('Order not found');
+                }
+                
+                renderReceipt(data.order);
+            } catch (error) {
+                console.error('Error loading receipt:', error);
+                document.getElementById('receipt').innerHTML = `
+                    <div class="loading">❌ Error loading receipt: ${error.message}</div>
+                `;
+            }
+        }
+        
+        function renderReceipt(order) {
+            const receiptContainer = document.getElementById('receipt');
+            
+            const customerName = order.customerInfo?.name || order.customer?.name || 'Customer';
+            const customerPhone = order.customerInfo?.phone || order.customer?.phone || 'N/A';
+            const customerAddress = order.customerInfo?.address || order.customer?.address || order.address || 'N/A';
+            const orderDate = new Date(order.createdAt || order.timestamp);
+            
+            const items = order.items || [];
+            const subtotal = order.pricing?.subtotal || order.subtotal || 0;
+            const deliveryFee = order.pricing?.deliveryFee || order.deliveryFee || 6.99;
+            const tip = order.pricing?.tip || 0;
+            const tax = order.pricing?.tax || 0;
+            const discount = order.pricing?.discount || 0;
+            const total = order.pricing?.total || order.total || 0;
+            
+            receiptContainer.innerHTML = `
+                <div class="header">
+                    <h1>🛒 Hometown Delivery</h1>
+                    <p>Order Receipt</p>
+                    <p>Thank you for your order!</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Order Information</div>
+                    <div class="info-row">
+                        <span>Order ID:</span>
+                        <span><strong>${order.orderId || order._id}</strong></span>
+                    </div>
+                    <div class="info-row">
+                        <span>Date:</span>
+                        <span>${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString()}</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Status:</span>
+                        <span class="status-badge ${order.status}">${formatStatus(order.status)}</span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Customer Details</div>
+                    <div class="info-row">
+                        <span>Name:</span>
+                        <span>${customerName}</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Phone:</span>
+                        <span>${customerPhone}</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Address:</span>
+                        <span>${customerAddress}</span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Order Items</div>
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th class="item-name">Item</th>
+                                <th class="item-qty">Qty</th>
+                                <th class="item-price">Price</th>
+                                <th class="item-total">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td class="item-name">${item.emoji || '📦'} ${item.name}</td>
+                                    <td class="item-qty">${item.quantity}</td>
+                                    <td class="item-price">$${(item.price || 0).toFixed(2)}</td>
+                                    <td class="item-total">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>$${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Delivery Fee:</span>
+                        <span>$${deliveryFee.toFixed(2)}</span>
+                    </div>
+                    ${tip > 0 ? `
+                        <div class="total-row">
+                            <span>Tip:</span>
+                            <span>$${tip.toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    ${tax > 0 ? `
+                        <div class="total-row">
+                            <span>Tax:</span>
+                            <span>$${tax.toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    ${discount > 0 ? `
+                        <div class="total-row">
+                            <span>Discount:</span>
+                            <span>-$${discount.toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    <div class="total-row grand-total">
+                        <span>TOTAL:</span>
+                        <span>$${total.toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                ${order.payment ? `
+                    <div class="section">
+                        <div class="section-title">Payment Method</div>
+                        <div class="info-row">
+                            <span>${formatPaymentMethod(order.payment.method || order.paymentMethod)}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${order.notes || order.delivery?.instructions ? `
+                    <div class="section">
+                        <div class="section-title">Special Instructions</div>
+                        <p style="font-size: 12px; color: #666;">
+                            ${order.notes || order.delivery?.instructions}
+                        </p>
+                    </div>
+                ` : ''}
+                
+                <div class="footer">
+                    <p>Thank you for choosing Hometown Delivery!</p>
+                    <p>Questions? Call us or visit our website</p>
+                </div>
+            `;
+        }
+        
+        function formatStatus(status) {
+            const statusMap = {
+                'placed': '🆕 New',
+                'confirmed': '✅ Confirmed',
+                'in_progress': '🛒 In Progress',
+                'ready': '📦 Ready',
+                'out_for_delivery': '🚗 Out for Delivery',
+                'delivered': '✔️ Delivered',
+                'cancelled': '❌ Cancelled'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function formatPaymentMethod(method) {
+            const methodMap = {
+                'cash': '💵 Cash',
+                'card': '💳 Card',
+                'check': '📝 Check'
+            };
+            return methodMap[method] || method;
+        }
+    </script>
+</body>
+</html>
