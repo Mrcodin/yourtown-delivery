@@ -200,6 +200,17 @@
         .status-delivering { background: #e8f5e9; color: #388e3c; }
         .status-delivered { background: #f3e5f5; color: #7b1fa2; }
 
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
         .customer-info {
             background: #f8f9fa;
             padding: 15px;
@@ -288,6 +299,19 @@
 
         .btn-secondary:hover {
             background: #d0d0d0;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
         .empty-state {
@@ -420,6 +444,45 @@
             }
         }
 
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes flash {
+            0% { background: white; }
+            50% { background: #e8f5e9; }
+            100% { background: white; }
+        }
+
+        @keyframes slideOutLeft {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -443,6 +506,28 @@
 
             .delivery-actions {
                 flex-direction: column;
+            }
+
+            .btn {
+                padding: 16px 20px;
+                font-size: 15px;
+            }
+
+            .delivery-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .status-badge {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+                overflow-y: auto;
             }
         }
     </style>
@@ -613,17 +698,32 @@
 
         // Fetch active deliveries
         async function fetchActiveDeliveries() {
+            console.log('📥 Fetching active deliveries...');
             try {
-                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/deliveries`, {
+                // Add timestamp to prevent caching
+                const cacheBuster = `?t=${Date.now()}`;
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/deliveries${cacheBuster}`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache'
                     }
                 });
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📦 Active deliveries received:', data.orders?.length || 0);
+                    
+                    // Update active count based on filtered orders
+                    const activeOrders = data.orders ? data.orders.filter(order => 
+                        order.status !== 'delivered' && 
+                        order.status !== 'cancelled'
+                    ) : [];
+                    
                     displayActiveDeliveries(data.orders);
-                    document.getElementById('activeCount').textContent = data.count;
+                    document.getElementById('activeCount').textContent = activeOrders.length;
+                    console.log('✅ Active deliveries displayed');
+                } else {
+                    console.error('❌ Failed to fetch active deliveries:', response.status);
                 }
             } catch (error) {
                 console.error('Error fetching deliveries:', error);
@@ -658,9 +758,23 @@
 
         // Display active deliveries
         function displayActiveDeliveries(orders) {
+            console.log('🎨 Displaying active deliveries:', orders?.length || 0);
             const container = document.getElementById('activeDeliveries');
             
-            if (!orders || orders.length === 0) {
+            if (!container) {
+                console.error('❌ activeDeliveries container not found!');
+                return;
+            }
+            
+            // Filter out delivered orders - they belong in history
+            const activeOrders = orders ? orders.filter(order => 
+                order.status !== 'delivered' && 
+                order.status !== 'cancelled'
+            ) : [];
+            
+            console.log('📊 Filtered active orders:', activeOrders.length);
+            
+            if (activeOrders.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📦</div>
@@ -671,14 +785,21 @@
                 return;
             }
 
-            container.innerHTML = orders.map(order => createDeliveryCard(order, true)).join('');
+            console.log('✅ Rendering active deliveries with statuses:', activeOrders.map(o => o.status));
+            container.innerHTML = activeOrders.map(order => createDeliveryCard(order, true)).join('');
         }
 
         // Display delivery history
         function displayDeliveryHistory(orders) {
             const container = document.getElementById('deliveryHistory');
             
-            if (!orders || orders.length === 0) {
+            // Only show delivered or cancelled orders in history
+            const historyOrders = orders ? orders.filter(order => 
+                order.status === 'delivered' || 
+                order.status === 'cancelled'
+            ) : [];
+            
+            if (historyOrders.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📜</div>
@@ -689,11 +810,12 @@
                 return;
             }
 
-            container.innerHTML = orders.map(order => createDeliveryCard(order, false)).join('');
+            container.innerHTML = historyOrders.map(order => createDeliveryCard(order, false)).join('');
         }
 
         // Fetch available orders
         async function fetchAvailableOrders() {
+            console.log('🔄 Fetching available orders...');
             try {
                 const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/available-orders`, {
                     headers: {
@@ -701,22 +823,35 @@
                     }
                 });
 
+                console.log('📡 Available orders response status:', response.status);
+
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📦 Available orders data:', data);
                     displayAvailableOrders(data.orders || []);
                 } else {
-                    console.error('Error fetching available orders');
+                    const errorData = await response.json();
+                    console.error('❌ Error fetching available orders:', response.status, errorData);
+                    displayAvailableOrders([]);
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('💥 Exception fetching available orders:', error);
+                displayAvailableOrders([]);
             }
         }
 
         // Display available orders
         function displayAvailableOrders(orders) {
+            console.log('🎨 Displaying available orders:', orders?.length || 0, 'orders');
             const container = document.getElementById('availableOrders');
             
+            if (!container) {
+                console.error('❌ Container #availableOrders not found!');
+                return;
+            }
+            
             if (!orders || orders.length === 0) {
+                console.log('📭 No available orders to display');
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🔍</div>
@@ -727,9 +862,20 @@
                 return;
             }
 
+            console.log('✅ Rendering', orders.length, 'available orders');
             container.innerHTML = orders.map(order => {
                 const itemCount = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-                const totalAmount = order.payment?.amount || 0;
+                const totalAmount = order.pricing?.total || 0;
+                
+                // Status badge styling
+                const statusColors = {
+                    'confirmed': '#27ae60',
+                    'shopping': '#3498db',
+                    'waiting': '#f39c12',
+                    'pending': '#f39c12'
+                };
+                const statusText = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Waiting';
+                const statusColor = statusColors[order.status?.toLowerCase()] || '#f39c12';
                 
                 return `
                     <div class="delivery-card" onclick="showOrderDetails('${order._id}')" style="cursor: pointer;">
@@ -737,22 +883,22 @@
                             <div>
                                 <h3>Order #${order._id.slice(-6)}</h3>
                                 <p style="margin: 5px 0; color: #666;">
-                                    <strong>${order.customer?.name || 'Customer'}</strong>
+                                    <strong>${order.customerInfo?.name || 'Customer'}</strong>
                                 </p>
                             </div>
-                            <div class="status-badge" style="background: #f39c12;">
-                                Waiting
+                            <div class="status-badge" style="background: ${statusColor};">
+                                ${statusText}
                             </div>
                         </div>
                         
                         <div class="delivery-details">
                             <div class="detail-item">
                                 <span class="icon">📞</span>
-                                <span>${order.customer?.phone || 'No phone'}</span>
+                                <span>${order.customerInfo?.phone || 'No phone'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="icon">📍</span>
-                                <span>${order.delivery?.address || 'No address'}</span>
+                                <span>${order.customerInfo?.address || 'No address'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="icon">🛒</span>
@@ -818,9 +964,9 @@
                     const modalContent = `
                         <div style="margin-bottom: 20px;">
                             <h3 style="margin: 0 0 10px 0; color: #667eea;">Customer Information</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${order.customer?.name || 'N/A'}</p>
-                            <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.customer?.phone || 'N/A'}</p>
-                            <p style="margin: 5px 0;"><strong>Address:</strong> ${order.delivery?.address || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Name:</strong> ${order.customerInfo?.name || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.customerInfo?.phone || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Address:</strong> ${order.customerInfo?.address || 'N/A'}</p>
                             ${order.delivery?.deliveryInstructions ? `<p style="margin: 5px 0;"><strong>Instructions:</strong> ${order.delivery.deliveryInstructions}</p>` : ''}
                         </div>
 
@@ -841,7 +987,7 @@
                                 <tfoot>
                                     <tr style="background: #f8f9fa; font-weight: bold;">
                                         <td colspan="3" style="padding: 10px; border-top: 2px solid #e0e0e0; text-align: right;">Total Amount:</td>
-                                        <td style="padding: 10px; border-top: 2px solid #e0e0e0; color: #667eea; font-size: 1.2em;">$${(order.payment?.amount || 0).toFixed(2)}</td>
+                                        <td style="padding: 10px; border-top: 2px solid #e0e0e0; color: #667eea; font-size: 1.2em;">$${(order.pricing?.total || 0).toFixed(2)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -865,11 +1011,25 @@
 
         // Claim order
         async function claimOrder() {
-            if (!currentOrderForClaim) return;
+            if (!currentOrderForClaim) {
+                console.error('❌ No order selected to claim');
+                return;
+            }
 
             const btn = document.getElementById('claimOrderBtn');
+            const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Claiming...';
+            btn.textContent = '⏳ Claiming...';
+            
+            console.log('🎯 Attempting to claim order:', currentOrderForClaim);
+
+            // Add timeout protection (10 seconds)
+            const timeoutId = setTimeout(() => {
+                console.error('⏱️ Claim request timed out');
+                showToast('Request timed out. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }, 10000);
 
             try {
                 const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/orders/${currentOrderForClaim}/claim`, {
@@ -880,27 +1040,54 @@
                     }
                 });
 
+                clearTimeout(timeoutId); // Clear timeout if request completes
+
                 if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Order claimed successfully:', data);
+                    
+                    // Show success toast immediately
+                    showToast('🎉 Order claimed! Loading your delivery...', 'success');
+                    
+                    // Close modal
                     closeOrderDetails();
-                    // Refresh all tabs
+                    
+                    // Small delay before refreshing to ensure backend committed
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Refresh all tabs in parallel with cache-busting
+                    console.log('🔄 Refreshing data after claim...');
                     await Promise.all([
                         fetchAvailableOrders(),
                         fetchActiveDeliveries(),
                         fetchDriverProfile()
                     ]);
+                    
                     // Switch to My Active tab to show the claimed order
+                    console.log('📂 Switching to Active tab...');
                     switchTab('active');
-                    alert('✅ Order claimed successfully! You can now start shopping.');
+                    
+                    // Show final success message after tab switch
+                    setTimeout(() => {
+                        showToast('✅ Ready to start shopping!', 'success');
+                    }, 300);
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Failed to claim order');
+                    console.error('❌ Claim failed:', error);
+                    showToast(`Error: ${error.message || 'Failed to claim order'}`, 'error');
+                    
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.textContent = originalText;
                 }
             } catch (error) {
-                console.error('Error claiming order:', error);
-                alert('Failed to claim order. Please try again.');
-            } finally {
+                clearTimeout(timeoutId); // Clear timeout on error
+                console.error('❌ Error claiming order:', error);
+                showToast('Network error. Please check your connection and try again.', 'error');
+                
+                // Re-enable button
                 btn.disabled = false;
-                btn.textContent = '🛒 Claim Order for Shopping';
+                btn.textContent = originalText;
             }
         }
 
@@ -926,7 +1113,23 @@
             const totalPay = basePay + tip;
             
             const customerPhone = customer.phone || 'N/A';
-            const customerAddress = customer.address || delivery.address || 'N/A';
+            
+            // Handle address - could be string or object
+            let customerAddress = 'N/A';
+            if (typeof customer.address === 'string') {
+                customerAddress = customer.address;
+            } else if (customer.address && typeof customer.address === 'object') {
+                // Address is an object with street, city, etc.
+                const addr = customer.address;
+                customerAddress = `${addr.street || ''}, ${addr.city || ''}, ${addr.state || ''} ${addr.zipCode || ''}`.trim();
+            } else if (delivery.address) {
+                if (typeof delivery.address === 'string') {
+                    customerAddress = delivery.address;
+                } else if (typeof delivery.address === 'object') {
+                    const addr = delivery.address;
+                    customerAddress = `${addr.street || ''}, ${addr.city || ''}, ${addr.state || ''} ${addr.zipCode || ''}`.trim();
+                }
+            }
 
             let actions = '';
             if (isActive) {
@@ -1072,6 +1275,62 @@
             }, 3500);
         }
 
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                z-index: 10001;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Update single delivery card in place
+        function updateDeliveryCardInPlace(orderId, newStatus) {
+            // Find the card element
+            const cards = document.querySelectorAll('.delivery-card');
+            for (let card of cards) {
+                if (card.innerHTML.includes(orderId)) {
+                    // Add a flash animation to show it's updating
+                    card.style.animation = 'flash 0.5s ease';
+                    setTimeout(() => {
+                        card.style.animation = '';
+                    }, 500);
+                    break;
+                }
+            }
+        }
+
+        // Reset stuck buttons (utility function for recovery)
+        function resetAllButtons() {
+            // Find all disabled buttons and re-enable them
+            const buttons = document.querySelectorAll('button[disabled]');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes('⏳') || btn.textContent.includes('Claiming')) {
+                    btn.disabled = false;
+                    btn.textContent = btn.textContent.replace('⏳ ', '').replace('Claiming...', 'Claim Order');
+                    console.log('🔓 Reset button:', btn.textContent);
+                }
+            });
+            console.log('✅ All stuck buttons reset');
+        }
+
         // Update order status
         async function updateOrderStatus(orderId, status) {
             const statusMessages = {
@@ -1084,7 +1343,22 @@
                 return;
             }
 
+            // Find and disable the button to prevent double-clicks
+            const button = event?.target;
+            const originalText = button?.textContent;
+            if (button) {
+                button.disabled = true;
+                button.style.opacity = '0.6';
+                button.textContent = '⏳ Updating...';
+            }
+
+            // Add visual feedback to the card
+            updateDeliveryCardInPlace(orderId, status);
+
             try {
+                console.log(`📤 Sending status update: ${orderId} → ${status}`);
+                const startTime = Date.now();
+                
                 const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/driver-auth/orders/${orderId}/status`, {
                     method: 'PUT',
                     headers: {
@@ -1094,53 +1368,99 @@
                     body: JSON.stringify({ status })
                 });
 
+                const responseTime = Date.now() - startTime;
+                console.log(`📡 Backend responded in ${responseTime}ms`);
+
                 if (response.ok) {
-                    // Trigger confetti for picked-up status
-                    if (status === 'picked-up') {
-                        triggerConfetti();
-                        
-                        // Show success message with emoji
-                        const successMsg = document.createElement('div');
-                        successMsg.style.cssText = `
-                            position: fixed;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -50%);
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                            padding: 30px 50px;
-                            border-radius: 20px;
-                            font-size: 24px;
-                            font-weight: bold;
-                            z-index: 10000;
-                            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-                            animation: bounceIn 0.6s ease-out;
-                        `;
-                        successMsg.innerHTML = '📦 Order Picked Up! 🎉';
-                        document.body.appendChild(successMsg);
-                        
-                        // Remove message after animation
-                        setTimeout(() => {
-                            successMsg.style.animation = 'fadeOut 0.5s ease-out';
-                            setTimeout(() => document.body.removeChild(successMsg), 500);
-                        }, 2000);
-                    } else {
-                        alert(`✅ Order marked as ${status} successfully!`);
+                    const responseData = await response.json();
+                    console.log('✅ Backend confirmed status:', responseData.order?.status);
+                    
+                    // Close modal if open
+                    const modal = document.getElementById('orderDetailsModal');
+                    if (modal) {
+                        modal.style.display = 'none';
                     }
                     
-                    // Reload data
+                    // Handle delivered orders - animate out
+                    if (status === 'delivered') {
+                        const cards = document.querySelectorAll('.delivery-card');
+                        for (let card of cards) {
+                            if (card.innerHTML.includes(orderId)) {
+                                card.style.animation = 'slideOutLeft 0.5s ease-out';
+                                setTimeout(() => {
+                                    card.remove();
+                                    console.log('🗑️ Removed card from DOM');
+                                }, 500);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Wait longer for backend to update (increased from 300ms to 800ms)
+                    console.log('⏳ Waiting for backend to save changes...');
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    // Force refresh data and wait for ALL operations to complete
+                    console.log('🔄 Starting data refresh...');
                     await Promise.all([
                         fetchActiveDeliveries(),
                         fetchDeliveryHistory(),
                         fetchDriverProfile()
                     ]);
+                    console.log('✅ Data refresh completed!');
+
+                    // Make sure we're showing the active tab to see the changes
+                    if (status !== 'delivered') {
+                        const activeTab = document.querySelector('[data-tab="active"]');
+                        if (activeTab && !activeTab.classList.contains('active')) {
+                            console.log('🔄 Switching to active tab to show changes...');
+                            switchTab('active');
+                        }
+                    } else {
+                        // For delivered, show history tab
+                        const historyTab = document.querySelector('[data-tab="history"]');
+                        if (historyTab && !historyTab.classList.contains('active')) {
+                            console.log('🔄 Switching to history tab...');
+                            setTimeout(() => switchTab('history'), 600);
+                        }
+                    }
+
+                    // Small delay to ensure DOM updates
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    // Show ONE final success message with confetti
+                    if (status === 'picked-up') {
+                        triggerConfetti();
+                        showToast('📦 Picked up! Navigate button is now active', 'success');
+                    } else if (status === 'delivering') {
+                        showToast('🚗 On the way! Use Navigate button to find customer', 'success');
+                    } else if (status === 'delivered') {
+                        triggerConfetti();
+                        showToast('🎉 Delivery complete! Great job!', 'success');
+                    }
+
+                    console.log(`✅ Status update complete: ${status}`);
                 } else {
                     const data = await response.json();
-                    alert(`Error: ${data.message}`);
+                    showToast(`Error: ${data.message}`, 'error');
+                    
+                    // Re-enable button on error
+                    if (button) {
+                        button.disabled = false;
+                        button.style.opacity = '1';
+                        button.textContent = originalText || 'Try Again';
+                    }
                 }
             } catch (error) {
                 console.error('Error updating order:', error);
-                alert('Network error. Please try again.');
+                showToast('Network error. Please try again.', 'error');
+                
+                // Re-enable button on error
+                if (button) {
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                    button.textContent = originalText || 'Try Again';
+                }
             }
         }
 
@@ -1266,6 +1586,10 @@
         // Initialize
         window.addEventListener('DOMContentLoaded', async function() {
             if (checkAuth()) {
+                // Reset any stuck buttons from previous session
+                console.log('🔄 Checking for stuck buttons...');
+                resetAllButtons();
+                
                 await Promise.all([
                     fetchDriverProfile(),
                     fetchAvailableOrders(),
@@ -1279,6 +1603,11 @@
                     fetchActiveDeliveries();
                     fetchDeliveryHistory();
                 }, 30000);
+                
+                // Safety: Reset stuck buttons every 2 minutes
+                setInterval(() => {
+                    resetAllButtons();
+                }, 120000);
             }
         });
     </script>
