@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics Dashboard - Admin Panel</title>
+    
+    <!-- Performance: DNS Prefetch & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Performance: Preload Critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="lazy-load.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="loading.css">
     <link rel="stylesheet" href="back-to-top.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .analytics-grid {
             display: grid;
@@ -242,28 +254,73 @@
             }
         }
     </style>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
 </head>
-<body>
-    <div class="admin-container">
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>🏪 Admin Panel</h2>
-            </div>
-            <nav class="nav-menu">
-                <a href="admin.html">📊 Dashboard</a>
-                <a href="admin-orders.html">📦 Orders</a>
-                <a href="admin-products.html">🛍️ Products</a>
-                <a href="admin-customers.html">👥 Customers</a>
-                <a href="admin-drivers.html">🚗 Drivers</a>
-                <a href="admin-reports.html">📈 Reports</a>
-                <a href="admin-analytics.html" class="active">📊 Analytics</a>
-                <a href="admin-email.html">📧 Email</a>
-                <a href="admin-settings.html">⚙️ Settings</a>
-                <a href="#" onclick="logout()">🚪 Logout</a>
-            </nav>
-        </aside>
+<body class="admin-body">
+    <!-- ADMIN SIDEBAR -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">🛒 Hometown</h1>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="sidebar-link">
+                <span class="sidebar-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="admin-orders.html" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                Orders
+            </a>
+            <a href="admin-products.html" class="sidebar-link">
+                <span class="sidebar-icon">🛍️</span>
+                Products
+            </a>
+            <a href="admin-drivers.html" class="sidebar-link">
+                <span class="sidebar-icon">🚗</span>
+                Drivers
+            </a>
+            <a href="admin-customers.html" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                Customers
+            </a>
+            <a href="admin-reports.html" class="sidebar-link">
+                <span class="sidebar-icon">📈</span>
+                Reports
+            </a>
+            <a href="admin-analytics.html" class="sidebar-link active">
+                <span class="sidebar-icon">📊</span>
+                Analytics
+            </a>
+            <a href="admin-email.html" class="sidebar-link">
+                <span class="sidebar-icon">📧</span>
+                Email
+            </a>
+            <a href="admin-settings.html" class="sidebar-link">
+                <span class="sidebar-icon">⚙️</span>
+                Settings
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="sidebar-icon">🌐</span>
+                View Website
+            </a>
+            <a href="#" class="sidebar-link" onclick="adminLogout()">
+                <span class="sidebar-icon">🚪</span>
+                Logout
+            </a>
+        </div>
+    </aside>
 
-        <main class="main-content">
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+        <!-- DASHBOARD CONTENT -->
+        <div class="admin-content">
             <header class="content-header">
                 <h1>📊 Analytics Dashboard</h1>
                 <p>Business insights and performance metrics</p>
@@ -379,14 +436,14 @@
                     </tbody>
                 </table>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <button id="backToTop" class="back-to-top" title="Back to top">↑</button>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="config.js"></script>
-    <script src="auth.js"></script>
+    <script src="loading.js"></script>
     <script src="back-to-top.js"></script>
     <script>
         // Check authentication
@@ -744,6 +801,10 @@
         function logout() {
             localStorage.removeItem('token');
             window.location.href = 'admin-login.html';
+        }
+        
+        function adminLogout() {
+            logout();
         }
     </script>
 </body>
