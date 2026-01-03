@@ -48,9 +48,9 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/register`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name, email, password, phone })
+                body: JSON.stringify({ name, email, password, phone }),
             });
 
             const data = await response.json();
@@ -62,7 +62,7 @@ class CustomerAuth {
             // Store token and customer data
             this.setToken(data.token);
             this.setCustomer(data.customer);
-            
+
             // Store email verification status (false for new registrations)
             localStorage.setItem('emailVerified', 'false');
 
@@ -78,9 +78,9 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
@@ -112,9 +112,9 @@ class CustomerAuth {
                 await fetch(`${API_CONFIG.BASE_URL}/customer-auth/logout`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
                 });
             }
         } catch (error) {
@@ -137,9 +137,9 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/me`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
             });
 
             const data = await response.json();
@@ -150,7 +150,7 @@ class CustomerAuth {
 
             // Update stored customer data
             this.setCustomer(data.customer);
-            
+
             // Update email verification status from profile
             if (data.customer.isEmailVerified !== undefined) {
                 localStorage.setItem('emailVerified', data.customer.isEmailVerified.toString());
@@ -173,10 +173,10 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/profile`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updates)
+                body: JSON.stringify(updates),
             });
 
             const data = await response.json();
@@ -205,10 +205,10 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/auth/password`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ currentPassword, newPassword })
+                body: JSON.stringify({ currentPassword, newPassword }),
             });
 
             const data = await response.json();
@@ -234,9 +234,9 @@ class CustomerAuth {
             const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/verify`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
             });
 
             if (!response.ok) {
@@ -276,23 +276,23 @@ class CustomerAuth {
         // First check localStorage
         const verified = localStorage.getItem('emailVerified');
         console.log('isEmailVerified check:', { verified });
-        
+
         if (verified !== null) {
             console.log('Using localStorage value:', verified);
             return verified === 'true';
         }
-        
+
         // Fallback: check customer data
         const customer = this.getCustomer();
         console.log('No localStorage, checking customer data:', customer);
-        
+
         if (customer && customer.isEmailVerified !== undefined) {
             // Update localStorage for next time
             localStorage.setItem('emailVerified', customer.isEmailVerified.toString());
             console.log('Using customer.isEmailVerified:', customer.isEmailVerified);
             return customer.isEmailVerified;
         }
-        
+
         // Default to false if not found
         console.log('No verification data found, defaulting to false');
         return false;
@@ -306,13 +306,16 @@ class CustomerAuth {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${API_CONFIG.BASE_URL}/customer-auth/resend-verification`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}/customer-auth/resend-verification`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
                 }
-            });
+            );
 
             const data = await response.json();
 

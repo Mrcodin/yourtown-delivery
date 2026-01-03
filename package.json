@@ -13,16 +13,21 @@
     "lighthouse": "lighthouse http://localhost:5500 --output html --output-path ./lighthouse-report.html",
     "perf": "npm run build:all && npm run analyze && npm run budget",
     "lint": "eslint *.js",
-    "lint:fix": "eslint *.js --fix"
+    "lint:fix": "eslint *.js --fix",
+    "format": "prettier --write \"**/*.{js,html,css,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,html,css,json,md}\""
   },
   "devDependencies": {
     "clean-css": "^5.3.3",
     "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "imagemin": "^8.0.1",
     "imagemin-mozjpeg": "^10.0.0",
     "imagemin-pngquant": "^9.0.2",
     "imagemin-webp": "^8.0.0",
     "lighthouse": "^11.4.0",
+    "prettier": "^3.7.4",
     "terser": "^5.44.1"
   }
 }

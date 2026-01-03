@@ -11,7 +11,7 @@ class FormValidator {
             validateOnBlur: true,
             showPasswordStrength: true,
             showRequirements: true,
-            ...options
+            ...options,
         };
         this.validators = {};
         this.init();
@@ -49,13 +49,17 @@ class FormValidator {
             }
 
             // Password strength meter
-            if (input.type === 'password' && input.id === 'password' && this.options.showPasswordStrength) {
+            if (
+                input.type === 'password' &&
+                input.id === 'password' &&
+                this.options.showPasswordStrength
+            ) {
                 this.addPasswordStrengthMeter(group, input);
             }
         });
 
         // Form submit validation
-        this.form.addEventListener('submit', (e) => {
+        this.form.addEventListener('submit', e => {
             if (!this.validateForm()) {
                 e.preventDefault();
                 this.focusFirstError();
@@ -182,7 +186,7 @@ class FormValidator {
     validateForm() {
         let isValid = true;
         const inputs = this.form.querySelectorAll('input, textarea, select');
-        
+
         inputs.forEach(input => {
             if (!this.validateField(input)) {
                 isValid = false;
@@ -212,7 +216,7 @@ class FormValidator {
     // Password strength calculator
     getPasswordStrength(password) {
         let strength = 0;
-        
+
         if (password.length >= 8) strength++;
         if (password.length >= 12) strength++;
         if (/[a-z]/.test(password)) strength++;
@@ -238,7 +242,7 @@ class FormValidator {
         input.addEventListener('input', () => {
             const value = input.value;
             const text = meter.querySelector('.password-strength-text');
-            
+
             if (!value) {
                 meter.classList.remove('active');
                 return;
@@ -247,11 +251,11 @@ class FormValidator {
             meter.classList.add('active');
             const strength = this.getPasswordStrength(value);
             meter.setAttribute('data-strength', strength);
-            
+
             const messages = {
                 weak: '⚠️ Weak password - consider adding more characters',
                 medium: '💪 Medium strength - good!',
-                strong: '🔒 Strong password - excellent!'
+                strong: '🔒 Strong password - excellent!',
             };
             text.textContent = messages[strength];
         });
@@ -354,7 +358,9 @@ class FormValidator {
 
     // Focus first error field
     focusFirstError() {
-        const firstError = this.form.querySelector('.form-group.invalid input, .form-group.invalid textarea, .form-group.invalid select');
+        const firstError = this.form.querySelector(
+            '.form-group.invalid input, .form-group.invalid textarea, .form-group.invalid select'
+        );
         if (firstError) {
             firstError.focus();
             firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -173,13 +173,17 @@ function getEmailTemplate(content) {
 function orderConfirmationEmail(order, businessInfo = {}) {
     const businessName = businessInfo.businessName || 'Hometown Delivery';
     const businessPhone = businessInfo.phone || '555-123-4567';
-    
-    const itemsHTML = order.items.map(item => `
+
+    const itemsHTML = order.items
+        .map(
+            item => `
         <li>
             <strong>${item.quantity}x</strong> ${item.name || item.productName} 
             <span style="float: right;">$${(item.price * item.quantity).toFixed(2)}</span>
         </li>
-    `).join('');
+    `
+        )
+        .join('');
 
     const content = `
         <div class="header">
@@ -211,12 +215,16 @@ function orderConfirmationEmail(order, businessInfo = {}) {
                         <span>Delivery Fee:</span>
                         <span>$${order.pricing.deliveryFee.toFixed(2)}</span>
                     </div>
-                    ${order.pricing.tax ? `
+                    ${
+                        order.pricing.tax
+                            ? `
                     <div style="display: flex; justify-content: space-between;">
                         <span>Tax:</span>
                         <span>$${order.pricing.tax.toFixed(2)}</span>
                     </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="total">
                         Total: $${order.pricing.total.toFixed(2)}
                     </div>
@@ -249,7 +257,7 @@ function orderConfirmationEmail(order, businessInfo = {}) {
 
     return {
         subject: `Order Confirmation #${order.orderId} - ${businessName}`,
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -259,44 +267,45 @@ function orderConfirmationEmail(order, businessInfo = {}) {
 function orderStatusUpdateEmail(order, newStatus, businessInfo = {}) {
     const businessName = businessInfo.businessName || 'Hometown Delivery';
     const businessPhone = businessInfo.phone || '555-123-4567';
-    
+
     const statusMessages = {
-        'confirmed': {
+        confirmed: {
             icon: '✅',
             title: 'Order Confirmed',
-            message: 'Great news! Your order has been confirmed and we\'re starting to prepare it.'
+            message: "Great news! Your order has been confirmed and we're starting to prepare it.",
         },
-        'preparing': {
+        preparing: {
             icon: '👨‍🍳',
             title: 'Preparing Your Order',
-            message: 'Our team is carefully selecting and packing your groceries right now.'
+            message: 'Our team is carefully selecting and packing your groceries right now.',
         },
-        'ready_for_pickup': {
+        ready_for_pickup: {
             icon: '📦',
             title: 'Ready for Pickup',
-            message: 'Your order is packed and ready! Our driver will pick it up shortly.'
+            message: 'Your order is packed and ready! Our driver will pick it up shortly.',
         },
-        'out_for_delivery': {
+        out_for_delivery: {
             icon: '🚗',
             title: 'Out for Delivery',
-            message: 'Your order is on its way! Our driver will arrive soon.'
+            message: 'Your order is on its way! Our driver will arrive soon.',
         },
-        'delivered': {
+        delivered: {
             icon: '🎉',
             title: 'Order Delivered',
-            message: 'Your order has been delivered! We hope you enjoy your groceries.'
+            message: 'Your order has been delivered! We hope you enjoy your groceries.',
         },
-        'cancelled': {
+        cancelled: {
             icon: '❌',
             title: 'Order Cancelled',
-            message: 'Your order has been cancelled. If you didn\'t request this, please contact us.'
-        }
+            message:
+                "Your order has been cancelled. If you didn't request this, please contact us.",
+        },
     };
 
     const statusInfo = statusMessages[newStatus] || {
         icon: '📋',
         title: 'Order Update',
-        message: 'Your order status has been updated.'
+        message: 'Your order status has been updated.',
     };
 
     const content = `
@@ -316,26 +325,38 @@ function orderStatusUpdateEmail(order, newStatus, businessInfo = {}) {
                     <span class="status-badge status-${newStatus}">${newStatus.replace(/_/g, ' ')}</span>
                 </p>
                 <p><strong>Delivery Address:</strong><br>${order.customerInfo.address}</p>
-                ${order.assignedDriver ? `
+                ${
+                    order.assignedDriver
+                        ? `
                 <p><strong>Driver:</strong> ${order.assignedDriver.name}</p>
                 ${order.assignedDriver.phone ? `<p><strong>Driver Phone:</strong> ${order.assignedDriver.phone}</p>` : ''}
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
             
-            ${newStatus === 'out_for_delivery' ? `
+            ${
+                newStatus === 'out_for_delivery'
+                    ? `
             <div class="help-text">
                 <strong>Estimated Delivery:</strong>
                 <p>Your order should arrive within the next 30-45 minutes.</p>
                 <p>Please ensure someone is available to receive the delivery.</p>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
             
-            ${newStatus === 'delivered' ? `
+            ${
+                newStatus === 'delivered'
+                    ? `
             <div class="help-text">
                 <p>Thank you for your order! We hope everything arrived fresh and in perfect condition.</p>
                 <p>We'd love to hear about your experience. Your feedback helps us improve!</p>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
             
             <center>
                 <a href="${process.env.FRONTEND_URL || 'http://localhost:5500'}/track.html?phone=${encodeURIComponent(order.customerInfo.phone)}" class="button">
@@ -351,7 +372,7 @@ function orderStatusUpdateEmail(order, newStatus, businessInfo = {}) {
 
     return {
         subject: `${statusInfo.title} - Order #${order.orderId}`,
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -360,13 +381,17 @@ function orderStatusUpdateEmail(order, newStatus, businessInfo = {}) {
  */
 function adminNewOrderEmail(order, businessInfo = {}) {
     const businessName = businessInfo.businessName || 'Hometown Delivery';
-    
-    const itemsHTML = order.items.map(item => `
+
+    const itemsHTML = order.items
+        .map(
+            item => `
         <li>
             <strong>${item.quantity}x</strong> ${item.name || item.productName} 
             <span style="float: right;">$${(item.price * item.quantity).toFixed(2)}</span>
         </li>
-    `).join('');
+    `
+        )
+        .join('');
 
     const content = `
         <div class="header">
@@ -426,7 +451,7 @@ function adminNewOrderEmail(order, businessInfo = {}) {
 
     return {
         subject: `🔔 New Order #${order.orderId} - ${businessName}`,
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -466,7 +491,7 @@ function testEmail(recipientName = 'User') {
 
     return {
         subject: 'Test Email - Hometown Delivery Email Service',
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -517,7 +542,7 @@ function emailVerificationEmail(customerName, verificationUrl) {
 
     return {
         subject: 'Verify Your Email - Hometown Delivery',
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -568,7 +593,7 @@ function passwordResetEmail(customerName, resetUrl) {
 
     return {
         subject: 'Reset Your Password - Hometown Delivery',
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -618,7 +643,7 @@ function emailVerifiedEmail(customerName) {
 
     return {
         subject: 'Welcome to Hometown Delivery! 🎉',
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -629,7 +654,7 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
     const {
         businessName = 'Hometown Delivery',
         businessPhone = '(555) 123-4567',
-        businessEmail = 'support@hometowndelivery.com'
+        businessEmail = 'support@hometowndelivery.com',
     } = businessInfo;
 
     const content = `
@@ -651,35 +676,39 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
                     </tr>
                     <tr>
                         <td><strong>Order Date:</strong></td>
-                        <td>${new Date(order.createdAt).toLocaleDateString('en-US', { 
-                            weekday: 'short', 
-                            year: 'numeric', 
-                            month: 'short', 
+                        <td>${new Date(order.createdAt).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
                             day: 'numeric',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
                         })}</td>
                     </tr>
                     <tr>
                         <td><strong>Cancelled At:</strong></td>
-                        <td>${new Date().toLocaleDateString('en-US', { 
-                            weekday: 'short', 
-                            year: 'numeric', 
-                            month: 'short', 
+                        <td>${new Date().toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
                             day: 'numeric',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
                         })}</td>
                     </tr>
                 </table>
             </div>
 
-            ${order.payment?.method === 'card' ? `
+            ${
+                order.payment?.method === 'card'
+                    ? `
             <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
                 <strong>💳 Refund Information</strong>
                 <p style="margin: 10px 0 0 0;">Your payment of $${order.pricing.total.toFixed(2)} will be refunded to your original payment method within 5-7 business days.</p>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <div class="items-section">
                 <h3>Cancelled Items</h3>
@@ -692,13 +721,17 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${order.items.map(item => `
+                        ${order.items
+                            .map(
+                                item => `
                             <tr>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
                                 <td>$${(item.price * item.quantity).toFixed(2)}</td>
                             </tr>
-                        `).join('')}
+                        `
+                            )
+                            .join('')}
                     </tbody>
                 </table>
             </div>
@@ -713,22 +746,30 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
                         <td>Delivery Fee:</td>
                         <td>$${order.pricing.deliveryFee.toFixed(2)}</td>
                     </tr>
-                    ${order.pricing.tip > 0 ? `
+                    ${
+                        order.pricing.tip > 0
+                            ? `
                     <tr>
                         <td>Tip:</td>
                         <td>$${order.pricing.tip.toFixed(2)}</td>
                     </tr>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <tr>
                         <td>Tax:</td>
                         <td>$${order.pricing.tax.toFixed(2)}</td>
                     </tr>
-                    ${order.pricing.discount > 0 ? `
+                    ${
+                        order.pricing.discount > 0
+                            ? `
                     <tr style="color: #28a745;">
                         <td>Discount:</td>
                         <td>-$${order.pricing.discount.toFixed(2)}</td>
                     </tr>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <tr class="total-row">
                         <td><strong>Total Amount:</strong></td>
                         <td><strong>$${order.pricing.total.toFixed(2)}</strong></td>
@@ -754,7 +795,7 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
 
     return {
         subject: `Order #${order.orderId} Cancelled - ${businessName}`,
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -762,10 +803,7 @@ function orderCancellationEmail(order, reason, businessInfo = {}) {
  * Order cancellation email template (admin notification)
  */
 function adminOrderCancellationEmail(order, reason, businessInfo = {}) {
-    const {
-        businessName = 'Hometown Delivery',
-        businessPhone = '(555) 123-4567'
-    } = businessInfo;
+    const { businessName = 'Hometown Delivery', businessPhone = '(555) 123-4567' } = businessInfo;
 
     const content = `
         <div class="content">
@@ -802,12 +840,16 @@ function adminOrderCancellationEmail(order, reason, businessInfo = {}) {
                 </table>
             </div>
 
-            ${order.payment?.method === 'card' ? `
+            ${
+                order.payment?.method === 'card'
+                    ? `
             <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
                 <strong>💳 Refund Required</strong>
                 <p style="margin: 10px 0 0 0;">This was a card payment. Process refund of $${order.pricing.total.toFixed(2)} through Stripe dashboard.</p>
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <div class="items-section">
                 <h3>Cancelled Items (${order.items.length})</h3>
@@ -820,13 +862,17 @@ function adminOrderCancellationEmail(order, reason, businessInfo = {}) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${order.items.map(item => `
+                        ${order.items
+                            .map(
+                                item => `
                             <tr>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
                                 <td>$${(item.price * item.quantity).toFixed(2)}</td>
                             </tr>
-                        `).join('')}
+                        `
+                            )
+                            .join('')}
                     </tbody>
                 </table>
             </div>
@@ -854,7 +900,7 @@ function adminOrderCancellationEmail(order, reason, businessInfo = {}) {
 
     return {
         subject: `🚨 Order Cancelled: #${order.orderId} - ${businessName}`,
-        html: getEmailTemplate(content)
+        html: getEmailTemplate(content),
     };
 }
 
@@ -868,5 +914,5 @@ module.exports = {
     passwordResetEmail,
     emailVerifiedEmail,
     orderCancellationEmail,
-    adminOrderCancellationEmail
+    adminOrderCancellationEmail,
 };

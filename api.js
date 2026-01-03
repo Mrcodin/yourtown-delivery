@@ -6,17 +6,19 @@
 // API Configuration
 const API_CONFIG = {
     // Change this to your deployed API URL for production
-    BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000/api'
-        : 'https://yourtown-delivery-api.onrender.com/api',
-    
+    BASE_URL:
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : 'https://yourtown-delivery-api.onrender.com/api',
+
     // Stripe publishable key
     STRIPE_KEY: 'pk_test_your_stripe_publishable_key', // Replace with your key
-    
+
     // Socket.io URL
-    SOCKET_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000'
-        : 'https://yourtown-delivery-api.onrender.com'
+    SOCKET_URL:
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://yourtown-delivery-api.onrender.com',
 };
 
 // API Utility Class
@@ -51,7 +53,7 @@ class API {
     // Get default headers
     getHeaders(includeAuth = true) {
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         };
 
         if (includeAuth && this.token) {
@@ -67,8 +69,8 @@ class API {
             ...options,
             headers: {
                 ...this.getHeaders(options.auth !== false),
-                ...options.headers
-            }
+                ...options.headers,
+            },
         };
 
         // Log request details for debugging
@@ -76,12 +78,12 @@ class API {
             endpoint,
             method: config.method || 'GET',
             hasBody: !!config.body,
-            auth: options.auth !== false
+            auth: options.auth !== false,
         });
 
         // Generate request ID for tracking
         const requestId = `${endpoint}-${Date.now()}`;
-        
+
         // Show loading if enabled (default true)
         const showLoading = options.showLoading !== false;
         const showOverlay = options.showOverlay === true;
@@ -97,7 +99,7 @@ class API {
             }
 
             const response = await fetch(`${this.baseURL}${endpoint}`, config);
-            
+
             // Try to parse response
             let data;
             const contentType = response.headers.get('content-type');
@@ -115,7 +117,7 @@ class API {
                         window.location.href = '/admin-login.html';
                     }
                 }
-                
+
                 // Create error object with status
                 const error = new Error(data.message || 'Request failed');
                 error.status = response.status;
@@ -130,15 +132,15 @@ class API {
                 endpoint,
                 message: error.message,
                 status: error.status || error.statusCode || 0,
-                data: error.data
+                data: error.data,
             });
-            
+
             // Add status code if network error
             if (!error.status && !error.statusCode) {
                 error.status = 0;
                 error.statusCode = 0;
             }
-            
+
             console.error('API Error:', error);
             throw error;
         } finally {
@@ -156,7 +158,7 @@ class API {
     async get(endpoint, options = {}) {
         return this.request(endpoint, {
             method: 'GET',
-            ...options
+            ...options,
         });
     }
 
@@ -165,7 +167,7 @@ class API {
         return this.request(endpoint, {
             method: 'POST',
             body: JSON.stringify(data),
-            ...options
+            ...options,
         });
     }
 
@@ -174,7 +176,7 @@ class API {
         return this.request(endpoint, {
             method: 'PUT',
             body: JSON.stringify(data),
-            ...options
+            ...options,
         });
     }
 
@@ -182,7 +184,7 @@ class API {
     async delete(endpoint, options = {}) {
         return this.request(endpoint, {
             method: 'DELETE',
-            ...options
+            ...options,
         });
     }
 
@@ -264,7 +266,7 @@ class API {
     async cancelOrder(id, reason) {
         return this.delete(`/orders/${id}`, {
             body: JSON.stringify({ reason }),
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         });
     }
 
@@ -394,7 +396,7 @@ class SocketManager {
 
     initSocket() {
         this.socket = io(API_CONFIG.SOCKET_URL, {
-            transports: ['websocket', 'polling']
+            transports: ['websocket', 'polling'],
         });
 
         this.socket.on('connect', () => {
@@ -407,7 +409,7 @@ class SocketManager {
             this.connected = false;
         });
 
-        this.socket.on('connect_error', (error) => {
+        this.socket.on('connect_error', error => {
             console.error('Socket.io connection error:', error);
         });
     }
@@ -460,7 +462,7 @@ const utils = {
     formatCurrency(amount) {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD'
+            currency: 'USD',
         }).format(amount);
     },
 
@@ -469,7 +471,7 @@ const utils = {
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
         });
     },
 
@@ -480,7 +482,7 @@ const utils = {
             month: 'short',
             day: 'numeric',
             hour: 'numeric',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     },
 
@@ -529,7 +531,7 @@ const utils = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    }
+    },
 };
 
 // Export for use in other scripts

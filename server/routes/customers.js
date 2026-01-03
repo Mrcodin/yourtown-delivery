@@ -36,7 +36,12 @@ router.get('/', protect, authorize('admin', 'manager'), customerController.getCu
  *       200:
  *         description: CSV file
  */
-router.get('/export/csv', protect, authorize('admin', 'manager'), customerController.exportCustomers);
+router.get(
+    '/export/csv',
+    protect,
+    authorize('admin', 'manager'),
+    customerController.exportCustomers
+);
 
 /**
  * @swagger
@@ -94,6 +99,13 @@ router.get('/:id', protect, authorize('admin', 'manager'), customerController.ge
  *       200:
  *         description: Customer updated
  */
-router.put('/:id', protect, authorize('admin', 'manager'), customerValidation, validate, customerController.updateCustomer);
+router.put(
+    '/:id',
+    protect,
+    authorize('admin', 'manager'),
+    customerValidation,
+    validate,
+    customerController.updateCustomer
+);
 
 module.exports = router;

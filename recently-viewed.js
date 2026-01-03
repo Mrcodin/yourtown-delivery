@@ -54,7 +54,7 @@ class RecentlyViewedTracker {
             category: product.category,
             imageUrl: product.imageUrl,
             emoji: product.emoji,
-            viewedAt: new Date().toISOString()
+            viewedAt: new Date().toISOString(),
         });
 
         // Keep only max items
@@ -118,12 +118,15 @@ async function displayRecentlyViewed(containerId = 'recently-viewed-container', 
                 <button class="clear-recent-btn" onclick="clearRecentlyViewed()">Clear All</button>
             </div>
             <div class="products-grid">
-                ${recentProducts.map(product => `
+                ${recentProducts
+                    .map(
+                        product => `
                     <div class="product-card" data-product-id="${product._id}">
                         <div class="product-image">
-                            ${product.imageUrl 
-                                ? `<img src="${product.imageUrl}" alt="${product.name}" loading="lazy">`
-                                : `<div class="product-emoji">${product.emoji || '📦'}</div>`
+                            ${
+                                product.imageUrl
+                                    ? `<img src="${product.imageUrl}" alt="${product.name}" loading="lazy">`
+                                    : `<div class="product-emoji">${product.emoji || '📦'}</div>`
                             }
                         </div>
                         <div class="product-info">
@@ -136,7 +139,9 @@ async function displayRecentlyViewed(containerId = 'recently-viewed-container', 
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `
+                    )
+                    .join('')}
             </div>
         </div>
     `;

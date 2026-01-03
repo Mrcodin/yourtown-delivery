@@ -16,14 +16,17 @@ async function testEmailService() {
     console.log('Environment Variables:');
     console.log('  EMAIL_SERVICE:', process.env.EMAIL_SERVICE || 'NOT SET');
     console.log('  EMAIL_USER:', process.env.EMAIL_USER || 'NOT SET');
-    console.log('  EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '***' + process.env.EMAIL_PASSWORD.slice(-4) : 'NOT SET');
+    console.log(
+        '  EMAIL_PASSWORD:',
+        process.env.EMAIL_PASSWORD ? '***' + process.env.EMAIL_PASSWORD.slice(-4) : 'NOT SET'
+    );
     console.log('  EMAIL_FROM:', process.env.EMAIL_FROM || 'NOT SET');
     console.log('');
 
     // Verify email configuration
     console.log('Verifying SMTP connection...');
     const isConfigValid = await verifyEmailConfig();
-    
+
     if (!isConfigValid) {
         console.error('\n❌ Email configuration is invalid or not set up.');
         console.log('\nTo set up email:');
@@ -38,7 +41,7 @@ async function testEmailService() {
 
     // Send test email
     const testEmailTo = process.env.EMAIL_USER;
-    
+
     if (!testEmailTo) {
         console.error('❌ No recipient email set. Set EMAIL_USER in .env');
         process.exit(1);
@@ -48,11 +51,11 @@ async function testEmailService() {
 
     try {
         const emailContent = testEmail('Test User');
-        
+
         await sendEmail({
             to: testEmailTo,
             subject: emailContent.subject,
-            html: emailContent.html
+            html: emailContent.html,
         });
 
         console.log('✅ Test email sent successfully!');
@@ -62,12 +65,13 @@ async function testEmailService() {
         console.log('  ✅ SMTP connection working');
         console.log('  ✅ Email sent successfully');
         console.log('\n🎉 Email service is ready to use!\n');
-        
     } catch (error) {
         console.error('❌ Error sending test email:', error.message);
         console.log('\nTroubleshooting:');
         console.log('- Check your email credentials');
-        console.log('- For Gmail: Make sure you\'re using an App Password, not your account password');
+        console.log(
+            "- For Gmail: Make sure you're using an App Password, not your account password"
+        );
         console.log('- Check if your email provider requires "Less secure app access"');
         console.log('- Verify your firewall/network allows SMTP connections\n');
         process.exit(1);

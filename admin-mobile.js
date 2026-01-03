@@ -6,7 +6,7 @@
 // Handle table scroll indicators
 document.addEventListener('DOMContentLoaded', () => {
     const tables = document.querySelectorAll('.table-container');
-    
+
     tables.forEach(table => {
         table.addEventListener('scroll', () => {
             if (table.scrollLeft > 10) {
@@ -46,7 +46,7 @@ const createMobileMenuToggle = () => {
     if (window.innerWidth <= 768) {
         const sidebar = document.getElementById('admin-sidebar');
         const mainContent = document.querySelector('.admin-main');
-        
+
         if (sidebar && !document.getElementById('mobile-sidebar-toggle')) {
             // Create toggle button
             const toggleBtn = document.createElement('button');
@@ -54,20 +54,20 @@ const createMobileMenuToggle = () => {
             toggleBtn.className = 'mobile-sidebar-toggle';
             toggleBtn.innerHTML = '☰';
             toggleBtn.setAttribute('aria-label', 'Toggle Menu');
-            
+
             // Insert at top of main content
             if (mainContent) {
                 mainContent.insertBefore(toggleBtn, mainContent.firstChild);
             }
-            
+
             // Toggle functionality
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('active');
                 toggleBtn.classList.toggle('active');
             });
-            
+
             // Close on outside click
-            document.addEventListener('click', (e) => {
+            document.addEventListener('click', e => {
                 if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
                     sidebar.classList.remove('active');
                     toggleBtn.classList.remove('active');

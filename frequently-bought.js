@@ -17,17 +17,17 @@ class FrequentlyBoughtTogether {
         try {
             const data = localStorage.getItem(this.cacheKey);
             if (!data) return {};
-            
+
             const cache = JSON.parse(data);
             const now = Date.now();
-            
+
             // Remove expired entries
             Object.keys(cache).forEach(key => {
                 if (cache[key].expiry < now) {
                     delete cache[key];
                 }
             });
-            
+
             return cache;
         } catch (error) {
             console.error('Error loading FBT cache:', error);
@@ -57,13 +57,15 @@ class FrequentlyBoughtTogether {
 
         // Fetch from API
         try {
-            const response = await api.get(`/reports/frequently-bought-together/${productId}?limit=${limit}`);
+            const response = await api.get(
+                `/reports/frequently-bought-together/${productId}?limit=${limit}`
+            );
             const suggestions = response.data;
 
             // Cache the results
             this.cache[productId] = {
                 suggestions,
-                expiry: Date.now() + this.cacheExpiry
+                expiry: Date.now() + this.cacheExpiry,
             };
             this.saveCache();
 
@@ -81,7 +83,7 @@ class FrequentlyBoughtTogether {
         const patterns = {};
 
         // Find all orders containing this product
-        const ordersWithProduct = allOrders.filter(order => 
+        const ordersWithProduct = allOrders.filter(order =>
             order.items.some(item => item.product._id === productId)
         );
 
@@ -94,7 +96,7 @@ class FrequentlyBoughtTogether {
                         patterns[id] = {
                             product: item.product,
                             count: 0,
-                            confidence: 0
+                            confidence: 0,
                         };
                     }
                     patterns[id].count++;
@@ -149,12 +151,15 @@ async function displayFrequentlyBought(productId, containerId = 'frequently-boug
             <div class="frequently-bought-section">
                 <h3>🤝 Frequently Bought Together</h3>
                 <div class="fbt-grid">
-                    ${suggestions.map(item => `
+                    ${suggestions
+                        .map(
+                            item => `
                         <div class="fbt-item" data-product-id="${item.product._id}">
                             <div class="fbt-image">
-                                ${item.product.imageUrl 
-                                    ? `<img src="${item.product.imageUrl}" alt="${item.product.name}" loading="lazy">`
-                                    : `<div class="product-emoji">${item.product.emoji || '📦'}</div>`
+                                ${
+                                    item.product.imageUrl
+                                        ? `<img src="${item.product.imageUrl}" alt="${item.product.name}" loading="lazy">`
+                                        : `<div class="product-emoji">${item.product.emoji || '📦'}</div>`
                                 }
                             </div>
                             <div class="fbt-info">
@@ -166,7 +171,9 @@ async function displayFrequentlyBought(productId, containerId = 'frequently-boug
                                 Add +
                             </button>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
                 <div class="fbt-actions">
                     <button class="btn-primary" onclick="addAllFBTToCart('${productId}')">
@@ -208,13 +215,13 @@ async function addFBTToCart(productId) {
 async function addAllFBTToCart(mainProductId) {
     try {
         const suggestions = await frequentlyBought.getSuggestions(mainProductId);
-        
+
         let added = 0;
         for (const item of suggestions) {
             try {
                 const response = await api.get(`/products/${item.product._id}`);
                 const product = response.data;
-                
+
                 if (typeof addToCart === 'function') {
                     addToCart(product, false); // Don't show individual toasts
                 } else if (typeof window.addToCart === 'function') {

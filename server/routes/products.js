@@ -112,7 +112,14 @@ router.get('/:id', productController.getProduct);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/', protect, authorize('admin', 'manager'), productValidation, validate, productController.createProduct);
+router.post(
+    '/',
+    protect,
+    authorize('admin', 'manager'),
+    productValidation,
+    validate,
+    productController.createProduct
+);
 
 /**
  * @swagger
@@ -142,7 +149,14 @@ router.post('/', protect, authorize('admin', 'manager'), productValidation, vali
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.put('/:id', protect, authorize('admin', 'manager'), productValidation, validate, productController.updateProduct);
+router.put(
+    '/:id',
+    protect,
+    authorize('admin', 'manager'),
+    productValidation,
+    validate,
+    productController.updateProduct
+);
 
 /**
  * @swagger
@@ -207,6 +221,12 @@ router.delete('/:id', protect, authorize('admin'), productController.deleteProdu
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/:id/image', protect, authorize('admin', 'manager'), upload.single('image'), productController.uploadProductImage);
+router.post(
+    '/:id/image',
+    protect,
+    authorize('admin', 'manager'),
+    upload.single('image'),
+    productController.uploadProductImage
+);
 
 module.exports = router;

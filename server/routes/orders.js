@@ -8,9 +8,9 @@ const { orderLimiter } = require('../middleware/security');
 // Rate limiter specifically for order tracking
 const rateLimit = require('express-rate-limit');
 const trackLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 requests per windowMs
-  message: 'Too many tracking requests, please try again later'
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per windowMs
+    message: 'Too many tracking requests, please try again later',
 });
 
 /**
@@ -260,7 +260,12 @@ router.get('/:id', protect, orderController.getOrder);
  *       200:
  *         description: Status updated successfully
  */
-router.put('/:id/status', protect, authorize('admin', 'manager'), orderController.updateOrderStatus);
+router.put(
+    '/:id/status',
+    protect,
+    authorize('admin', 'manager'),
+    orderController.updateOrderStatus
+);
 
 /**
  * @swagger
@@ -291,7 +296,12 @@ router.put('/:id/status', protect, authorize('admin', 'manager'), orderControlle
  *       200:
  *         description: Driver assigned successfully
  */
-router.put('/:id/assign-driver', protect, authorize('admin', 'manager'), orderController.assignDriver);
+router.put(
+    '/:id/assign-driver',
+    protect,
+    authorize('admin', 'manager'),
+    orderController.assignDriver
+);
 
 /**
  * @swagger

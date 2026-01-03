@@ -25,9 +25,9 @@ class LoadingManager {
             `;
             document.body.appendChild(this.overlay);
         }
-        
+
         this.overlay.querySelector('.loading-text').textContent = message;
-        
+
         // Force reflow to enable transition
         setTimeout(() => {
             this.overlay.classList.add('active');
@@ -56,7 +56,7 @@ class LoadingManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         container.innerHTML = `
@@ -74,11 +74,11 @@ class LoadingManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         let skeletonHTML = '';
-        
+
         switch (type) {
             case 'product':
                 skeletonHTML = this._getProductSkeleton(count);
@@ -91,7 +91,7 @@ class LoadingManager {
                 skeletonHTML = this._getCardSkeleton(count);
                 break;
         }
-        
+
         container.innerHTML = skeletonHTML;
     }
 
@@ -102,13 +102,13 @@ class LoadingManager {
         if (typeof button === 'string') {
             button = document.querySelector(button);
         }
-        
+
         if (!button) return;
 
         if (isLoading) {
             button.classList.add('btn-loading');
             button.disabled = true;
-            
+
             // Wrap text if not already wrapped
             if (!button.querySelector('.btn-text')) {
                 const text = button.textContent;
@@ -153,7 +153,7 @@ class LoadingManager {
                 </div>
             </div>
         `;
-        
+
         return `<div class="skeleton-grid">${skeleton.repeat(count)}</div>`;
     }
 
@@ -166,7 +166,7 @@ class LoadingManager {
                 <div class="skeleton skeleton-table-cell"></div>
             </div>
         `;
-        
+
         return `<div class="skeleton-table">${row.repeat(count)}</div>`;
     }
 
@@ -179,7 +179,7 @@ class LoadingManager {
                 <div class="skeleton skeleton-text"></div>
             </div>
         `;
-        
+
         return skeleton.repeat(count);
     }
 }
@@ -227,36 +227,38 @@ class MessageManager {
         // Map technical errors to user-friendly messages
         const errorMap = {
             // Network errors
-            'Failed to fetch': 'Unable to connect to the server. Please check your internet connection.',
-            'NetworkError': 'Network error occurred. Please check your internet connection.',
+            'Failed to fetch':
+                'Unable to connect to the server. Please check your internet connection.',
+            NetworkError: 'Network error occurred. Please check your internet connection.',
             'TypeError: Failed to fetch': 'Unable to connect to the server. Please try again.',
-            
+
             // Authentication errors
             'Invalid credentials': 'The username or password you entered is incorrect.',
-            'Unauthorized': 'You need to log in to access this feature.',
+            Unauthorized: 'You need to log in to access this feature.',
             'Token expired': 'Your session has expired. Please log in again.',
             'Authentication required': 'Please log in to continue.',
-            
+
             // Validation errors
             'Validation failed': 'Please check the information you entered and try again.',
             'Invalid input': 'Some of the information you entered is invalid.',
             'Required field': 'Please fill in all required fields.',
-            
+
             // Not found errors
             'Not found': 'The requested item could not be found.',
             'Product not found': 'This product is no longer available.',
-            'Order not found': 'We couldn\'t find that order.',
-            
+            'Order not found': "We couldn't find that order.",
+
             // Server errors
             'Internal server error': 'Something went wrong on our end. Please try again later.',
-            'Service unavailable': 'The service is temporarily unavailable. Please try again later.',
-            
+            'Service unavailable':
+                'The service is temporarily unavailable. Please try again later.',
+
             // Specific business logic errors
-            'Insufficient stock': 'Sorry, we don\'t have enough of this item in stock.',
+            'Insufficient stock': "Sorry, we don't have enough of this item in stock.",
             'Out of stock': 'This item is currently out of stock.',
             'Invalid quantity': 'Please enter a valid quantity.',
             'Minimum order': 'The minimum order amount has not been met.',
-            'Delivery zone': 'We don\'t currently deliver to your area.',
+            'Delivery zone': "We don't currently deliver to your area.",
         };
 
         // Check for mapped errors
@@ -274,11 +276,11 @@ class MessageManager {
                 case 401:
                     return 'Please log in to continue.';
                 case 403:
-                    return 'You don\'t have permission to perform this action.';
+                    return "You don't have permission to perform this action.";
                 case 404:
                     return 'The requested item was not found.';
                 case 409:
-                    return 'This item already exists or there\'s a conflict.';
+                    return "This item already exists or there's a conflict.";
                 case 422:
                     return 'Please check the information you entered.';
                 case 429:
@@ -297,7 +299,7 @@ class MessageManager {
         if (errorMessage.length < 100) {
             return errorMessage;
         }
-        
+
         return 'An unexpected error occurred. Please try again.';
     }
 
@@ -305,13 +307,17 @@ class MessageManager {
      * Clear all messages from a container
      */
     clearMessages(container = null) {
-        const target = container 
-            ? (typeof container === 'string' ? document.querySelector(container) : container)
+        const target = container
+            ? typeof container === 'string'
+                ? document.querySelector(container)
+                : container
             : document.body;
-        
+
         if (!target) return;
-        
-        const messages = target.querySelectorAll('.error-message, .success-message, .warning-message, .info-message');
+
+        const messages = target.querySelectorAll(
+            '.error-message, .success-message, .warning-message, .info-message'
+        );
         messages.forEach(msg => msg.remove());
     }
 
@@ -321,7 +327,7 @@ class MessageManager {
             error: '⚠️',
             success: '✓',
             warning: '⚠',
-            info: 'ℹ'
+            info: 'ℹ',
         };
 
         const messageEl = document.createElement('div');
@@ -342,10 +348,12 @@ class MessageManager {
         });
 
         // Add to container
-        const target = container 
-            ? (typeof container === 'string' ? document.querySelector(container) : container)
+        const target = container
+            ? typeof container === 'string'
+                ? document.querySelector(container)
+                : container
             : document.body;
-        
+
         if (!target) return null;
 
         // Insert at the beginning of container
@@ -375,15 +383,19 @@ class ProgressManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
-        const stepElements = steps.map((step, index) => `
+        const stepElements = steps
+            .map(
+                (step, index) => `
             <div class="progress-step ${index <= currentStep ? (index === currentStep ? 'active' : 'completed') : ''}">
                 <div class="progress-step-circle">${index < currentStep ? '' : index + 1}</div>
                 <div class="progress-step-label">${step}</div>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
 
         const progress = (currentStep / (steps.length - 1)) * 100;
 
@@ -404,12 +416,12 @@ class ProgressManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         const steps = container.querySelectorAll('.progress-step');
         const progressLine = container.querySelector('.progress-line');
-        
+
         steps.forEach((step, index) => {
             step.classList.remove('active', 'completed');
             if (index < currentStep) {
@@ -432,7 +444,7 @@ class ProgressManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         container.innerHTML = `
@@ -449,7 +461,7 @@ class ProgressManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         const fill = container.querySelector('.progress-bar-fill');
@@ -467,7 +479,7 @@ class EmptyStateManager {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        
+
         if (!container) return;
 
         const {
@@ -475,12 +487,13 @@ class EmptyStateManager {
             title = 'No items found',
             message = 'There are no items to display.',
             actionText = null,
-            actionCallback = null
+            actionCallback = null,
         } = options;
 
-        const actionHTML = actionText && actionCallback 
-            ? `<button class="btn btn-primary empty-state-action">${actionText}</button>`
-            : '';
+        const actionHTML =
+            actionText && actionCallback
+                ? `<button class="btn btn-primary empty-state-action">${actionText}</button>`
+                : '';
 
         container.innerHTML = `
             <div class="empty-state">
@@ -506,5 +519,14 @@ const emptyState = new EmptyStateManager();
 
 // Export for module use if needed
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { LoadingManager, MessageManager, ProgressManager, EmptyStateManager, loading, message, progress, emptyState };
+    module.exports = {
+        LoadingManager,
+        MessageManager,
+        ProgressManager,
+        EmptyStateManager,
+        loading,
+        message,
+        progress,
+        emptyState,
+    };
 }

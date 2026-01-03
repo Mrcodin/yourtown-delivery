@@ -6,7 +6,7 @@ const {
     saveEmailConfig,
     testConnection,
     sendTestEmail,
-    getEmailHistory
+    getEmailHistory,
 } = require('../controllers/emailController');
 
 // All routes require authentication and admin access

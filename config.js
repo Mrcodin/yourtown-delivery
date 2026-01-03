@@ -10,59 +10,54 @@ const DEFAULT_CONFIG = {
     // Business Name
     businessName: 'Hometown Grocery Delivery',
     shortName: 'Hometown Delivery',
-    
+
     // Location
     townName: 'Your Town',
     state: 'State',
     zipCode: '12345',
     fullAddress: '123 Main Street, Your Town, State 12345',
-    
+
     // Contact
     phone: '555-123-4567',
     phoneDisplay: '555-123-4567',
     email: 'info@hometowndelivery.com',
-    
+
     // Store Information
     storeName: 'Local Market',
     storePartner: 'Your Local Grocery Store',
-    
+
     // Business Hours
     hours: {
         weekday: {
             display: 'Mon-Fri 8am-6pm',
-            detailed: 'Monday - Friday: 8am - 6pm'
+            detailed: 'Monday - Friday: 8am - 6pm',
         },
         saturday: {
             display: 'Sat 9am-3pm',
-            detailed: 'Saturday: 9am - 3pm'
+            detailed: 'Saturday: 9am - 3pm',
         },
         sunday: {
             display: 'Closed',
-            detailed: 'Sunday: Closed'
+            detailed: 'Sunday: Closed',
         },
-        full: 'Mon-Fri 8am-6pm, Sat 9am-3pm'
+        full: 'Mon-Fri 8am-6pm, Sat 9am-3pm',
     },
-    
+
     // Service Details
-    deliveryFee: 5.00,
-    minimumOrder: 20.00,
+    deliveryFee: 5.0,
+    minimumOrder: 20.0,
     averageDeliveryTime: '2 hours',
     deliveryRadius: '10 miles',
-    
+
     // Social Media (optional - leave empty if not used)
     social: {
         facebook: '',
         instagram: '',
-        twitter: ''
+        twitter: '',
     },
-    
+
     // Features/Benefits
-    features: [
-        'Same Day Delivery',
-        'Cash Accepted',
-        'Local Drivers',
-        'Senior Friendly'
-    ]
+    features: ['Same Day Delivery', 'Cash Accepted', 'Local Drivers', 'Senior Friendly'],
 };
 
 // Active configuration (will be loaded from API)
@@ -72,12 +67,14 @@ let BUSINESS_CONFIG = { ...DEFAULT_CONFIG };
 async function loadBusinessConfig() {
     try {
         // Get base URL from API_CONFIG if available, otherwise construct it
-        const baseURL = (typeof API_CONFIG !== 'undefined' && API_CONFIG.BASE_URL) 
-            ? API_CONFIG.BASE_URL.replace('/api', '')
-            : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'http://localhost:3000'
-                : 'https://yourtown-delivery-api.onrender.com');
-        
+        const baseURL =
+            typeof API_CONFIG !== 'undefined' && API_CONFIG.BASE_URL
+                ? API_CONFIG.BASE_URL.replace('/api', '')
+                : window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1'
+                  ? 'http://localhost:3000'
+                  : 'https://yourtown-delivery-api.onrender.com';
+
         const response = await fetch(`${baseURL}/api/settings`);
         if (response.ok) {
             const data = await response.json();
@@ -88,12 +85,14 @@ async function loadBusinessConfig() {
                     ...data.data,
                     // Ensure nested objects are properly merged
                     hours: { ...DEFAULT_CONFIG.hours, ...data.data.hours },
-                    social: { ...DEFAULT_CONFIG.social, ...data.data.social }
+                    social: { ...DEFAULT_CONFIG.social, ...data.data.social },
                 };
                 // console.log('✅ Business configuration loaded from database');
-                
+
                 // Trigger event for page-config.js to re-run replacements
-                document.dispatchEvent(new CustomEvent('configLoaded', { detail: BUSINESS_CONFIG }));
+                document.dispatchEvent(
+                    new CustomEvent('configLoaded', { detail: BUSINESS_CONFIG })
+                );
                 return BUSINESS_CONFIG;
             }
         }
@@ -107,9 +106,15 @@ async function loadBusinessConfig() {
 // ⚠️ This is your PUBLISHABLE key - safe to expose in frontend
 // Get this from: https://dashboard.stripe.com/apikeys
 // IMPORTANT: Use TEST key (pk_test_) for development, LIVE key (pk_live_) for production
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SkVBm1Q8OjRkTazELvM1TurrRUst2NtCpCx8zwAVWvAjWTcSwlF9bpR10TGsLY8JB2t5qIVViKfgPvNRI6dAs2V00gOFXqrNQ';
+const STRIPE_PUBLISHABLE_KEY =
+    'pk_test_51SkVBm1Q8OjRkTazELvM1TurrRUst2NtCpCx8zwAVWvAjWTcSwlF9bpR10TGsLY8JB2t5qIVViKfgPvNRI6dAs2V00gOFXqrNQ';
 
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { BUSINESS_CONFIG, DEFAULT_CONFIG, loadBusinessConfig, STRIPE_PUBLISHABLE_KEY };
+    module.exports = {
+        BUSINESS_CONFIG,
+        DEFAULT_CONFIG,
+        loadBusinessConfig,
+        STRIPE_PUBLISHABLE_KEY,
+    };
 }

@@ -5,10 +5,13 @@ const Driver = require('./models/Driver');
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/yourtown-delivery', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        const conn = await mongoose.connect(
+            process.env.MONGO_URI || 'mongodb://localhost:27017/yourtown-delivery',
+            {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            }
+        );
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
@@ -22,7 +25,7 @@ const addPasswordToDrivers = async () => {
 
         // Get all drivers without password field
         const drivers = await Driver.find({}).select('+password');
-        
+
         console.log(`\n📋 Found ${drivers.length} drivers\n`);
 
         for (const driver of drivers) {
@@ -35,7 +38,7 @@ const addPasswordToDrivers = async () => {
             // Set default password (driver's first name + "123")
             const defaultPassword = `${driver.firstName.toLowerCase()}123`;
             driver.password = defaultPassword;
-            
+
             await driver.save();
 
             console.log(`✅ ${driver.firstName} ${driver.lastName}`);

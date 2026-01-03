@@ -13,8 +13,8 @@ const emailConfig = {
     secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
+        pass: process.env.EMAIL_PASSWORD,
+    },
 };
 
 // Create reusable transporter
@@ -38,8 +38,8 @@ function initializeTransporter() {
                 service: 'gmail',
                 auth: {
                     user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                }
+                    pass: process.env.EMAIL_PASSWORD,
+                },
             });
         } else if (process.env.EMAIL_SERVICE === 'sendgrid') {
             transporter = nodemailer.createTransport({
@@ -48,8 +48,8 @@ function initializeTransporter() {
                 secure: false,
                 auth: {
                     user: 'apikey',
-                    pass: process.env.SENDGRID_API_KEY
-                }
+                    pass: process.env.SENDGRID_API_KEY,
+                },
             });
         } else if (process.env.EMAIL_SERVICE === 'mailgun') {
             transporter = nodemailer.createTransport({
@@ -58,8 +58,8 @@ function initializeTransporter() {
                 secure: false,
                 auth: {
                     user: process.env.EMAIL_USER,
-                    pass: process.env.MAILGUN_API_KEY
-                }
+                    pass: process.env.MAILGUN_API_KEY,
+                },
             });
         } else {
             // Generic SMTP configuration
@@ -69,8 +69,8 @@ function initializeTransporter() {
                 secure: process.env.EMAIL_SECURE === 'true',
                 auth: {
                     user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                }
+                    pass: process.env.EMAIL_PASSWORD,
+                },
             });
         }
 
@@ -97,7 +97,7 @@ function getTransporter() {
  */
 async function verifyEmailConfig() {
     const trans = getTransporter();
-    
+
     if (!trans) {
         return { success: false, message: 'Email not configured' };
     }
@@ -115,7 +115,7 @@ async function verifyEmailConfig() {
  */
 async function sendEmail(options) {
     const trans = getTransporter();
-    
+
     if (!trans) {
         console.warn('Email not sent - service not configured');
         return { success: false, message: 'Email service not configured' };
@@ -127,20 +127,20 @@ async function sendEmail(options) {
             to: options.to,
             subject: options.subject,
             html: options.html,
-            text: options.text || options.html?.replace(/<[^>]*>/g, '') // Strip HTML for text fallback
+            text: options.text || options.html?.replace(/<[^>]*>/g, ''), // Strip HTML for text fallback
         };
 
         const info = await trans.sendMail(mailOptions);
         return {
             success: true,
             messageId: info.messageId,
-            message: 'Email sent successfully'
+            message: 'Email sent successfully',
         };
     } catch (error) {
         console.error('Email send error:', error.message);
         return {
             success: false,
-            message: error.message
+            message: error.message,
         };
     }
 }
@@ -159,5 +159,5 @@ module.exports = {
     getTransporter,
     verifyEmailConfig,
     sendEmail,
-    emailConfig
+    emailConfig,
 };

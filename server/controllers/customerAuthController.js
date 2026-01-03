@@ -2,16 +2,12 @@ const Customer = require('../models/Customer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { sendEmail } = require('../config/email');
-const { 
-  trackFailedLogin, 
-  resetLoginAttempts, 
-  isAccountLocked 
-} = require('../middleware/security');
+const { trackFailedLogin, resetLoginAttempts, isAccountLocked } = require('../middleware/security');
 
 // Generate JWT Token
-const generateToken = (id) => {
+const generateToken = id => {
     return jwt.sign({ id, type: 'customer' }, process.env.JWT_SECRET, {
-        expiresIn: '30d'
+        expiresIn: '30d',
     });
 };
 
@@ -29,7 +25,7 @@ exports.register = async (req, res) => {
         if (customerExists) {
             return res.status(400).json({
                 success: false,
-                message: 'An account with this email already exists'
+                message: 'An account with this email already exists',
             });
         }
 
@@ -38,7 +34,7 @@ exports.register = async (req, res) => {
         if (phoneExists) {
             return res.status(400).json({
                 success: false,
-                message: 'An account with this phone number already exists'
+                message: 'An account with this phone number already exists',
             });
         }
 
@@ -47,7 +43,7 @@ exports.register = async (req, res) => {
             name,
             email,
             password,
-            phone
+            phone,
         });
 
         // Generate verification token
@@ -64,10 +60,10 @@ exports.register = async (req, res) => {
             const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/verify-email.html?token=${verificationToken}`;
             const { emailVerificationEmail } = require('../utils/emailTemplates');
             const emailContent = emailVerificationEmail(customer.name, verificationUrl);
-            
+
             await sendEmail({
                 to: customer.email,
-                ...emailContent
+                ...emailContent,
             });
         } catch (emailError) {
             console.error('Error sending verification email:', emailError);
@@ -81,13 +77,13 @@ exports.register = async (req, res) => {
             success: true,
             message: 'Account created successfully',
             token,
-            customer: customer.toProfileJSON()
+            customer: customer.toProfileJSON(),
         });
     } catch (error) {
         console.error('Customer registration error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error creating account'
+            message: 'Error creating account',
         });
     }
 };
@@ -105,7 +101,7 @@ exports.login = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide email and password'
+                message: 'Please provide email and password',
             });
         }
 
@@ -115,7 +111,7 @@ exports.login = async (req, res) => {
             return res.status(429).json({
                 success: false,
                 message: lockCheck.message,
-                remainingTime: lockCheck.remainingTime
+                remainingTime: lockCheck.remainingTime,
             });
         }
 
@@ -129,14 +125,14 @@ exports.login = async (req, res) => {
                 return res.status(429).json({
                     success: false,
                     message: failedAttempt.message,
-                    remainingTime: failedAttempt.remainingTime
+                    remainingTime: failedAttempt.remainingTime,
                 });
             }
-            
+
             return res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',
-                attemptsRemaining: failedAttempt.remaining
+                attemptsRemaining: failedAttempt.remaining,
             });
         }
 
@@ -144,7 +140,7 @@ exports.login = async (req, res) => {
         if (!customer.isActive) {
             return res.status(401).json({
                 success: false,
-                message: 'Your account has been deactivated. Please contact support.'
+                message: 'Your account has been deactivated. Please contact support.',
             });
         }
 
@@ -158,14 +154,14 @@ exports.login = async (req, res) => {
                 return res.status(429).json({
                     success: false,
                     message: failedAttempt.message,
-                    remainingTime: failedAttempt.remainingTime
+                    remainingTime: failedAttempt.remainingTime,
                 });
             }
-            
+
             return res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',
-                attemptsRemaining: failedAttempt.remaining
+                attemptsRemaining: failedAttempt.remaining,
             });
         }
 
@@ -182,10 +178,12 @@ exports.login = async (req, res) => {
         // Add verification warning if email not verified
         const response = {
             success: true,
-            message: customer.isEmailVerified ? 'Login successful' : 'Login successful - Please verify your email',
+            message: customer.isEmailVerified
+                ? 'Login successful'
+                : 'Login successful - Please verify your email',
             token,
             customer: customer.toProfileJSON(),
-            emailVerified: customer.isEmailVerified
+            emailVerified: customer.isEmailVerified,
         };
 
         if (!customer.isEmailVerified) {
@@ -197,7 +195,7 @@ exports.login = async (req, res) => {
         console.error('Customer login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error logging in'
+            message: 'Error logging in',
         });
     }
 };
@@ -216,19 +214,19 @@ exports.getProfile = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'Customer not found',
             });
         }
 
         res.json({
             success: true,
-            customer: customer.toProfileJSON()
+            customer: customer.toProfileJSON(),
         });
     } catch (error) {
         console.error('Get profile error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error fetching profile'
+            message: 'Error fetching profile',
         });
     }
 };
@@ -247,7 +245,7 @@ exports.updateProfile = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'Customer not found',
             });
         }
 
@@ -262,13 +260,13 @@ exports.updateProfile = async (req, res) => {
         res.json({
             success: true,
             message: 'Profile updated successfully',
-            customer: customer.toProfileJSON()
+            customer: customer.toProfileJSON(),
         });
     } catch (error) {
         console.error('Update profile error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error updating profile'
+            message: 'Error updating profile',
         });
     }
 };
@@ -285,7 +283,7 @@ exports.changePassword = async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide current and new password'
+                message: 'Please provide current and new password',
             });
         }
 
@@ -294,7 +292,7 @@ exports.changePassword = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'Customer not found',
             });
         }
 
@@ -304,7 +302,7 @@ exports.changePassword = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
-                message: 'Current password is incorrect'
+                message: 'Current password is incorrect',
             });
         }
 
@@ -314,13 +312,13 @@ exports.changePassword = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Password changed successfully'
+            message: 'Password changed successfully',
         });
     } catch (error) {
         console.error('Change password error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error changing password'
+            message: 'Error changing password',
         });
     }
 };
@@ -337,18 +335,18 @@ exports.verifyToken = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: 'Customer not found'
+                message: 'Customer not found',
             });
         }
 
         res.json({
             success: true,
-            customer: customer.toProfileJSON()
+            customer: customer.toProfileJSON(),
         });
     } catch (error) {
         res.status(401).json({
             success: false,
-            message: 'Invalid token'
+            message: 'Invalid token',
         });
     }
 };
@@ -361,21 +359,18 @@ exports.verifyToken = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
     try {
         // Hash the token from URL
-        const hashedToken = crypto
-            .createHash('sha256')
-            .update(req.params.token)
-            .digest('hex');
+        const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
         // Find customer with matching token that hasn't expired
         const customer = await Customer.findOne({
             emailVerificationToken: hashedToken,
-            emailVerificationExpires: { $gt: Date.now() }
+            emailVerificationExpires: { $gt: Date.now() },
         });
 
         if (!customer) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid or expired verification token'
+                message: 'Invalid or expired verification token',
             });
         }
 
@@ -391,7 +386,7 @@ exports.verifyEmail = async (req, res) => {
             const emailContent = emailVerifiedEmail(customer.name);
             await sendEmail({
                 to: customer.email,
-                ...emailContent
+                ...emailContent,
             });
         } catch (emailError) {
             console.error('Error sending verification confirmation email:', emailError);
@@ -400,13 +395,13 @@ exports.verifyEmail = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Email verified successfully! You can now log in.'
+            message: 'Email verified successfully! You can now log in.',
         });
     } catch (error) {
         console.error('Email verification error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error verifying email'
+            message: 'Error verifying email',
         });
     }
 };
@@ -420,7 +415,7 @@ exports.resendVerification = async (req, res) => {
     try {
         // Support both authenticated and public requests
         let email = req.body.email;
-        
+
         // If authenticated, get email from token
         if (req.customer && req.customer._id) {
             const authCustomer = await Customer.findById(req.customer._id);
@@ -428,11 +423,11 @@ exports.resendVerification = async (req, res) => {
                 email = authCustomer.email;
             }
         }
-        
+
         if (!email) {
             return res.status(400).json({
                 success: false,
-                message: 'Email is required'
+                message: 'Email is required',
             });
         }
 
@@ -441,14 +436,14 @@ exports.resendVerification = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: 'No account found with that email'
+                message: 'No account found with that email',
             });
         }
 
         if (customer.isEmailVerified) {
             return res.status(400).json({
                 success: false,
-                message: 'Email is already verified'
+                message: 'Email is already verified',
             });
         }
 
@@ -463,24 +458,24 @@ exports.resendVerification = async (req, res) => {
 
         // Send verification email
         const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/verify-email.html?token=${verificationToken}`;
-        
+
         const { emailVerificationEmail } = require('../utils/emailTemplates');
         const emailContent = emailVerificationEmail(customer.name, verificationUrl);
-        
+
         await sendEmail({
             to: customer.email,
-            ...emailContent
+            ...emailContent,
         });
 
         res.json({
             success: true,
-            message: 'Verification email sent! Please check your inbox.'
+            message: 'Verification email sent! Please check your inbox.',
         });
     } catch (error) {
         console.error('Resend verification error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error sending verification email'
+            message: 'Error sending verification email',
         });
     }
 };
@@ -500,29 +495,27 @@ exports.forgotPassword = async (req, res) => {
             // Don't reveal whether email exists for security
             return res.json({
                 success: true,
-                message: 'If an account exists with that email, a password reset link has been sent.'
+                message:
+                    'If an account exists with that email, a password reset link has been sent.',
             });
         }
 
         // Generate reset token
         const resetToken = crypto.randomBytes(20).toString('hex');
-        customer.passwordResetToken = crypto
-            .createHash('sha256')
-            .update(resetToken)
-            .digest('hex');
+        customer.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
         customer.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
         await customer.save();
 
         // Send reset email
         const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/reset-password.html?token=${resetToken}`;
-        
+
         const { passwordResetEmail } = require('../utils/emailTemplates');
         const emailContent = passwordResetEmail(customer.name, resetUrl);
-        
+
         try {
             await sendEmail({
                 to: customer.email,
-                ...emailContent
+                ...emailContent,
             });
         } catch (emailError) {
             console.error('Error sending password reset email:', emailError);
@@ -530,22 +523,22 @@ exports.forgotPassword = async (req, res) => {
             customer.passwordResetToken = undefined;
             customer.passwordResetExpires = undefined;
             await customer.save();
-            
+
             return res.status(500).json({
                 success: false,
-                message: 'Error sending password reset email. Please try again.'
+                message: 'Error sending password reset email. Please try again.',
             });
         }
 
         res.json({
             success: true,
-            message: 'If an account exists with that email, a password reset link has been sent.'
+            message: 'If an account exists with that email, a password reset link has been sent.',
         });
     } catch (error) {
         console.error('Forgot password error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error processing password reset request'
+            message: 'Error processing password reset request',
         });
     }
 };
@@ -562,26 +555,23 @@ exports.resetPassword = async (req, res) => {
         if (!password || password.length < 6) {
             return res.status(400).json({
                 success: false,
-                message: 'Password must be at least 6 characters'
+                message: 'Password must be at least 6 characters',
             });
         }
 
         // Hash the token from URL
-        const hashedToken = crypto
-            .createHash('sha256')
-            .update(req.params.token)
-            .digest('hex');
+        const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
         // Find customer with matching token that hasn't expired
         const customer = await Customer.findOne({
             passwordResetToken: hashedToken,
-            passwordResetExpires: { $gt: Date.now() }
+            passwordResetExpires: { $gt: Date.now() },
         }).select('+password');
 
         if (!customer) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid or expired reset token'
+                message: 'Invalid or expired reset token',
             });
         }
 
@@ -597,13 +587,13 @@ exports.resetPassword = async (req, res) => {
         res.json({
             success: true,
             message: 'Password reset successfully!',
-            token
+            token,
         });
     } catch (error) {
         console.error('Reset password error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error resetting password'
+            message: 'Error resetting password',
         });
     }
 };
@@ -617,6 +607,6 @@ exports.logout = async (req, res) => {
     // Since we're using JWT, logout is handled client-side by removing the token
     res.json({
         success: true,
-        message: 'Logged out successfully'
+        message: 'Logged out successfully',
     });
 };

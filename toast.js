@@ -55,14 +55,14 @@ class ToastManager {
         if (!this.container) {
             this.init();
         }
-        
+
         const {
             message,
             title = '',
             type = 'info',
             duration = 5000,
             dismissible = true,
-            onClose = null
+            onClose = null,
         } = typeof options === 'string' ? { message: options } : options;
 
         // Create toast element
@@ -76,7 +76,7 @@ class ToastManager {
             success: '✓',
             error: '✕',
             warning: '⚠',
-            info: 'ℹ'
+            info: 'ℹ',
         };
 
         // Build toast HTML
@@ -145,7 +145,7 @@ class ToastManager {
                 toast.parentElement.removeChild(toast);
             }
             this.toasts = this.toasts.filter(t => t !== toast);
-            
+
             if (callback) callback();
         }, 300);
     }
@@ -157,7 +157,7 @@ class ToastManager {
         return this.show({
             message,
             title: title || 'Success',
-            type: 'success'
+            type: 'success',
         });
     }
 
@@ -166,7 +166,7 @@ class ToastManager {
             message,
             title: title || 'Error',
             type: 'error',
-            duration: 7000 // Errors stay longer
+            duration: 7000, // Errors stay longer
         });
     }
 
@@ -175,7 +175,7 @@ class ToastManager {
             message,
             title: title || 'Warning',
             type: 'warning',
-            duration: 6000
+            duration: 6000,
         });
     }
 
@@ -183,7 +183,7 @@ class ToastManager {
         return this.show({
             message,
             title: title || 'Info',
-            type: 'info'
+            type: 'info',
         });
     }
 

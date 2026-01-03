@@ -48,7 +48,7 @@ class WishlistManager {
         // Add to wishlist with timestamp
         this.wishlist.push({
             ...product,
-            addedAt: new Date().toISOString()
+            addedAt: new Date().toISOString(),
         });
 
         this.saveWishlist();
@@ -62,7 +62,7 @@ class WishlistManager {
     removeFromWishlist(productId) {
         const initialLength = this.wishlist.length;
         this.wishlist = this.wishlist.filter(item => item._id !== productId);
-        
+
         if (this.wishlist.length < initialLength) {
             this.saveWishlist();
             showToast('Removed from wishlist', 'success');
@@ -131,7 +131,7 @@ class WishlistManager {
      */
     dispatchEvent(eventName) {
         const event = new CustomEvent(eventName, {
-            detail: { wishlist: this.wishlist }
+            detail: { wishlist: this.wishlist },
         });
         window.dispatchEvent(event);
     }
@@ -142,7 +142,7 @@ class WishlistManager {
     updateBadge() {
         const badges = document.querySelectorAll('.wishlist-badge');
         const count = this.getCount();
-        
+
         badges.forEach(badge => {
             badge.textContent = count;
             badge.style.display = count > 0 ? 'inline-block' : 'none';
@@ -154,7 +154,7 @@ class WishlistManager {
      */
     updateButton(productId, button) {
         const isInWishlist = this.isInWishlist(productId);
-        
+
         if (button) {
             if (isInWishlist) {
                 button.innerHTML = '❤️';

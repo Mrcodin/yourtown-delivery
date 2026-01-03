@@ -15,21 +15,25 @@ exports.login = async (req, res) => {
 
         // Clean phone number (remove spaces, dashes, parentheses, etc.)
         const cleanPhone = phone.replace(/\D/g, '');
-        
+
         // Try multiple phone formats to match database
         const phoneFormats = [
-            phone,                                    // As provided
-            cleanPhone,                               // Digits only
+            phone, // As provided
+            cleanPhone, // Digits only
         ];
-        
+
         // Add formatted versions based on length
         if (cleanPhone.length === 7) {
             phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3)}`); // xxx-xxxx
         } else if (cleanPhone.length === 10) {
             // Full 10-digit formats
-            phoneFormats.push(`${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // xxx-xxx-xxxx
-            phoneFormats.push(`(${cleanPhone.slice(0, 3)}) ${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`); // (xxx) xxx-xxxx
-            
+            phoneFormats.push(
+                `${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`
+            ); // xxx-xxx-xxxx
+            phoneFormats.push(
+                `(${cleanPhone.slice(0, 3)}) ${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`
+            ); // (xxx) xxx-xxxx
+
             // Also try first 7 digits (for local numbers stored as 7 digits)
             const first7 = cleanPhone.slice(0, 7);
             phoneFormats.push(first7); // xxxxxxx
@@ -37,8 +41,8 @@ exports.login = async (req, res) => {
         }
 
         // Find driver by phone and include password
-        const driver = await Driver.findOne({ 
-            phone: { $in: phoneFormats }
+        const driver = await Driver.findOne({
+            phone: { $in: phoneFormats },
         }).select('+password');
 
         if (!driver) {
@@ -47,7 +51,9 @@ exports.login = async (req, res) => {
 
         // Check if driver is inactive
         if (driver.status === 'inactive') {
-            return res.status(401).json({ message: 'Your account is inactive. Please contact admin.' });
+            return res
+                .status(401)
+                .json({ message: 'Your account is inactive. Please contact admin.' });
         }
 
         // Check password
@@ -77,8 +83,8 @@ exports.login = async (req, res) => {
                 rating: driver.rating,
                 totalDeliveries: driver.totalDeliveries,
                 earnings: driver.earnings,
-                payRate: driver.payRate
-            }
+                payRate: driver.payRate,
+            },
         });
     } catch (error) {
         console.error('Driver login error:', error);
@@ -96,7 +102,7 @@ exports.logout = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Logged out successfully'
+            message: 'Logged out successfully',
         });
     } catch (error) {
         console.error('Driver logout error:', error);
@@ -128,8 +134,8 @@ exports.getMe = async (req, res) => {
                 totalDeliveries: driver.totalDeliveries,
                 earnings: driver.earnings,
                 payRate: driver.payRate,
-                vehicle: driver.vehicle
-            }
+                vehicle: driver.vehicle,
+            },
         });
     } catch (error) {
         console.error('Get driver profile error:', error);
@@ -169,8 +175,8 @@ exports.updateProfile = async (req, res) => {
                 lastName: driver.lastName,
                 phone: driver.phone,
                 email: driver.email,
-                vehicle: driver.vehicle
-            }
+                vehicle: driver.vehicle,
+            },
         });
     } catch (error) {
         console.error('Update driver profile error:', error);
@@ -212,7 +218,7 @@ exports.changePassword = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Password changed successfully'
+            message: 'Password changed successfully',
         });
     } catch (error) {
         console.error('Change password error:', error);
@@ -230,15 +236,15 @@ exports.getAssignedDeliveries = async (req, res) => {
         // Get orders assigned to this driver that are not delivered or cancelled
         const orders = await Order.find({
             'delivery.driverId': driverId,
-            status: { $in: ['confirmed', 'shopping', 'delivering', 'picked-up'] }
+            status: { $in: ['confirmed', 'shopping', 'delivering', 'picked-up'] },
         })
-        .sort({ createdAt: -1 })
-        .populate('items.productId', 'name emoji imageUrl');
+            .sort({ createdAt: -1 })
+            .populate('items.productId', 'name emoji imageUrl');
 
         res.json({
             success: true,
             count: orders.length,
-            orders
+            orders,
         });
     } catch (error) {
         console.error('Get assigned deliveries error:', error);
@@ -253,21 +259,18 @@ exports.getAvailableOrders = async (req, res) => {
     try {
         // Get orders that don't have a driver assigned yet and are confirmed
         const orders = await Order.find({
-            $or: [
-                { 'delivery.driverId': { $exists: false } },
-                { 'delivery.driverId': null }
-            ],
+            $or: [{ 'delivery.driverId': { $exists: false } }, { 'delivery.driverId': null }],
             status: { $in: ['confirmed', 'shopping'] },
-            'payment.status': 'completed'
+            'payment.status': 'completed',
         })
-        .sort({ createdAt: -1 })
-        .limit(20)
-        .populate('items.productId', 'name emoji imageUrl');
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .populate('items.productId', 'name emoji imageUrl');
 
         res.json({
             success: true,
             count: orders.length,
-            orders
+            orders,
         });
     } catch (error) {
         console.error('Get available orders error:', error);
@@ -302,7 +305,7 @@ exports.claimOrder = async (req, res) => {
 
         // Get driver info
         const driver = await Driver.findById(driverId);
-        
+
         // Update order using findByIdAndUpdate to avoid full validation
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId,
@@ -310,8 +313,8 @@ exports.claimOrder = async (req, res) => {
                 $set: {
                     'delivery.driverId': driverId,
                     'delivery.driverName': `${driver.firstName} ${driver.lastName}`,
-                    status: 'shopping'
-                }
+                    status: 'shopping',
+                },
             },
             { new: true, runValidators: false }
         ).populate('items.productId', 'name emoji imageUrl');
@@ -323,7 +326,7 @@ exports.claimOrder = async (req, res) => {
         res.json({
             success: true,
             message: 'Order claimed successfully',
-            order: updatedOrder
+            order: updatedOrder,
         });
     } catch (error) {
         console.error('Claim order error:', error);
@@ -341,17 +344,17 @@ exports.getDeliveryHistory = async (req, res) => {
         // Get completed deliveries
         const orders = await Order.find({
             'delivery.driverId': driverId,
-            status: { $in: ['delivered', 'cancelled'] }
+            status: { $in: ['delivered', 'cancelled'] },
         })
-        .sort({ 'delivery.actualTime': -1 })
-        .limit(50)
-        .populate('items.productId', 'name emoji imageUrl');
+            .sort({ 'delivery.actualTime': -1 })
+            .limit(50)
+            .populate('items.productId', 'name emoji imageUrl');
 
         // Calculate earnings
         const earnings = orders
             .filter(order => order.status === 'delivered')
             .reduce((sum, order) => {
-                const basePay = 4.00; // Driver pay rate
+                const basePay = 4.0; // Driver pay rate
                 const tip = order.pricing?.tip || 0;
                 return sum + basePay + tip;
             }, 0);
@@ -360,7 +363,7 @@ exports.getDeliveryHistory = async (req, res) => {
             success: true,
             count: orders.length,
             totalEarnings: earnings,
-            orders
+            orders,
         });
     } catch (error) {
         console.error('Get delivery history error:', error);
@@ -380,7 +383,9 @@ exports.updateOrderStatus = async (req, res) => {
         // Validate status
         const validStatuses = ['picked-up', 'delivering', 'delivered'];
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({ message: 'Invalid status. Must be picked-up, delivering, or delivered.' });
+            return res
+                .status(400)
+                .json({ message: 'Invalid status. Must be picked-up, delivering, or delivered.' });
         }
 
         // Find order and verify it's assigned to this driver
@@ -410,7 +415,7 @@ exports.updateOrderStatus = async (req, res) => {
             await Driver.findByIdAndUpdate(driverId, { status: 'busy' });
         } else if (status === 'delivered') {
             updateData['delivery.actualTime'] = new Date();
-            
+
             // Update driver's total deliveries and earnings
             const driver = await Driver.findById(driverId);
             driver.totalDeliveries += 1;
@@ -432,7 +437,7 @@ exports.updateOrderStatus = async (req, res) => {
         res.json({
             success: true,
             message: `Order marked as ${status}`,
-            order: updatedOrder
+            order: updatedOrder,
         });
     } catch (error) {
         console.error('Update order status error:', error);
@@ -452,16 +457,12 @@ exports.updateStatus = async (req, res) => {
             return res.status(400).json({ message: 'Invalid status. Must be online or offline' });
         }
 
-        const driver = await Driver.findByIdAndUpdate(
-            req.driver.id,
-            { status },
-            { new: true }
-        );
+        const driver = await Driver.findByIdAndUpdate(req.driver.id, { status }, { new: true });
 
         res.json({
             success: true,
             message: `Status updated to ${status}`,
-            status: driver.status
+            status: driver.status,
         });
     } catch (error) {
         console.error('Update status error:', error);
@@ -496,9 +497,9 @@ exports.uploadDeliveryProof = async (req, res) => {
                 $set: {
                     'delivery.proofPhoto': {
                         url: photoUrl,
-                        uploadedAt: new Date()
-                    }
-                }
+                        uploadedAt: new Date(),
+                    },
+                },
             },
             { new: true, runValidators: false }
         );
@@ -506,7 +507,7 @@ exports.uploadDeliveryProof = async (req, res) => {
         res.json({
             success: true,
             message: 'Delivery proof uploaded successfully',
-            proofPhoto: updatedOrder.delivery.proofPhoto
+            proofPhoto: updatedOrder.delivery.proofPhoto,
         });
     } catch (error) {
         console.error('Upload proof error:', error);

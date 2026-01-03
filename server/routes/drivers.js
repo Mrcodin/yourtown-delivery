@@ -82,7 +82,14 @@ router.get('/:id/orders', protect, driverController.getDriverOrders);
  *       201:
  *         description: Driver created
  */
-router.post('/', protect, authorize('admin'), driverValidation, validate, driverController.createDriver);
+router.post(
+    '/',
+    protect,
+    authorize('admin'),
+    driverValidation,
+    validate,
+    driverController.createDriver
+);
 
 /**
  * @swagger

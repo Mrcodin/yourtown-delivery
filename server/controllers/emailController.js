@@ -1,6 +1,11 @@
 const crypto = require('crypto');
 const { sendEmail, verifyEmailConfig, reinitializeTransporter } = require('../config/email');
-const { testEmail, orderConfirmationEmail, orderStatusUpdateEmail, adminNewOrderEmail } = require('../utils/emailTemplates');
+const {
+    testEmail,
+    orderConfirmationEmail,
+    orderStatusUpdateEmail,
+    adminNewOrderEmail,
+} = require('../utils/emailTemplates');
 
 // In-memory storage for email config (in production, use database)
 let emailConfig = {
@@ -15,7 +20,7 @@ let emailConfig = {
     from: process.env.EMAIL_FROM || null,
     fromName: 'Hometown Delivery',
     adminEmail: process.env.ADMIN_EMAIL || null,
-    configured: false
+    configured: false,
 };
 
 // Email history (in production, store in database)
@@ -56,9 +61,11 @@ function decrypt(text) {
 exports.getEmailConfig = async (req, res) => {
     try {
         // Check if email is configured
-        const configured = !!(emailConfig.provider && 
-            (emailConfig.password || emailConfig.apiKey) && 
-            emailConfig.from);
+        const configured = !!(
+            emailConfig.provider &&
+            (emailConfig.password || emailConfig.apiKey) &&
+            emailConfig.from
+        );
 
         // Test connection if configured
         let connected = false;
@@ -92,14 +99,14 @@ exports.getEmailConfig = async (req, res) => {
                 connected,
                 provider: emailConfig.provider,
                 from: emailConfig.from,
-                adminEmail: emailConfig.adminEmail
-            }
+                adminEmail: emailConfig.adminEmail,
+            },
         });
     } catch (error) {
         console.error('Get email config error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error fetching email configuration'
+            message: 'Error fetching email configuration',
         });
     }
 };
@@ -109,13 +116,25 @@ exports.getEmailConfig = async (req, res) => {
 // @access  Private (Admin)
 exports.saveEmailConfig = async (req, res) => {
     try {
-        const { provider, user, password, apiKey, host, port, secure, domain, from, fromName, adminEmail } = req.body;
+        const {
+            provider,
+            user,
+            password,
+            apiKey,
+            host,
+            port,
+            secure,
+            domain,
+            from,
+            fromName,
+            adminEmail,
+        } = req.body;
 
         // Validate required fields
         if (!provider || !from) {
             return res.status(400).json({
                 success: false,
-                message: 'Provider and from email are required'
+                message: 'Provider and from email are required',
             });
         }
 
@@ -130,7 +149,7 @@ exports.saveEmailConfig = async (req, res) => {
             if (!user || !password) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Gmail requires email and app password'
+                    message: 'Gmail requires email and app password',
                 });
             }
             emailConfig.user = user;
@@ -143,7 +162,7 @@ exports.saveEmailConfig = async (req, res) => {
             if (!apiKey) {
                 return res.status(400).json({
                     success: false,
-                    message: 'SendGrid requires API key'
+                    message: 'SendGrid requires API key',
                 });
             }
             emailConfig.apiKey = encrypt(apiKey);
@@ -153,7 +172,7 @@ exports.saveEmailConfig = async (req, res) => {
             if (!apiKey || !domain) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Mailgun requires API key and domain'
+                    message: 'Mailgun requires API key and domain',
                 });
             }
             emailConfig.apiKey = encrypt(apiKey);
@@ -165,7 +184,7 @@ exports.saveEmailConfig = async (req, res) => {
             if (!host || !port || !user || !password) {
                 return res.status(400).json({
                     success: false,
-                    message: 'SMTP requires host, port, username, and password'
+                    message: 'SMTP requires host, port, username, and password',
                 });
             }
             emailConfig.host = host;
@@ -195,13 +214,13 @@ exports.saveEmailConfig = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Email configuration saved successfully'
+            message: 'Email configuration saved successfully',
         });
     } catch (error) {
         console.error('Save email config error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error saving email configuration'
+            message: 'Error saving email configuration',
         });
     }
 };
@@ -216,19 +235,19 @@ exports.testConnection = async (req, res) => {
         if (isValid) {
             res.json({
                 success: true,
-                message: 'Email connection successful!'
+                message: 'Email connection successful!',
             });
         } else {
             res.status(400).json({
                 success: false,
-                message: 'Email connection failed. Please check your configuration.'
+                message: 'Email connection failed. Please check your configuration.',
             });
         }
     } catch (error) {
         console.error('Test connection error:', error);
         res.status(500).json({
             success: false,
-            message: error.message || 'Failed to test email connection'
+            message: error.message || 'Failed to test email connection',
         });
     }
 };
@@ -243,7 +262,7 @@ exports.sendTestEmail = async (req, res) => {
         if (!to) {
             return res.status(400).json({
                 success: false,
-                message: 'Recipient email is required'
+                message: 'Recipient email is required',
             });
         }
 
@@ -260,21 +279,21 @@ exports.sendTestEmail = async (req, res) => {
                     name: 'John Doe',
                     phone: '555-1234',
                     email: to,
-                    address: '123 Main St, Anytown, ST 12345'
+                    address: '123 Main St, Anytown, ST 12345',
                 },
                 items: [
                     { name: 'Fresh Milk', quantity: 2, price: 3.99 },
-                    { name: 'Whole Wheat Bread', quantity: 1, price: 2.49 }
+                    { name: 'Whole Wheat Bread', quantity: 1, price: 2.49 },
                 ],
                 pricing: {
                     subtotal: 10.47,
                     deliveryFee: 6.99,
-                    total: 17.46
+                    total: 17.46,
                 },
                 delivery: {
-                    timePreference: 'ASAP'
+                    timePreference: 'ASAP',
                 },
-                createdAt: new Date()
+                createdAt: new Date(),
             };
             emailContent = orderConfirmationEmail(mockOrder);
         } else if (type === 'status-update') {
@@ -284,12 +303,12 @@ exports.sendTestEmail = async (req, res) => {
                     name: 'John Doe',
                     phone: '555-1234',
                     email: to,
-                    address: '123 Main St, Anytown, ST 12345'
+                    address: '123 Main St, Anytown, ST 12345',
                 },
                 assignedDriver: {
                     name: 'Mike Driver',
-                    phone: '555-9876'
-                }
+                    phone: '555-9876',
+                },
             };
             emailContent = orderStatusUpdateEmail(mockOrder, 'out_for_delivery');
         } else if (type === 'admin-notification') {
@@ -299,24 +318,24 @@ exports.sendTestEmail = async (req, res) => {
                     name: 'John Doe',
                     phone: '555-1234',
                     email: 'customer@example.com',
-                    address: '123 Main St, Anytown, ST 12345'
+                    address: '123 Main St, Anytown, ST 12345',
                 },
                 items: [
                     { name: 'Fresh Milk', quantity: 2, price: 3.99 },
-                    { name: 'Whole Wheat Bread', quantity: 1, price: 2.49 }
+                    { name: 'Whole Wheat Bread', quantity: 1, price: 2.49 },
                 ],
                 pricing: {
                     subtotal: 10.47,
                     deliveryFee: 6.99,
-                    total: 17.46
+                    total: 17.46,
                 },
                 delivery: {
-                    timePreference: 'ASAP'
+                    timePreference: 'ASAP',
                 },
                 payment: {
-                    method: 'cash'
+                    method: 'cash',
                 },
-                createdAt: new Date()
+                createdAt: new Date(),
             };
             emailContent = adminNewOrderEmail(mockOrder);
         }
@@ -325,7 +344,7 @@ exports.sendTestEmail = async (req, res) => {
         await sendEmail({
             to,
             subject: emailContent.subject,
-            html: emailContent.html
+            html: emailContent.html,
         });
 
         // Log to history
@@ -334,7 +353,7 @@ exports.sendTestEmail = async (req, res) => {
             to,
             type,
             subject: emailContent.subject,
-            status: 'sent'
+            status: 'sent',
         });
 
         // Keep only last 100 emails
@@ -344,7 +363,7 @@ exports.sendTestEmail = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Test email sent to ${to}`
+            message: `Test email sent to ${to}`,
         });
     } catch (error) {
         console.error('Send test email error:', error);
@@ -356,12 +375,12 @@ exports.sendTestEmail = async (req, res) => {
             type: req.body.type || 'test',
             subject: 'Failed to send',
             status: 'failed',
-            error: error.message
+            error: error.message,
         });
 
         res.status(500).json({
             success: false,
-            message: error.message || 'Failed to send test email'
+            message: error.message || 'Failed to send test email',
         });
     }
 };
@@ -383,22 +402,22 @@ exports.getEmailHistory = async (req, res) => {
 
         res.json({
             success: true,
-            history: filteredHistory.slice(0, 50) // Return last 50
+            history: filteredHistory.slice(0, 50), // Return last 50
         });
     } catch (error) {
         console.error('Get email history error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error fetching email history'
+            message: 'Error fetching email history',
         });
     }
 };
 
 // Log email sending (called from other controllers)
-exports.logEmail = (emailData) => {
+exports.logEmail = emailData => {
     emailHistory.unshift({
         sentAt: new Date(),
-        ...emailData
+        ...emailData,
     });
 
     // Keep only last 100

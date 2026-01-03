@@ -5,25 +5,26 @@ const swaggerDefinition = {
     info: {
         title: 'Hometown Delivery API',
         version: '1.0.0',
-        description: 'Complete API documentation for Hometown Delivery platform - a full-stack grocery delivery management system',
+        description:
+            'Complete API documentation for Hometown Delivery platform - a full-stack grocery delivery management system',
         contact: {
             name: 'API Support',
-            url: 'https://github.com/Mrcodin/yourtown-delivery'
+            url: 'https://github.com/Mrcodin/yourtown-delivery',
         },
         license: {
             name: 'MIT',
-            url: 'https://opensource.org/licenses/MIT'
-        }
+            url: 'https://opensource.org/licenses/MIT',
+        },
     },
     servers: [
         {
             url: 'http://localhost:3000',
-            description: 'Development server'
+            description: 'Development server',
         },
         {
             url: 'https://yourtown-delivery-api.onrender.com',
-            description: 'Production server'
-        }
+            description: 'Production server',
+        },
     ],
     components: {
         securitySchemes: {
@@ -31,8 +32,8 @@ const swaggerDefinition = {
                 type: 'http',
                 scheme: 'bearer',
                 bearerFormat: 'JWT',
-                description: 'Enter your JWT token from login'
-            }
+                description: 'Enter your JWT token from login',
+            },
         },
         schemas: {
             User: {
@@ -41,9 +42,13 @@ const swaggerDefinition = {
                     _id: { type: 'string', example: '507f1f77bcf86cd799439011' },
                     username: { type: 'string', example: 'admin' },
                     email: { type: 'string', example: 'admin@hometown.com' },
-                    role: { type: 'string', enum: ['admin', 'manager', 'driver'], example: 'admin' },
-                    createdAt: { type: 'string', format: 'date-time' }
-                }
+                    role: {
+                        type: 'string',
+                        enum: ['admin', 'manager', 'driver'],
+                        example: 'admin',
+                    },
+                    createdAt: { type: 'string', format: 'date-time' },
+                },
             },
             Customer: {
                 type: 'object',
@@ -61,11 +66,11 @@ const swaggerDefinition = {
                                 city: { type: 'string' },
                                 state: { type: 'string' },
                                 zipCode: { type: 'string' },
-                                isDefault: { type: 'boolean' }
-                            }
-                        }
-                    }
-                }
+                                isDefault: { type: 'boolean' },
+                            },
+                        },
+                    },
+                },
             },
             Product: {
                 type: 'object',
@@ -77,8 +82,8 @@ const swaggerDefinition = {
                     unit: { type: 'string', example: 'lb' },
                     imageUrl: { type: 'string' },
                     inStock: { type: 'boolean', example: true },
-                    description: { type: 'string' }
-                }
+                    description: { type: 'string' },
+                },
             },
             Order: {
                 type: 'object',
@@ -94,9 +99,9 @@ const swaggerDefinition = {
                                 product: { type: 'string' },
                                 name: { type: 'string' },
                                 price: { type: 'number' },
-                                quantity: { type: 'number' }
-                            }
-                        }
+                                quantity: { type: 'number' },
+                            },
+                        },
                     },
                     pricing: {
                         type: 'object',
@@ -106,17 +111,29 @@ const swaggerDefinition = {
                             tax: { type: 'number' },
                             tip: { type: 'number' },
                             discount: { type: 'number' },
-                            total: { type: 'number' }
-                        }
+                            total: { type: 'number' },
+                        },
                     },
                     status: {
                         type: 'string',
-                        enum: ['pending', 'confirmed', 'preparing', 'ready', 'picked-up', 'delivering', 'delivered', 'cancelled'],
-                        example: 'confirmed'
+                        enum: [
+                            'pending',
+                            'confirmed',
+                            'preparing',
+                            'ready',
+                            'picked-up',
+                            'delivering',
+                            'delivered',
+                            'cancelled',
+                        ],
+                        example: 'confirmed',
                     },
                     paymentMethod: { type: 'string', enum: ['cash', 'check', 'card'] },
-                    paymentStatus: { type: 'string', enum: ['pending', 'completed', 'failed', 'refunded'] }
-                }
+                    paymentStatus: {
+                        type: 'string',
+                        enum: ['pending', 'completed', 'failed', 'refunded'],
+                    },
+                },
             },
             Driver: {
                 type: 'object',
@@ -129,17 +146,17 @@ const swaggerDefinition = {
                     licensePlate: { type: 'string', example: 'ABC123' },
                     status: { type: 'string', enum: ['available', 'busy', 'offline'] },
                     currentDeliveries: { type: 'number', example: 2 },
-                    rating: { type: 'number', example: 4.8 }
-                }
+                    rating: { type: 'number', example: 4.8 },
+                },
             },
             Error: {
                 type: 'object',
                 properties: {
                     success: { type: 'boolean', example: false },
                     message: { type: 'string', example: 'Error message' },
-                    error: { type: 'string' }
-                }
-            }
+                    error: { type: 'string' },
+                },
+            },
         },
         responses: {
             UnauthorizedError: {
@@ -149,10 +166,10 @@ const swaggerDefinition = {
                         schema: { $ref: '#/components/schemas/Error' },
                         example: {
                             success: false,
-                            message: 'Not authorized, token failed'
-                        }
-                    }
-                }
+                            message: 'Not authorized, token failed',
+                        },
+                    },
+                },
             },
             NotFoundError: {
                 description: 'Resource not found',
@@ -161,15 +178,18 @@ const swaggerDefinition = {
                         schema: { $ref: '#/components/schemas/Error' },
                         example: {
                             success: false,
-                            message: 'Resource not found'
-                        }
-                    }
-                }
-            }
-        }
+                            message: 'Resource not found',
+                        },
+                    },
+                },
+            },
+        },
     },
     tags: [
-        { name: 'Authentication', description: 'User authentication endpoints (Admin, Manager, Driver)' },
+        {
+            name: 'Authentication',
+            description: 'User authentication endpoints (Admin, Manager, Driver)',
+        },
         { name: 'Customer Auth', description: 'Customer authentication and profile management' },
         { name: 'Products', description: 'Product catalog management' },
         { name: 'Orders', description: 'Order creation and management' },
@@ -177,13 +197,13 @@ const swaggerDefinition = {
         { name: 'Drivers', description: 'Driver management and assignments' },
         { name: 'Payments', description: 'Stripe payment processing' },
         { name: 'Reports', description: 'Analytics and reporting' },
-        { name: 'Activity Logs', description: 'System activity tracking' }
-    ]
+        { name: 'Activity Logs', description: 'System activity tracking' },
+    ],
 };
 
 const options = {
     swaggerDefinition,
-    apis: ['./routes/*.js', './controllers/*.js', './server.js']
+    apis: ['./routes/*.js', './controllers/*.js', './server.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);

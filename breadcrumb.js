@@ -29,74 +29,74 @@ class BreadcrumbManager {
     getBreadcrumbData() {
         const path = window.location.pathname;
         const filename = path.split('/').pop() || 'index.html';
-        
+
         // Define breadcrumb mappings
         const breadcrumbs = {
-            'index.html': [
-                { label: 'Home', url: null, current: true }
-            ],
+            'index.html': [{ label: 'Home', url: null, current: true }],
             'shop.html': [
                 { label: 'Home', url: 'index.html' },
-                { label: 'Shop Groceries', url: null, current: true }
+                { label: 'Shop Groceries', url: null, current: true },
             ],
             'cart.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Shop', url: 'shop.html' },
-                { label: 'Shopping Cart', url: null, current: true }
+                { label: 'Shopping Cart', url: null, current: true },
             ],
             'track.html': [
                 { label: 'Home', url: 'index.html' },
-                { label: 'Track Order', url: null, current: true }
+                { label: 'Track Order', url: null, current: true },
             ],
             'about.html': [
                 { label: 'Home', url: 'index.html' },
-                { label: 'About Us', url: null, current: true }
+                { label: 'About Us', url: null, current: true },
             ],
             'admin-login.html': [
                 { label: 'Home', url: 'index.html' },
-                { label: 'Admin Login', url: null, current: true }
+                { label: 'Admin Login', url: null, current: true },
             ],
             'admin.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: null, current: true },
-                { label: 'Dashboard', url: null, current: true }
+                { label: 'Dashboard', url: null, current: true },
             ],
             'admin-orders.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Orders', url: null, current: true }
+                { label: 'Orders', url: null, current: true },
             ],
             'admin-products.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Products', url: null, current: true }
+                { label: 'Products', url: null, current: true },
             ],
             'admin-customers.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Customers', url: null, current: true }
+                { label: 'Customers', url: null, current: true },
             ],
             'admin-drivers.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Drivers', url: null, current: true }
+                { label: 'Drivers', url: null, current: true },
             ],
             'admin-reports.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Reports', url: null, current: true }
+                { label: 'Reports', url: null, current: true },
             ],
             'admin-settings.html': [
                 { label: 'Home', url: 'index.html' },
                 { label: 'Admin', url: 'admin.html' },
-                { label: 'Settings', url: null, current: true }
-            ]
+                { label: 'Settings', url: null, current: true },
+            ],
         };
 
-        return breadcrumbs[filename] || [
-            { label: 'Home', url: 'index.html' },
-            { label: 'Page', url: null, current: true }
-        ];
+        return (
+            breadcrumbs[filename] || [
+                { label: 'Home', url: 'index.html' },
+                { label: 'Page', url: null, current: true },
+            ]
+        );
     }
 
     /**
@@ -107,27 +107,29 @@ class BreadcrumbManager {
         if (!container) return;
 
         const breadcrumbData = this.getBreadcrumbData();
-        
-        const breadcrumbHTML = breadcrumbData.map((item, index) => {
-            const isLast = index === breadcrumbData.length - 1;
-            const separator = !isLast ? '<span class="breadcrumb-separator">›</span>' : '';
-            
-            if (item.current || !item.url) {
-                return `
+
+        const breadcrumbHTML = breadcrumbData
+            .map((item, index) => {
+                const isLast = index === breadcrumbData.length - 1;
+                const separator = !isLast ? '<span class="breadcrumb-separator">›</span>' : '';
+
+                if (item.current || !item.url) {
+                    return `
                     <div class="breadcrumb-item">
                         <span class="breadcrumb-current">${item.label}</span>
                     </div>
                     ${separator}
                 `;
-            } else {
-                return `
+                } else {
+                    return `
                     <div class="breadcrumb-item">
                         <a href="${item.url}" class="breadcrumb-link">${item.label}</a>
                     </div>
                     ${separator}
                 `;
-            }
-        }).join('');
+                }
+            })
+            .join('');
 
         container.innerHTML = `
             <div class="breadcrumb">
@@ -144,26 +146,28 @@ class BreadcrumbManager {
         const container = document.getElementById('breadcrumb-container');
         if (!container || !breadcrumbData) return;
 
-        const breadcrumbHTML = breadcrumbData.map((item, index) => {
-            const isLast = index === breadcrumbData.length - 1;
-            const separator = !isLast ? '<span class="breadcrumb-separator">›</span>' : '';
-            
-            if (item.current || !item.url) {
-                return `
+        const breadcrumbHTML = breadcrumbData
+            .map((item, index) => {
+                const isLast = index === breadcrumbData.length - 1;
+                const separator = !isLast ? '<span class="breadcrumb-separator">›</span>' : '';
+
+                if (item.current || !item.url) {
+                    return `
                     <div class="breadcrumb-item">
                         <span class="breadcrumb-current">${item.label}</span>
                     </div>
                     ${separator}
                 `;
-            } else {
-                return `
+                } else {
+                    return `
                     <div class="breadcrumb-item">
                         <a href="${item.url}" class="breadcrumb-link">${item.label}</a>
                     </div>
                     ${separator}
                 `;
-            }
-        }).join('');
+                }
+            })
+            .join('');
 
         container.innerHTML = `
             <div class="breadcrumb">
