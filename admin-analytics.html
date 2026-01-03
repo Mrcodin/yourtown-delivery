@@ -366,10 +366,10 @@
                 <div class="chart-header">
                     <h2 class="chart-title">📈 Revenue Trends</h2>
                     <div class="period-selector">
-                        <button class="period-btn" onclick="loadRevenue('7days')">7 Days</button>
-                        <button class="period-btn active" onclick="loadRevenue('30days')">30 Days</button>
-                        <button class="period-btn" onclick="loadRevenue('90days')">90 Days</button>
-                        <button class="period-btn" onclick="loadRevenue('1year')">1 Year</button>
+                        <button class="period-btn" onclick="loadRevenue('7days', this)">7 Days</button>
+                        <button class="period-btn active" onclick="loadRevenue('30days', this)">30 Days</button>
+                        <button class="period-btn" onclick="loadRevenue('90days', this)">90 Days</button>
+                        <button class="period-btn" onclick="loadRevenue('1year', this)">1 Year</button>
                     </div>
                 </div>
                 <canvas id="revenueChart"></canvas>
@@ -380,9 +380,9 @@
                 <div class="chart-header">
                     <h2 class="chart-title">🔥 Popular Products</h2>
                     <div class="period-selector">
-                        <button class="period-btn" onclick="loadPopularProducts('7days')">7 Days</button>
-                        <button class="period-btn active" onclick="loadPopularProducts('30days')">30 Days</button>
-                        <button class="period-btn" onclick="loadPopularProducts('90days')">90 Days</button>
+                        <button class="period-btn" onclick="loadPopularProducts('7days', this)">7 Days</button>
+                        <button class="period-btn active" onclick="loadPopularProducts('30days', this)">30 Days</button>
+                        <button class="period-btn" onclick="loadPopularProducts('90days', this)">90 Days</button>
                     </div>
                 </div>
                 <div class="products-grid" id="popularProducts">
@@ -395,9 +395,9 @@
                 <div class="chart-header">
                     <h2 class="chart-title">⏰ Peak Ordering Times</h2>
                     <div class="period-selector">
-                        <button class="period-btn" onclick="loadPeakTimes('7days')">7 Days</button>
-                        <button class="period-btn active" onclick="loadPeakTimes('30days')">30 Days</button>
-                        <button class="period-btn" onclick="loadPeakTimes('90days')">90 Days</button>
+                        <button class="period-btn" onclick="loadPeakTimes('7days', this)">7 Days</button>
+                        <button class="period-btn active" onclick="loadPeakTimes('30days', this)">30 Days</button>
+                        <button class="period-btn" onclick="loadPeakTimes('90days', this)">90 Days</button>
                     </div>
                 </div>
                 <canvas id="peakTimesChart"></canvas>
@@ -427,9 +427,9 @@
                 <div class="chart-header">
                     <h2 class="chart-title">🚗 Driver Performance</h2>
                     <div class="period-selector">
-                        <button class="period-btn" onclick="loadDriverPerformance('7days')">7 Days</button>
-                        <button class="period-btn active" onclick="loadDriverPerformance('30days')">30 Days</button>
-                        <button class="period-btn" onclick="loadDriverPerformance('90days')">90 Days</button>
+                        <button class="period-btn" onclick="loadDriverPerformance('7days', this)">7 Days</button>
+                        <button class="period-btn active" onclick="loadDriverPerformance('30days', this)">30 Days</button>
+                        <button class="period-btn" onclick="loadDriverPerformance('90days', this)">90 Days</button>
                     </div>
                 </div>
                 <table class="driver-table" id="driverTable">
@@ -458,8 +458,10 @@
     <script src="loading.js"></script>
     <script src="back-to-top.js"></script>
     <script>
-        // Check authentication
-        checkAuth();
+        // API Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://yourtown-delivery.onrender.com';
 
         let revenueChart, peakTimesChart;
         let currentRevenuePeriod = '30days';
@@ -482,7 +484,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/analytics/dashboard`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -515,19 +517,19 @@
         }
 
         // Load revenue analytics
-        async function loadRevenue(period) {
+        async function loadRevenue(period, clickedBtn) {
             try {
                 // Update active button
                 document.querySelectorAll('.period-selector')[0].querySelectorAll('.period-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                event.target.classList.add('active');
+                if (clickedBtn) clickedBtn.classList.add('active');
 
                 currentRevenuePeriod = period;
 
                 const response = await fetch(`${API_BASE_URL}/api/analytics/revenue?period=${period}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -612,19 +614,19 @@
         }
 
         // Load popular products
-        async function loadPopularProducts(period) {
+        async function loadPopularProducts(period, clickedBtn) {
             try {
                 // Update active button
                 document.querySelectorAll('.period-selector')[1].querySelectorAll('.period-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                event.target.classList.add('active');
+                if (clickedBtn) clickedBtn.classList.add('active');
 
                 currentProductsPeriod = period;
 
                 const response = await fetch(`${API_BASE_URL}/api/analytics/popular-products?period=${period}&limit=12`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -662,7 +664,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/analytics/customers?period=${period}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -682,19 +684,19 @@
         }
 
         // Load peak times
-        async function loadPeakTimes(period) {
+        async function loadPeakTimes(period, clickedBtn) {
             try {
                 // Update active button
                 document.querySelectorAll('.period-selector')[2].querySelectorAll('.period-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                event.target.classList.add('active');
+                if (clickedBtn) clickedBtn.classList.add('active');
 
                 currentPeakTimesPeriod = period;
 
                 const response = await fetch(`${API_BASE_URL}/api/analytics/peak-times?period=${period}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -747,19 +749,19 @@
         }
 
         // Load driver performance
-        async function loadDriverPerformance(period) {
+        async function loadDriverPerformance(period, clickedBtn) {
             try {
                 // Update active button
                 document.querySelectorAll('.period-selector')[3].querySelectorAll('.period-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                event.target.classList.add('active');
+                if (clickedBtn) clickedBtn.classList.add('active');
 
                 currentDriverPeriod = period;
 
                 const response = await fetch(`${API_BASE_URL}/api/analytics/drivers?period=${period}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -803,15 +805,16 @@
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error';
             errorDiv.textContent = message;
-            document.querySelector('.main-content').insertBefore(
-                errorDiv, 
-                document.querySelector('.analytics-grid')
-            );
-            setTimeout(() => errorDiv.remove(), 5000);
+            const container = document.querySelector('.admin-content');
+            const grid = document.querySelector('.analytics-grid');
+            if (container && grid) {
+                container.insertBefore(errorDiv, grid);
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
         }
 
         function logout() {
-            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
             window.location.href = 'admin-login.html';
         }
         
