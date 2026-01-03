@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Load Test</title>
+    <style>
+        body { padding: 20px; font-family: Arial; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Script Loading Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'status ' + (isError ? 'error' : 'success');
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        log('✅ Basic JavaScript is working');
+        
+        // Check if objects exist as scripts load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('✅ DOM loaded');
+        });
+        
+        window.addEventListener('error', (e) => {
+            log('❌ Error: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')', true);
+        }, true);
+    </script>
+    
+    <script src="toast.js" onerror="log('❌ Failed to load toast.js', true)"></script>
+    <script src="api.js" onerror="log('❌ Failed to load api.js', true)"></script>
+    <script src="customer-auth.js" onerror="log('❌ Failed to load customer-auth.js', true)"></script>
+    <script src="loading.js" onerror="log('❌ Failed to load loading.js', true)"></script>
+    <script src="config.js" onerror="log('❌ Failed to load config.js', true)"></script>
+    <script src="wishlist.js" onerror="log('❌ Failed to load wishlist.js', true)"></script>
+    <script src="main.js" onerror="log('❌ Failed to load main.js', true)"></script>
+    
+    <script>
+        setTimeout(() => {
+            log(typeof api !== 'undefined' ? '✅ api loaded' : '❌ api NOT loaded', typeof api === 'undefined');
+            log(typeof customerAuth !== 'undefined' ? '✅ customerAuth loaded' : '❌ customerAuth NOT loaded', typeof customerAuth === 'undefined');
+            log(typeof loading !== 'undefined' ? '✅ loading loaded' : '❌ loading NOT loaded', typeof loading === 'undefined');
+            log(typeof wishlistManager !== 'undefined' ? '✅ wishlistManager loaded' : '❌ wishlistManager NOT loaded', typeof wishlistManager === 'undefined');
+            log(typeof addToCart === 'function' ? '✅ addToCart function exists' : '❌ addToCart function missing', typeof addToCart !== 'function');
+        }, 1000);
+    </script>
+</body>
+</html>

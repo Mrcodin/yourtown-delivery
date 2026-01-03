@@ -981,6 +981,7 @@ a:hover {
 }
 
 .grocery-item {
+    position: relative;
     background: var(--white);
     border-radius: var(--radius-lg);
     overflow: hidden;

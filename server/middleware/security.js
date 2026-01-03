@@ -89,10 +89,11 @@ const helmetConfig = helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com', 'https://cdn.socket.io'],
+            scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers (onclick, etc)
             frameSrc: ["'self'", 'https://js.stripe.com'],
             imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-            connectSrc: ["'self'", 'https://api.stripe.com'],
+            connectSrc: ["'self'", 'https://api.stripe.com', 'https://js.stripe.com', 'https://cdn.socket.io', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'ws:', 'wss:'],
         },
     },
     crossOriginEmbedderPolicy: false,

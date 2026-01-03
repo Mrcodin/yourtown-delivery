@@ -348,10 +348,11 @@ exports.createOrder = async (req, res) => {
                 promoCode: promoCodeData,
                 total,
             },
-            status: 'placed',
+            // Auto-confirm cash/check orders since payment is handled on delivery
+            status: (payment.method === 'cash' || payment.method === 'check') ? 'confirmed' : 'placed',
             payment: {
                 method: payment.method,
-                status: payment.method === 'cash' ? 'pending' : 'pending',
+                status: (payment.method === 'cash' || payment.method === 'check') ? 'pending' : 'pending',
             },
             delivery: {
                 timePreference: delivery?.timePreference,
@@ -361,7 +362,7 @@ exports.createOrder = async (req, res) => {
             substitutionPreference: req.body.substitutionPreference || 'call-me',
             statusHistory: [
                 {
-                    status: 'placed',
+                    status: (payment.method === 'cash' || payment.method === 'check') ? 'confirmed' : 'placed',
                     timestamp: new Date(),
                 },
             ],

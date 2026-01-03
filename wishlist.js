@@ -171,6 +171,7 @@ class WishlistManager {
 
 // Initialize wishlist manager
 const wishlistManager = new WishlistManager();
+window.wishlistManager = wishlistManager;
 
 // Update badge on page load
 document.addEventListener('DOMContentLoaded', () => {

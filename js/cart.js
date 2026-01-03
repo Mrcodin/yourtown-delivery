@@ -77,6 +77,97 @@ function updateCartPreview() {
     }
 }
 
+// Render cart items on cart page
+function renderCartItems() {
+    const cartContainer = document.getElementById('cart-items');
+    const emptyCart = document.getElementById('empty-cart');
+    const orderSummary = document.getElementById('order-summary');
+    const cartActions = document.getElementById('cart-actions');
+    
+    if (!cartContainer) return;
+    
+    if (cart.length === 0) {
+        cartContainer.innerHTML = '';
+        if (emptyCart) emptyCart.style.display = 'block';
+        if (orderSummary) orderSummary.style.display = 'none';
+        if (cartActions) cartActions.style.display = 'none';
+        return;
+    }
+    
+    if (emptyCart) emptyCart.style.display = 'none';
+    if (orderSummary) orderSummary.style.display = 'block';
+    if (cartActions) cartActions.style.display = 'flex';
+    
+    cartContainer.innerHTML = cart.map(item => {
+        const imageHtml = item.imageUrl 
+            ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`
+            : item.emoji;
+        
+        return `
+        <div class="cart-item">
+            <div class="cart-item-image">${imageHtml}</div>
+            <div class="cart-item-info">
+                <h3 class="cart-item-name">${item.name}</h3>
+                <p class="cart-item-price">$${item.price.toFixed(2)} each</p>
+            </div>
+            <div class="quantity-controls">
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
+                <span class="qty-number">${item.quantity}</span>
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+            </div>
+            <div class="cart-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
+            <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">×</button>
+        </div>
+        `;
+    }).join('');
+    
+    // Update summary
+    updateOrderSummary();
+}
+
+// Update order summary
+function updateOrderSummary() {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const delivery = 6.99;
+    
+    // Get tip amount
+    const tip = parseFloat(document.getElementById('custom-tip')?.value || 0) || 0;
+    
+    // Get discount from validated promo code (if available)
+    let discount = 0;
+    if (typeof getValidatedPromoCode === 'function') {
+        const promoCode = getValidatedPromoCode();
+        if (promoCode && promoCode.discount) {
+            discount = promoCode.discount;
+        }
+    }
+    
+    // Calculate taxable items subtotal (non-food items like soap, paper products)
+    const taxableItemsSubtotal = cart.reduce((sum, item) => {
+        return sum + (item.isTaxable ? item.price * item.quantity : 0);
+    }, 0);
+    
+    // Calculate Washington state sales tax - Chelan County 8.4%
+    // NOTE: Groceries are tax-exempt in WA (RCW 82.08.0293)
+    // Taxable: delivery fee + non-food items only
+    const taxRate = 0.084;
+    const taxableAmount = delivery + taxableItemsSubtotal;
+    const tax = taxableAmount * taxRate;
+    
+    const total = subtotal + delivery + tip + tax - discount;
+    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    const summaryItemCount = document.getElementById('summary-item-count');
+    const summarySubtotal = document.getElementById('summary-subtotal');
+    const summaryTax = document.getElementById('summary-tax');
+    const summaryTotal = document.getElementById('summary-total');
+    
+    if (summaryItemCount) summaryItemCount.textContent = itemCount;
+    if (summarySubtotal) summarySubtotal.textContent = subtotal.toFixed(2);
+    if (summaryTax) summaryTax.textContent = tax.toFixed(2);
+    if (summaryTotal) summaryTotal.textContent = total.toFixed(2);
+}
+
 // Add item to cart
 function addToCart(productId) {
     const product = groceries.find(p => p.id === productId);
@@ -178,6 +269,17 @@ if (document.readyState === 'loading') {
 } else {
     loadCart();
 }
+
+// Expose functions globally for onclick handlers
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.updateQuantity = updateQuantity;
+window.clearCart = clearCart;
+window.loadUsualOrder = loadUsualOrder;
+window.getCartTotal = getCartTotal;
+window.getCartItemCount = getCartItemCount;
+window.renderCartItems = renderCartItems;
+window.updateOrderSummary = updateOrderSummary;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {

@@ -1,9 +1,10 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 const connectDB = require('./config/database');
 const { apiLimiter, helmetConfig, mongoSanitize, hpp } = require('./middleware/security');
 
@@ -92,6 +93,10 @@ app.use(
     })
 );
 
+// Serve static files from the parent directory (for frontend)
+
+app.use(express.static(path.join(__dirname, '..')));
+
 // Apply general rate limiting to all API routes
 app.use('/api/', apiLimiter);
 
@@ -122,12 +127,25 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 404 handler
-app.use((req, res) => {
+// Serve static files from parent directory
+app.use(express.static(path.join(__dirname, '..')));
+
+// Serve index.html for root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
     res.status(404).json({
         success: false,
-        message: 'Route not found',
+        message: 'API route not found',
     });
+});
+
+// 404 handler for other routes
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, '..', '404.html'));
 });
 
 // Global error handler

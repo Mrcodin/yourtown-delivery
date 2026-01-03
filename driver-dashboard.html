@@ -418,6 +418,31 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal-footer .btn {
+            flex: 0 0 auto !important;
+            padding: 12px 18px !important;
+            white-space: nowrap;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+        }
+        
+        .modal-content {
+            min-width: 500px;
+        }
+        
+        @media (max-width: 600px) {
+            .modal-content {
+                min-width: auto;
+            }
+            .modal-footer .btn {
+                font-size: 14px;
+                padding: 10px 16px !important;
+            }
         }
 
         @keyframes bounceIn {
@@ -1133,7 +1158,7 @@
 
             let actions = '';
             if (isActive) {
-                if (order.status === 'confirmed' || order.status === 'shopping') {
+                if (order.status === 'placed' || order.status === 'confirmed' || order.status === 'shopping') {
                     actions = `
                         <div class="delivery-actions">
                             <button class="btn btn-primary" onclick="updateOrderStatus('${order._id}', 'picked-up')">

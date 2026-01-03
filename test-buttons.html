@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        #console-log {
+            background: #f0f0f0;
+            padding: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Button & Script Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Simple Inline onclick Test</h2>
+        <button onclick="alert('Inline onclick works!')">Test Inline onclick</button>
+        <button onclick="testFunction()">Test Global Function</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Wishlist Manager Test</h2>
+        <button onclick="testWishlistManager()">Test Wishlist Manager</button>
+        <div id="wishlist-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Main.js Functions Test</h2>
+        <button onclick="typeof toggleLargeText === 'function' ? log('✅ toggleLargeText exists') : log('❌ toggleLargeText missing')">
+            Check toggleLargeText
+        </button>
+        <button onclick="typeof toggleMobileMenu === 'function' ? log('✅ toggleMobileMenu exists') : log('❌ toggleMobileMenu missing')">
+            Check toggleMobileMenu
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Script Loading Test</h2>
+        <button onclick="checkScripts()">Check All Scripts</button>
+    </div>
+
+    <div id="console-log"></div>
+
+    <!-- Load scripts in same order as shop.html -->
+    <script src="toast.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="api.js"></script>
+    <script src="customer-auth.js"></script>
+    <script src="loading.js"></script>
+    <script src="config.js"></script>
+    <script src="page-config.js"></script>
+    <script src="wishlist.js"></script>
+    <script src="js/error-tracking.js"></script>
+    <script src="main.js"></script>
+
+    <script>
+        // Test logging function
+        function log(message) {
+            const consoleDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.textContent += `[${timestamp}] ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // Test global function
+        function testFunction() {
+            log('✅ Global function works!');
+            alert('Global function works!');
+        }
+
+        // Test wishlist manager
+        function testWishlistManager() {
+            const result = document.getElementById('wishlist-result');
+            if (typeof wishlistManager !== 'undefined') {
+                log('✅ wishlistManager is defined');
+                log(`   Type: ${typeof wishlistManager}`);
+                log(`   Has addToWishlist: ${typeof wishlistManager.addToWishlist === 'function'}`);
+                result.innerHTML = '<span class="success">✅ wishlistManager exists and is ready</span>';
+            } else {
+                log('❌ wishlistManager is NOT defined');
+                result.innerHTML = '<span class="error">❌ wishlistManager is NOT defined</span>';
+            }
+        }
+
+        // Check all scripts
+        function checkScripts() {
+            log('=== Script Check ===');
+            const checks = [
+                { name: 'api', check: typeof api !== 'undefined' },
+                { name: 'customerAuth', check: typeof customerAuth !== 'undefined' },
+                { name: 'loading', check: typeof loading !== 'undefined' },
+                { name: 'wishlistManager', check: typeof wishlistManager !== 'undefined' },
+                { name: 'toggleLargeText', check: typeof toggleLargeText === 'function' },
+                { name: 'toggleMobileMenu', check: typeof toggleMobileMenu === 'function' },
+                { name: 'addToCart', check: typeof addToCart === 'function' }
+            ];
+            
+            checks.forEach(item => {
+                log(`${item.check ? '✅' : '❌'} ${item.name}`);
+            });
+            log('===================');
+        }
+
+        // Auto-run checks on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Page loaded');
+            setTimeout(() => {
+                checkScripts();
+            }, 500);
+        });
+
+        // Capture console errors
+        window.addEventListener('error', (event) => {
+            log(`❌ ERROR: ${event.message} at ${event.filename}:${event.lineno}`);
+        });
+    </script>
+</body>
+</html>

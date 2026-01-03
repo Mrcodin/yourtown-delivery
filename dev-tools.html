@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Tools - Yourtown Delivery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .tool {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .tool h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tool p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        #status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        #status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Development Tools</h1>
+        <p class="subtitle">Clear caches and enable dev mode for Yourtown Delivery</p>
+        
+        <div class="tool">
+            <h2>
+                <span>🧹</span>
+                <span>Clear All Caches</span>
+                <span class="badge">Recommended</span>
+            </h2>
+            <p>
+                This will unregister all service workers, delete all caches, and clear storage.
+                Use this if you're still seeing old cached content.
+            </p>
+            <button class="btn" onclick="clearEverything()">🚀 Clear Everything</button>
+        </div>
+        
+        <div class="tool">
+            <h2>
+                <span>🔄</span>
+                <span>Check Dev Mode Status</span>
+            </h2>
+            <p>
+                Verify if development mode is active and working correctly.
+            </p>
+            <button class="btn" onclick="checkStatus()">📊 Check Status</button>
+        </div>
+        
+        <div class="tool">
+            <h2>
+                <span>📖</span>
+                <span>Bookmarklet (Optional)</span>
+            </h2>
+            <p>
+                Drag this link to your bookmarks bar for instant cache clearing:
+            </p>
+            <a href="javascript:(async()=>{if('serviceWorker'in navigator){const r=await navigator.serviceWorker.getRegistrations();for(let g of r)await g.unregister();}if('caches'in window){const c=await caches.keys();for(let n of c)await caches.delete(n);}localStorage.clear();sessionStorage.clear();alert('✅ Caches cleared! Refresh the page.');})();" 
+               class="btn" 
+               onclick="return false;">
+                🔖 Clear Cache Bookmarklet
+            </a>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                Drag to bookmarks bar, then click whenever you need to clear cache
+            </p>
+        </div>
+        
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        const status = document.getElementById('status');
+        
+        async function clearEverything() {
+            status.className = '';
+            status.style.display = 'block';
+            status.innerHTML = '<p>🔄 Clearing caches...</p>';
+            
+            try {
+                let messages = [];
+                
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    messages.push(`Found ${registrations.length} service worker(s)`);
+                    
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        messages.push(`✅ Unregistered: ${registration.scope}`);
+                    }
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    messages.push(`Found ${cacheNames.length} cache(s)`);
+                    
+                    for (let name of cacheNames) {
+                        await caches.delete(name);
+                        messages.push(`✅ Deleted cache: ${name}`);
+                    }
+                }
+                
+                // Clear storage
+                localStorage.clear();
+                messages.push('✅ Cleared localStorage');
+                
+                sessionStorage.clear();
+                messages.push('✅ Cleared sessionStorage');
+                
+                // Clear cookies
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                messages.push('✅ Cleared cookies');
+                
+                status.className = 'success';
+                status.innerHTML = `
+                    <h3 style="margin-bottom: 10px;">✨ All Clear!</h3>
+                    ${messages.map(m => `<p style="margin: 5px 0;">• ${m}</p>`).join('')}
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #c3e6cb;">
+                    <p style="font-weight: bold; margin-top: 10px;">Next Steps:</p>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Close this tab</li>
+                        <li>Go to shop.html</li>
+                        <li>Do ONE Ctrl+Shift+R</li>
+                        <li>Look for purple "🔧 DEV MODE" badge</li>
+                        <li>After that, F5 works perfectly!</li>
+                    </ol>
+                `;
+                
+            } catch (err) {
+                status.className = 'error';
+                status.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>${err.message}</p>
+                    <p style="margin-top: 10px;">Try doing a manual Ctrl+Shift+R instead.</p>
+                `;
+            }
+        }
+        
+        async function checkStatus() {
+            status.className = '';
+            status.style.display = 'block';
+            status.innerHTML = '<p>🔍 Checking status...</p>';
+            
+            try {
+                let info = [];
+                
+                // Check hostname
+                info.push(`🌐 Hostname: ${window.location.hostname}`);
+                info.push(`📡 Port: ${window.location.port}`);
+                
+                // Check dev mode flag
+                const devModeActive = window.location.hostname === 'localhost' || 
+                                     window.location.hostname === '127.0.0.1' ||
+                                     window.location.hostname.includes('codespaces');
+                info.push(`🔧 Dev Mode: ${devModeActive ? '✅ Active' : '❌ Inactive'}`);
+                
+                // Check service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    info.push(`👷 Service Workers: ${registrations.length} registered`);
+                    registrations.forEach(r => {
+                        info.push(`   └─ ${r.scope}`);
+                    });
+                } else {
+                    info.push(`👷 Service Workers: Not supported`);
+                }
+                
+                // Check caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    info.push(`💾 Caches: ${cacheNames.length} active`);
+                    cacheNames.forEach(n => {
+                        info.push(`   └─ ${n}`);
+                    });
+                } else {
+                    info.push(`💾 Caches: Not supported`);
+                }
+                
+                // Check disable flag
+                info.push(`🚫 SW Disabled: ${window.DISABLE_SERVICE_WORKER ? '✅ Yes' : '❌ No'}`);
+                
+                status.className = devModeActive ? 'success' : 'error';
+                status.innerHTML = `
+                    <h3>${devModeActive ? '✅ Status Check' : '⚠️ Status Check'}</h3>
+                    ${info.map(i => `<p style="margin: 5px 0; font-family: monospace; font-size: 13px;">${i}</p>`).join('')}
+                `;
+                
+            } catch (err) {
+                status.className = 'error';
+                status.innerHTML = `<p>❌ Error: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

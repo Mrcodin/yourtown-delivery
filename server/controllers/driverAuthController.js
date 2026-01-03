@@ -236,7 +236,7 @@ exports.getAssignedDeliveries = async (req, res) => {
         // Get orders assigned to this driver that are not delivered or cancelled
         const orders = await Order.find({
             'delivery.driverId': driverId,
-            status: { $in: ['confirmed', 'shopping', 'delivering', 'picked-up'] },
+            status: { $in: ['confirmed', 'shopping', 'delivering', 'picked-up', 'placed'] },
         })
             .sort({ createdAt: -1 })
             .populate('items.productId', 'name emoji imageUrl');
@@ -257,11 +257,10 @@ exports.getAssignedDeliveries = async (req, res) => {
 // @access  Private (Driver)
 exports.getAvailableOrders = async (req, res) => {
     try {
-        // Get orders that don't have a driver assigned yet and are confirmed
+        // Get orders that don't have a driver assigned yet and are confirmed or placed (cash/check)
         const orders = await Order.find({
             $or: [{ 'delivery.driverId': { $exists: false } }, { 'delivery.driverId': null }],
-            status: { $in: ['confirmed', 'shopping'] },
-            'payment.status': 'completed',
+            status: { $in: ['confirmed', 'shopping', 'placed'] },
         })
             .sort({ createdAt: -1 })
             .limit(20)

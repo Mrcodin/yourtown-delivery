@@ -6,10 +6,20 @@ function getCart() {
     return cart || [];
 }
 
+// Wait for Stripe.js to load, then initialize
+function initializeStripeWhenReady() {
+    if (window.Stripe) {
+        stripeCheckout.initialize();
+    } else {
+        // Retry in 100ms if Stripe not loaded yet
+        setTimeout(initializeStripeWhenReady, 100);
+    }
+}
+
 // Initialize Stripe when page loads
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize Stripe
-    const stripeInitialized = await stripeCheckout.initialize();
+    // Initialize Stripe (wait for it to load)
+    initializeStripeWhenReady();
     
     // Handle payment method selection
     const paymentRadios = document.querySelectorAll('input[name="payment"]');
@@ -22,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cardPaymentSection.style.display = 'block';
                 
                 // Create Stripe Elements if not already created
-                if (stripeInitialized && !stripeCheckout.cardElement) {
+                if (stripeCheckout.stripe && !stripeCheckout.cardElement) {
                     stripeCheckout.createCardElement('#card-element');
                 }
             } else {

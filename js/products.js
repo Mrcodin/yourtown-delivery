@@ -3,9 +3,13 @@
    Handles product loading from API
    =================================== */
 
-// Global product data
-let groceries = [];
-let USUAL_ORDER_IDS = [];
+// Global product data - directly on window for global access
+window.groceries = [];
+window.USUAL_ORDER_IDS = [];
+
+// Reference for easier access in this file
+let groceries = window.groceries;
+let USUAL_ORDER_IDS = window.USUAL_ORDER_IDS;
 
 // Load products from API
 async function loadProducts() {
@@ -21,8 +25,9 @@ async function loadProducts() {
         const response = await api.getProducts({ showLoading: false });
         
         if (response.success && response.products) {
-            groceries = response.products.map(p => ({
-                id: p._id,
+            window.groceries = response.products.map(p => ({
+                _id: p._id,  // Use _id to match MongoDB format
+                id: p._id,   // Keep id as alias for compatibility
                 name: p.name,
                 price: p.price,
                 category: p.category,
@@ -30,9 +35,11 @@ async function loadProducts() {
                 imageUrl: p.imageUrl || null,
                 isTaxable: p.isTaxable || false
             }));
+            groceries = window.groceries;
             
             // Set usual order IDs (first 6 products)
-            USUAL_ORDER_IDS = groceries.slice(0, 6).map(p => p.id);
+            window.USUAL_ORDER_IDS = window.groceries.slice(0, 6).map(p => p.id);
+            USUAL_ORDER_IDS = window.USUAL_ORDER_IDS;
             
             // Render products if on shop page
             if (gridContainer) {
@@ -73,6 +80,9 @@ async function loadProducts() {
     }
 }
 
+// Window references are already set at the top
+// They will be updated when loadProducts() runs
+
 // Initialize product loading
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadProducts);
@@ -82,5 +92,5 @@ if (document.readyState === 'loading') {
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { groceries, USUAL_ORDER_IDS, loadProducts };
+    module.exports = { groceries: window.groceries, USUAL_ORDER_IDS: window.USUAL_ORDER_IDS, loadProducts };
 }

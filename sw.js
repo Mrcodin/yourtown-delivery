@@ -1,10 +1,10 @@
 /**
  * Service Worker for Hometown Delivery
  * Provides offline support and intelligent caching
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
-const CACHE_VERSION = 'hometown-v1.0.0';
+const CACHE_VERSION = 'hometown-v1.0.1';
 const CACHE_NAMES = {
     static: `${CACHE_VERSION}-static`,
     dynamic: `${CACHE_VERSION}-dynamic`,

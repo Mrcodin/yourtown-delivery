@@ -10,6 +10,12 @@ class ServiceWorkerManager {
     }
 
     async register() {
+        // Check if service worker is disabled (dev mode)
+        if (window.DISABLE_SERVICE_WORKER) {
+            console.log('[SW] Service worker disabled by dev-mode.js');
+            return false;
+        }
+
         if (!('serviceWorker' in navigator)) {
             console.log('[SW] Service workers not supported');
             return false;

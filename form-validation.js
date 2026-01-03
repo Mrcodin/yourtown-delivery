@@ -158,11 +158,11 @@ class FormValidator {
         }
 
         // Check min/max length
-        if (input.minLength && value.length < input.minLength) {
+        if (input.minLength && input.minLength > 0 && value.length < input.minLength) {
             errorMsg = `Must be at least ${input.minLength} characters`;
             isValid = false;
         }
-        if (input.maxLength && value.length > input.maxLength) {
+        if (input.maxLength && input.maxLength > 0 && value.length > input.maxLength) {
             errorMsg = `Must be no more than ${input.maxLength} characters`;
             isValid = false;
         }
