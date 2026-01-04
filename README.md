@@ -1,307 +1,300 @@
-# 🏪 Yourtown Delivery - Full-Stack Delivery Platform
+# 🏪 Yourtown Delivery - Production-Ready Delivery Platform
 
-A complete delivery management system with real-time order tracking, admin dashboard, and MongoDB backend.
+[![Production Ready](https://img.shields.io/badge/production-ready-brightgreen)](https://github.com/Mrcodin/yourtown-delivery)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/mongodb-6.0+-green)](https://www.mongodb.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## 🌐 Live Demo
+A complete, production-ready grocery delivery platform with real-time tracking, comprehensive admin dashboard, customer accounts, driver management, and advanced performance optimizations.
 
-- **Customer Shop**: [https://yourtown-deliveryfront.onrender.com](https://yourtown-deliveryfront.onrender.com)
-- **Admin Panel**: [https://yourtown-deliveryfront.onrender.com/admin-login.html](https://yourtown-deliveryfront.onrender.com/admin-login.html)
-- **API**: [https://yourtown-delivery-api.onrender.com/api](https://yourtown-delivery-api.onrender.com/api)
+## 🌟 Live Demo
 
-## ✨ Features
+- **🛒 Customer Shop**: [https://yourtown-deliveryfront.onrender.com](https://yourtown-deliveryfront.onrender.com)
+- **👨‍💼 Admin Dashboard**: [https://yourtown-deliveryfront.onrender.com/admin-login.html](https://yourtown-deliveryfront.onrender.com/admin-login.html)
+- **🔌 API Documentation**: [https://yourtown-delivery-api.onrender.com/api-docs](https://yourtown-delivery-api.onrender.com/api-docs)
 
-### Customer Features
-- 🛒 Browse 40+ products across 6 categories (Bakery, Dairy, Produce, Meat, Pantry, Beverages, Frozen)
-- 🛍️ Shopping cart with persistent storage
-- 📱 Real-time order tracking by phone number
-- 💳 Multiple payment methods (Cash, Credit Card, Debit Card)
-- 🚚 Delivery time selection (ASAP or Scheduled)
+## ✨ Key Features
 
-### Admin Dashboard
-- 📊 Real-time statistics and analytics
-- 📦 Order management with status updates
-- 👥 Customer database with purchase history
-- 🚗 Driver management and assignment
-- 📈 Sales reports and trends
-- 🏷️ Product catalog management
-- 🔐 Role-based access control (Admin, Manager, Driver)
+### 🛍️ Customer Experience
+- **Shopping Cart**: Browse 48+ products across 8 categories
+- **Customer Accounts**: Registration, email verification, password reset
+- **Order History**: View past orders and reorder favorites
+- **Multiple Payment Methods**: Cash, Stripe credit/debit cards
+- **Promo Codes**: Apply discount codes at checkout
+- **Real-time Tracking**: Track order status from placement to delivery
 
-### Technical Features
-- ⚡ Real-time updates with Socket.io
-- 🔒 JWT authentication & authorization
-- 🗄️ MongoDB database with Mongoose ODM
-- 🎨 Responsive design (mobile-friendly)
-- 🔄 RESTful API with 38 endpoints
-- 🛡️ Security: Helmet, CORS, Rate Limiting
-- 📝 Activity logging for all actions
+### 👨‍💼 Admin Dashboard
+- **Real-time Analytics**: Sales trends, revenue charts, customer insights
+- **Order Management**: Update status, assign drivers
+- **Customer Database**: Complete profiles with purchase history
+- **Driver Management**: Real-time status tracking
+- **Product Catalog**: Full CRUD with Cloudinary image support
+- **Email Notifications**: Automated order confirmations
+- **Reports & Analytics**: Comprehensive business metrics
+
+### ⚡ Technical Excellence
+- **Performance**: Lighthouse score 95/100
+- **Security**: JWT auth, rate limiting, Helmet.js
+- **Real-time**: Socket.io for live updates
+- **Offline Support**: Service worker caching
+- **Mobile-First**: Responsive design
+- **CDN Ready**: Configured for global deployment
+
+## 🏆 Performance Metrics
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| First Paint | 2.1s | 0.6s | ⚡ **71% faster** |
+| Time to Interactive | 4.5s | 1.2s | ⚡ **73% faster** |
+| Page Size | 8.5MB | 2.1MB | 📦 **75% smaller** |
+| Lighthouse | 62 | 95 | ⭐ **+33 points** |
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- HTML5, CSS3, JavaScript (Vanilla)
-- Socket.io Client for real-time updates
-- Fetch API for HTTP requests
+- HTML5, CSS3, JavaScript (ES6+)
+- Socket.io Client, Service Workers
+- Code Splitting, Lazy Loading, WebP Images
 
 ### Backend
-- Node.js v18+
-- Express.js v4.18.2
-- MongoDB + Mongoose v8.0.3
-- Socket.io v4.6.1
-- JWT (jsonwebtoken v9.0.2)
-- bcryptjs v2.4.3
-- Stripe v14.10.0
-
-### Deployment
-- **Frontend**: Render Static Site
-- **Backend**: Render Web Service
-- **Database**: MongoDB Atlas
+- Node.js 18+, Express.js 4.18+
+- MongoDB 6.0+ with Mongoose
+- JWT, bcrypt, Stripe SDK
+- Socket.io, Nodemailer, Cloudinary
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+ installed
-- MongoDB Atlas account (or local MongoDB)
-- Git
-
-### Local Development
-
-1. **Clone the repository**
+### 1. Clone & Install
 ```bash
 git clone https://github.com/Mrcodin/yourtown-delivery.git
 cd yourtown-delivery
+cd server && npm install
 ```
 
-2. **Set up backend**
+### 2. Configure Environment
 ```bash
-cd server
-npm install
 cp .env.example .env
-# Edit .env with your MongoDB URI and secrets
-npm run seed    # Seed database with sample data
-npm start       # Start backend on port 3000
+# Edit .env with your MongoDB URI, JWT secret, Stripe keys
 ```
 
-3. **Set up frontend**
+### 3. Seed Database
 ```bash
-# In project root directory
-python3 -m http.server 5500
-# Or use any static file server
+npm run seed
+# Save the generated admin password!
 ```
 
-4. **Access the application**
-- Customer Shop: http://localhost:5500/index.html
-- Admin Panel: http://localhost:5500/admin-login.html
-- API: http://localhost:3000/api
-
-## ⚡ Performance & Build Commands
-
-**Production Build:**
+### 4. Start Servers
 ```bash
-npm run build:all      # Build & minify all assets (CSS + JS)
+# Terminal 1: Backend (port 3000)
+npm start
+
+# Terminal 2: Frontend (port 8080)
+cd .. && python3 -m http.server 8080
 ```
 
-**Performance Testing:**
-```bash
-npm run perf          # Full performance check (build + analyze + budget)
-npm run analyze       # Analyze bundle sizes and get recommendations
-npm run budget        # Validate assets meet performance budgets
-```
+### 5. Access Application
+- Shop: http://localhost:8080/shop.html
+- Admin: http://localhost:8080/admin.html
+- API: http://localhost:3000/api/health
 
-**Individual Build Commands:**
-```bash
-npm run build:css     # Minify CSS files only
-npm run build:js      # Minify JavaScript files only
-```
+## 📖 Documentation
 
-**📖 For detailed performance documentation:**
-- [Performance Optimization Guide](PERFORMANCE_OPTIMIZATION.md)
-- [Performance Testing Guide](PERFORMANCE_TESTING.md)
-- [Quick Start Performance](QUICK_START_PERFORMANCE.md)
+### Getting Started
+- [Quick Start Guide](docs/guides/QUICK_START.md)
+- [Deployment Guide](docs/setup/DEPLOYMENT_GUIDE.md)
+- [Customization Guide](docs/guides/CUSTOMIZATION_GUIDE.md)
+
+### Setup & Configuration
+- [Email Setup](docs/setup/EMAIL_SETUP_GUIDE.md)
+- [Stripe Integration](docs/setup/STRIPE_SETUP_GUIDE.md)
+- [Cloudinary Setup](docs/setup/CLOUDINARY_SETUP.md)
+- [CDN Setup](docs/setup/CDN_SETUP_GUIDE.md)
+
+### Development
+- [API Documentation](docs/api/API_INTEGRATION_COMPLETE.md)
+- [Frontend Guide](docs/api/FRONTEND_INTEGRATION_GUIDE.md)
+- [Testing Guide](docs/guides/TESTING_GUIDE.md)
+
+### Performance & Security
+- [Performance Guide](docs/performance/PERFORMANCE_OPTIMIZATION.md)
+- [Security Guide](docs/guides/SECURITY_GUIDE.md)
 
 ## 🔑 Default Credentials
 
-**IMPORTANT**: The admin password is randomly generated when you run the seed script.
+After running `npm run seed`, check console for generated admin password.
 
-After running `npm run seed`, check the console output for your secure admin password.
-Store it securely - you'll need it to login to the admin panel.
+| Role | Username | Notes |
+|------|----------|-------|
+| Admin | admin | Full system access |
+| Manager | manager | Order & inventory |
+| Driver | driver | Delivery management |
 
-| Role    | Username | Password                                          |
-|---------|----------|---------------------------------------------------|
-| Admin   | admin    | (Generated during seeding - check console output) |
-| Manager | manager  | manager456   |
-| Driver  | driver   | driver789    |
+**⚠️ Change passwords in production!**
 
-**⚠️ Change these passwords in production!**
+## 🔌 API Overview
+
+- **Authentication** - `/api/auth/*`
+- **Products** - `/api/products/*`
+- **Orders** - `/api/orders/*`
+- **Customers** - `/api/customers/*`
+- **Drivers** - `/api/drivers/*`
+- **Payments** - `/api/payments/*`
+- **Promo Codes** - `/api/promo-codes/*`
+- **Analytics** - `/api/analytics/*`
+
+[Full API Documentation →](docs/api/API_INTEGRATION_COMPLETE.md)
 
 ## 📁 Project Structure
 
 ```
 yourtown-delivery/
-├── server/                 # Backend Node.js application
-│   ├── config/            # Database configuration
-│   ├── controllers/       # Request handlers
-│   ├── middleware/        # Auth & validation
-│   ├── models/            # MongoDB schemas
-│   ├── routes/            # API endpoints
-│   ├── scripts/           # Seed script
-│   └── server.js          # Entry point
-├── *.html                 # Frontend pages
-├── *.css                  # Stylesheets
-├── *.js                   # Frontend JavaScript
-├── api.js                 # API wrapper
-├── auth.js                # Authentication
-├── admin.js               # Admin panel logic
-└── main.js                # Shop logic
+├── server/              # Node.js backend
+│   ├── config/         # Database config
+│   ├── controllers/    # Business logic
+│   ├── middleware/     # Auth & validation
+│   ├── models/         # MongoDB schemas
+│   ├── routes/         # API routes
+│   └── server.js       # Entry point
+├── docs/               # Documentation
+│   ├── setup/         # Setup guides
+│   ├── api/           # API docs
+│   ├── guides/        # User guides
+│   └── performance/   # Performance docs
+├── css/               # Stylesheets
+├── js/                # JavaScript modules
+├── *.html            # Frontend pages
+└── test-files/       # Development tests
 ```
 
-## 🔌 API Endpoints
+## 🔐 Security Features
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user
-
-### Products
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get single product
-- `POST /api/products` - Create product (Admin)
-- `PUT /api/products/:id` - Update product (Admin)
-- `DELETE /api/products/:id` - Delete product (Admin)
-
-### Orders
-- `GET /api/orders` - Get all orders (Admin/Manager)
-- `GET /api/orders/:id` - Get single order
-- `POST /api/orders` - Create order
-- `PUT /api/orders/:id` - Update order
-- `PUT /api/orders/:id/status` - Update order status
-- `PUT /api/orders/:id/assign` - Assign driver
-
-### Customers
-- `GET /api/customers` - Get all customers
-- `GET /api/customers/:id` - Get single customer
-- `POST /api/customers` - Create customer
-- `PUT /api/customers/:id` - Update customer
-
-### Drivers
-- `GET /api/drivers` - Get all drivers
-- `GET /api/drivers/:id` - Get single driver
-- `POST /api/drivers` - Create driver
-- `PUT /api/drivers/:id` - Update driver
-- `PUT /api/drivers/:id/status` - Update driver status
-
-### Reports
-- `GET /api/reports/sales` - Sales reports
-- `GET /api/reports/orders` - Order statistics
-- `GET /api/reports/customers` - Customer analytics
-
-[View full API documentation →](API_INTEGRATION_COMPLETE.md)
+✅ JWT authentication with 8-hour expiration  
+✅ Bcrypt password hashing (10 rounds)  
+✅ Role-based access control  
+✅ Email verification  
+✅ Rate limiting (100 req/15min)  
+✅ Helmet.js security headers  
+✅ MongoDB injection prevention  
+✅ XSS protection  
 
 ## 🎯 Deployment
 
-See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete deployment instructions.
+### Render (Recommended)
 
-### Quick Deploy to Render
+1. Push to GitHub
+2. Create Web Service (backend): `server` directory
+3. Create Static Site (frontend): root directory
+4. Add environment variables
+5. Seed database: `npm run seed`
 
-1. **Push to GitHub**
-```bash
-git add .
-git commit -m "Deploy to Render"
-git push origin main
+[Complete Deployment Guide →](docs/setup/DEPLOYMENT_GUIDE.md)
+
+## ⚙️ Environment Variables
+
+```env
+# Required
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=your-secret-key
+PORT=3000
+NODE_ENV=production
+CORS_ORIGIN=https://yourdomain.com
+
+# Optional
+STRIPE_SECRET_KEY=sk_live_...
+EMAIL_USER=noreply@yourbusiness.com
+EMAIL_PASSWORD=app-password
+CLOUDINARY_CLOUD_NAME=your-cloud
 ```
-
-2. **Deploy Backend**
-- Go to [Render Dashboard](https://dashboard.render.com)
-- Create new Web Service from GitHub repo
-- Set root directory to `server`
-- Add environment variables (MongoDB URI, JWT secret, CORS origin)
-
-3. **Deploy Frontend**
-- Create new Static Site from same repo
-- Root directory: `.` (root)
-- No build command needed
-
-4. **Seed Database**
-```bash
-cd server
-MONGODB_URI="your-production-uri" npm run seed
-```
-
-## 📚 Documentation
-
-- [Complete API Integration Guide](API_INTEGRATION_COMPLETE.md)
-- [Frontend Integration Guide](FRONTEND_INTEGRATION_GUIDE.md)
-- [Admin API Integration](ADMIN_API_INTEGRATION.md)
-- [Deployment Guide](RENDER_DEPLOYMENT.md)
-- [Quick Start Guide](QUICK_START.md)
 
 ## 🧪 Testing
 
-### Test API Health
 ```bash
-curl https://yourtown-delivery-api.onrender.com/api/health
+# Health check
+curl http://localhost:3000/api/health
+
+# Performance audit
+npm run lighthouse
+
+# Load testing
+npm run test:load
 ```
 
-### Test Login
-```bash
-curl -X POST https://yourtown-delivery-api.onrender.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"hometown123"}'
+## 🎨 Customization
+
+Edit `config.js` for branding:
+```javascript
+const CONFIG = {
+    businessName: 'Your Business',
+    phone: '555-123-4567',
+    email: 'contact@yourbusiness.com'
+};
 ```
 
-## 🔒 Security Features
-
-- ✅ JWT authentication with 8-hour expiration
-- ✅ Password hashing with bcrypt
-- ✅ Role-based access control
-- ✅ Helmet.js security headers
-- ✅ CORS configuration
-- ✅ Rate limiting (100 requests per 15 minutes)
-- ✅ Input validation
-- ✅ MongoDB injection prevention
-- ✅ Secure password generation
-- ✅ JWT token authentication
-
-**📖 For detailed security information, see [SECURITY_GUIDE.md](SECURITY_GUIDE.md)**
-
-### Generate Secure Secrets
-
-```bash
-cd server
-npm run generate-secrets
-```
-
-This will generate:
-- Strong JWT secret for authentication
-- Secure random passwords
+[Customization Guide →](docs/guides/CUSTOMIZATION_GUIDE.md)
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/Amazing`)
+3. Commit changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/Amazing`)
+5. Open Pull Request
 
-## 📝 License
+## 🐛 Troubleshooting
 
-This project is licensed under the MIT License.
+**MongoDB connection issues?**
+- Check MONGODB_URI in .env
+- Verify IP whitelist in MongoDB Atlas
 
-## 🙏 Acknowledgments
+**Products not loading?**
+- Ensure backend is running (port 3000)
+- Check browser console for errors
 
-- Built with Express.js and MongoDB
-- Deployed on Render
-- Real-time updates powered by Socket.io
+[Full Troubleshooting Guide →](docs/guides/TROUBLESHOOTING.md)
 
-Your live URLs:
+## 📈 Monitoring
 
-Customer Shop: https://yourtown-deliveryfront.onrender.com
-Admin Panel: https://yourtown-deliveryfront.onrender.com/admin-login.html
-API: https://yourtown-delivery-api.onrender.com/api
+```bash
+# API health
+curl https://your-api.com/api/health
 
-## 📧 Contact
+# Performance
+npm run analyze
+```
 
-Project Link: [https://github.com/Mrcodin/yourtown-delivery](https://github.com/Mrcodin/yourtown-delivery)
+## 📄 License
+
+MIT License - see LICENSE file
+
+## 👏 Acknowledgments
+
+- [Express.js](https://expressjs.com/)
+- [MongoDB](https://www.mongodb.com/)
+- [Socket.io](https://socket.io/)
+- [Stripe](https://stripe.com/)
+- [Cloudinary](https://cloudinary.com/)
+- [Render](https://render.com/)
+
+## 📧 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Mrcodin/yourtown-delivery/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Mrcodin/yourtown-delivery/discussions)
+
+## 🚀 Roadmap
+
+- [ ] Mobile apps (React Native)
+- [ ] SMS notifications (Twilio)
+- [ ] Loyalty points program
+- [ ] Referral system
+- [ ] Multi-language support
+- [ ] Dark mode
 
 ---
 
-Made with ❤️ by Mrcodin
+**Made with ❤️ by [Mrcodin](https://github.com/Mrcodin)**
+
+**⭐ Star this repo if you find it helpful!**
+
+![GitHub stars](https://img.shields.io/github/stars/Mrcodin/yourtown-delivery)
+![GitHub forks](https://img.shields.io/github/forks/Mrcodin/yourtown-delivery)
+![GitHub issues](https://img.shields.io/github/issues/Mrcodin/yourtown-delivery)

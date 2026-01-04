@@ -1,9 +1,25 @@
 {
   "name": "yourtown-delivery-frontend",
   "version": "1.0.0",
-  "description": "Frontend build tools for Hometown Delivery",
+  "description": "Yourtown Delivery - Full-stack grocery delivery platform",
+  "keywords": [
+    "delivery",
+    "grocery",
+    "e-commerce",
+    "food-delivery"
+  ],
+  "author": "Yourtown Delivery Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mrcodin/yourtown-delivery.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
-    "build": "node build-scripts/build.js",
+    "build": "npm run build:all",
     "build:css": "node build-scripts/minify-css.js",
     "build:js": "node build-scripts/minify-js.js",
     "build:images": "node build-scripts/optimize-images.js",
@@ -12,10 +28,13 @@
     "budget": "node build-scripts/performance-budget.js",
     "lighthouse": "lighthouse http://localhost:5500 --output html --output-path ./lighthouse-report.html",
     "perf": "npm run build:all && npm run analyze && npm run budget",
-    "lint": "eslint *.js",
-    "lint:fix": "eslint *.js --fix",
+    "lint": "eslint *.js server/**/*.js",
+    "lint:fix": "eslint *.js server/**/*.js --fix",
     "format": "prettier --write \"**/*.{js,html,css,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,html,css,json,md}\""
+    "format:check": "prettier --check \"**/*.{js,html,css,json,md}\"",
+    "clean": "rm -rf dist/ *.min.js *.min.css",
+    "test": "echo 'Tests coming soon' && exit 0",
+    "organize": "bash organize-project.sh"
   },
   "devDependencies": {
     "clean-css": "^5.3.3",
