@@ -8,6 +8,14 @@ const path = require('path');
 const connectDB = require('./config/database');
 const { apiLimiter, helmetConfig, mongoSanitize, hpp } = require('./middleware/security');
 
+// Import Sentry error tracking
+const {
+    initSentry,
+    getRequestHandler,
+    getTracingHandler,
+    getErrorHandler,
+} = require('./config/sentry');
+
 // Import models to ensure they're registered
 require('./models/PromoCode');
 require('./models/Product');
@@ -19,6 +27,9 @@ require('./models/User');
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
+
+// Initialize Sentry (must be first)
+initSentry(app);
 
 // Initialize Socket.io
 const io = socketIo(server, {
@@ -39,6 +50,10 @@ connectDB();
 app.use(helmetConfig); // Security headers
 app.use(mongoSanitize); // Prevent MongoDB injection
 app.use(hpp); // Prevent HTTP Parameter Pollution
+
+// Sentry request handler (must be before routes)
+app.use(getRequestHandler());
+app.use(getTracingHandler());
 
 // CORS Configuration
 app.use(
@@ -176,6 +191,9 @@ app.use('/api/*', (req, res) => {
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, '..', '404.html'));
 });
+
+// Sentry error handler (must be before other error handlers)
+app.use(getErrorHandler());
 
 // Global error handler
 app.use((err, req, res, next) => {

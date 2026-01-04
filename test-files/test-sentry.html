@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentry Error Tracking Test</title>
+    
+    <!-- Sentry DSN (replace with your actual DSN) -->
+    <meta name="sentry-dsn" content="">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.enabled {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disabled {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .danger {
+            background: #e74c3c;
+        }
+        
+        .danger:hover {
+            background: #c0392b;
+        }
+        
+        .warning {
+            background: #f39c12;
+        }
+        
+        .warning:hover {
+            background: #d68910;
+        }
+        
+        .info {
+            background: #3498db;
+        }
+        
+        .info:hover {
+            background: #2980b9;
+        }
+        
+        .setup-instructions {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .setup-instructions h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .setup-instructions ol {
+            margin: 10px 0;
+        }
+        
+        .setup-instructions li {
+            margin: 8px 0;
+        }
+        
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .log {
+            background: #2c3e50;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Sentry Error Tracking Test</h1>
+        <p class="subtitle">Test your Sentry integration for Yourtown Delivery</p>
+        
+        <div id="status" class="status disabled">
+            ⚠️ Sentry not configured. Add SENTRY_DSN to enable error tracking.
+        </div>
+        
+        <div class="setup-instructions">
+            <h3>📋 Setup Instructions</h3>
+            <ol>
+                <li>Go to <a href="https://sentry.io" target="_blank">sentry.io</a> and create a free account</li>
+                <li>Create a new project (select "Express" for backend, "JavaScript" for frontend)</li>
+                <li>Copy your DSN from the project settings</li>
+                <li>Add to <code>server/.env</code>:</li>
+            </ol>
+            <div class="code">SENTRY_DSN=https://your-dsn@sentry.io/project-id</div>
+            <p>For frontend testing, add the DSN to the meta tag at the top of this page.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Frontend Error Tests</h2>
+            <p>These buttons trigger different types of frontend errors:</p>
+            
+            <button onclick="testJavaScriptError()" class="danger">
+                💥 Throw JavaScript Error
+            </button>
+            
+            <button onclick="testUnhandledPromiseRejection()" class="danger">
+                ⚠️ Unhandled Promise Rejection
+            </button>
+            
+            <button onclick="testAPIError()" class="warning">
+                🌐 Trigger API Error
+            </button>
+            
+            <button onclick="testManualException()" class="info">
+                📝 Manual Exception Capture
+            </button>
+            
+            <button onclick="testBreadcrumbs()">
+                🍞 Test Breadcrumbs
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Backend Error Tests</h2>
+            <p>These buttons test backend error tracking:</p>
+            
+            <button onclick="testBackendError()" class="danger">
+                💥 Trigger Backend Error
+            </button>
+            
+            <button onclick="test404Error()" class="warning">
+                🔍 Test 404 Error
+            </button>
+            
+            <button onclick="testValidationError()" class="warning">
+                ✅ Test Validation Error
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Log</h2>
+            <div id="log" class="log">
+                <div class="log-entry">Ready to test...</div>
+            </div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import Sentry (in production, this would be bundled)
+        import { initSentry, captureException, captureMessage, addBreadcrumb, trackAction } from './sentry-frontend.js';
+        
+        // Initialize Sentry
+        initSentry();
+        
+        // Check if Sentry is enabled
+        const sentryDsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+        const statusEl = document.getElementById('status');
+        
+        if (sentryDsn) {
+            statusEl.className = 'status enabled';
+            statusEl.textContent = '✅ Sentry enabled and tracking errors';
+            log('✅ Sentry initialized successfully');
+        } else {
+            log('⚠️ Sentry DSN not configured');
+        }
+        
+        // Make functions global
+        window.testJavaScriptError = function() {
+            log('Testing JavaScript error...');
+            trackAction('test-js-error');
+            throw new Error('This is a test JavaScript error from Sentry test page');
+        };
+        
+        window.testUnhandledPromiseRejection = function() {
+            log('Testing unhandled promise rejection...');
+            trackAction('test-promise-rejection');
+            Promise.reject(new Error('This is a test promise rejection'));
+        };
+        
+        window.testAPIError = async function() {
+            log('Testing API error...');
+            trackAction('test-api-error');
+            try {
+                const response = await fetch('/api/products/nonexistent-id');
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                captureException(error, {
+                    api: {
+                        endpoint: '/api/products/nonexistent-id',
+                        method: 'GET',
+                    }
+                });
+                log('❌ API error captured and sent to Sentry');
+            }
+        };
+        
+        window.testManualException = function() {
+            log('Testing manual exception capture...');
+            trackAction('test-manual-exception');
+            const error = new Error('This is a manually captured test error');
+            captureException(error, {
+                custom: {
+                    testType: 'manual',
+                    timestamp: new Date().toISOString(),
+                }
+            });
+            log('✅ Manual exception captured and sent to Sentry');
+        };
+        
+        window.testBreadcrumbs = function() {
+            log('Testing breadcrumbs...');
+            addBreadcrumb('User clicked breadcrumb test button', 'user-action', { test: true });
+            addBreadcrumb('User navigated to shop page', 'navigation', { page: 'shop' });
+            addBreadcrumb('User added item to cart', 'user-action', { item: 'Test Product' });
+            
+            // Now trigger an error to see breadcrumbs in context
+            const error = new Error('Test error with breadcrumbs');
+            captureException(error);
+            log('✅ Breadcrumbs added and error sent to Sentry');
+        };
+        
+        window.testBackendError = async function() {
+            log('Testing backend error...');
+            try {
+                // This endpoint intentionally causes an error for testing
+                const response = await fetch('/api/test-error', {
+                    method: 'GET',
+                });
+                if (response.ok) {
+                    log('✅ Backend error endpoint triggered');
+                } else {
+                    log(`❌ Backend error: ${response.status}`);
+                }
+            } catch (error) {
+                log('❌ Network error: ' + error.message);
+            }
+        };
+        
+        window.test404Error = async function() {
+            log('Testing 404 error...');
+            try {
+                const response = await fetch('/api/this-endpoint-does-not-exist');
+                log(`Response: ${response.status} - ${response.statusText}`);
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+        };
+        
+        window.testValidationError = async function() {
+            log('Testing validation error...');
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ /* missing required fields */ })
+                });
+                const data = await response.json();
+                log(`Response: ${response.status} - ${data.message}`);
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+        };
+        
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '<div class="log-entry">Log cleared...</div>';
+        };
+        
+        // Export log function for global use
+        window.log = log;
+    </script>
+</body>
+</html>
