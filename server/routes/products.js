@@ -4,6 +4,7 @@ const productController = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/auth');
 const { productValidation, validate } = require('../middleware/validation');
 const { upload } = require('../config/cloudinary');
+const { apiResponseCache, clearCacheOnMutation } = require('../middleware/apiCache');
 
 /**
  * @swagger
@@ -39,7 +40,7 @@ const { upload } = require('../config/cloudinary');
  *                   items:
  *                     $ref: '#/components/schemas/Product'
  */
-router.get('/', productController.getProducts);
+router.get('/', apiResponseCache(300), productController.getProducts); // Cache for 5 minutes
 
 /**
  * @swagger
@@ -118,6 +119,7 @@ router.post(
     authorize('admin', 'manager'),
     productValidation,
     validate,
+    clearCacheOnMutation('api:/api/products'), // Clear products cache
     productController.createProduct
 );
 
@@ -155,6 +157,7 @@ router.put(
     authorize('admin', 'manager'),
     productValidation,
     validate,
+    clearCacheOnMutation('api:/api/products'), // Clear products cache
     productController.updateProduct
 );
 
@@ -180,7 +183,13 @@ router.put(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.delete('/:id', protect, authorize('admin'), productController.deleteProduct);
+router.delete(
+    '/:id',
+    protect,
+    authorize('admin'),
+    clearCacheOnMutation('api:/api/products'), // Clear products cache
+    productController.deleteProduct
+);
 
 /**
  * @swagger

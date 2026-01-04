@@ -76,37 +76,41 @@ async function loadInitialData() {
     loading.showOverlay('Loading dashboard data...');
 
     try {
-        // Load all data in parallel
+        // Load all data in parallel - use limit param to get all records
         const [ordersRes, driversRes, customersRes, productsRes] = await Promise.all([
-            api.getOrders({ showLoading: false }),
-            api.getDrivers({ showLoading: false }),
-            api.getCustomers({ showLoading: false }),
-            api.getProducts({ showLoading: false }),
+            api.getOrders({ showLoading: false, limit: 1000 }),
+            api.getDrivers({ showLoading: false, limit: 1000 }),
+            api.getCustomers({ showLoading: false, limit: 1000 }),
+            api.getProducts({ showLoading: false, limit: 1000 }),
         ]);
 
         if (ordersRes.success) {
-            adminOrders = ordersRes.orders || [];
+            // Handle both old format (orders) and new format (data)
+            adminOrders = ordersRes.data || ordersRes.orders || [];
             // console.log(`✅ Loaded ${adminOrders.length} orders from API`);
         } else {
             message.showWarning('Failed to load orders data.', 'Data Loading');
         }
 
         if (driversRes.success) {
-            drivers = driversRes.drivers || [];
+            // Handle both old format (drivers) and new format (data)
+            drivers = driversRes.data || driversRes.drivers || [];
             // console.log(`✅ Loaded ${drivers.length} drivers from API`);
         } else {
             message.showWarning('Failed to load drivers data.', 'Data Loading');
         }
 
         if (customersRes.success) {
-            customers = customersRes.customers || [];
+            // Handle both old format (customers) and new format (data)
+            customers = customersRes.data || customersRes.customers || [];
             // console.log(`✅ Loaded ${customers.length} customers from API`);
         } else {
             message.showWarning('Failed to load customers data.', 'Data Loading');
         }
 
         if (productsRes.success) {
-            products = productsRes.products || [];
+            // Handle both old format (products) and new format (data)
+            products = productsRes.data || productsRes.products || [];
             // console.log(`✅ Loaded ${products.length} products from API`);
         } else {
             message.showWarning('Failed to load products data.', 'Data Loading');

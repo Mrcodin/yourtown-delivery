@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const ActivityLog = require('../models/ActivityLog');
 const { uploadToCloudinary, cloudinary } = require('../config/cloudinary');
+const { getPaginationParams, buildPaginatedResponse, applyPagination, getCount } = require('../utils/pagination');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -8,6 +9,9 @@ const { uploadToCloudinary, cloudinary } = require('../config/cloudinary');
 exports.getProducts = async (req, res) => {
     try {
         const { category, status, search } = req.query;
+        
+        // Get pagination parameters
+        const { page, limit, skip } = getPaginationParams(req.query);
 
         let query = {};
 
@@ -29,13 +33,27 @@ exports.getProducts = async (req, res) => {
             query.$text = { $search: search };
         }
 
-        const products = await Product.find(query).sort({ category: 1, name: 1 });
+        // Get total count
+        const total = await getCount(Product, query);
 
-        res.json({
-            success: true,
-            count: products.length,
+        // Get paginated products
+        const products = await applyPagination(
+            Product.find(query).sort({ category: 1, name: 1 }),
+            skip,
+            limit
+        );
+
+        // Return paginated response
+        const response = buildPaginatedResponse(
             products,
-        });
+            total,
+            page,
+            limit,
+            '/api/products',
+            req.query
+        );
+
+        res.json(response);
     } catch (error) {
         console.error('Get products error:', error);
         res.status(500).json({

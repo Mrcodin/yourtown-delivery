@@ -14,6 +14,7 @@ const {
 const { logEmail } = require('./emailController');
 const { generateReceipt } = require('../utils/pdfReceipt');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { getPaginationParams, buildPaginatedResponse, applyPagination, getCount } = require('../utils/pagination');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -21,6 +22,9 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 exports.getOrders = async (req, res) => {
     try {
         const { status, startDate, endDate, search, driverId, customerId } = req.query;
+        
+        // Get pagination parameters
+        const { page, limit, skip } = getPaginationParams(req.query);
 
         let query = {};
 
@@ -60,16 +64,30 @@ exports.getOrders = async (req, res) => {
             ];
         }
 
-        const orders = await Order.find(query)
-            .populate('customerId', 'name phone email')
-            .populate('delivery.driverId', 'firstName lastName phone')
-            .sort({ createdAt: -1 });
+        // Get total count for pagination
+        const total = await getCount(Order, query);
 
-        res.json({
-            success: true,
-            count: orders.length,
+        // Get paginated orders
+        const orders = await applyPagination(
+            Order.find(query)
+                .populate('customerId', 'name phone email')
+                .populate('delivery.driverId', 'firstName lastName phone')
+                .sort({ createdAt: -1 }),
+            skip,
+            limit
+        );
+
+        // Return paginated response
+        const response = buildPaginatedResponse(
             orders,
-        });
+            total,
+            page,
+            limit,
+            '/api/orders',
+            req.query
+        );
+        
+        res.json(response);
     } catch (error) {
         console.error('Get orders error:', error);
         res.status(500).json({

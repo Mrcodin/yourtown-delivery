@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const ActivityLog = require('../models/ActivityLog');
+const { getPaginationParams, buildPaginatedResponse, applyPagination, getCount } = require('../utils/pagination');
 
 // @desc    Get all customers
 // @route   GET /api/customers
@@ -8,6 +9,9 @@ const ActivityLog = require('../models/ActivityLog');
 exports.getCustomers = async (req, res) => {
     try {
         const { search, sortBy } = req.query;
+        
+        // Get pagination parameters
+        const { page, limit, skip } = getPaginationParams(req.query);
 
         let query = {};
 
@@ -24,13 +28,27 @@ exports.getCustomers = async (req, res) => {
         if (sortBy === 'orders') sortOptions = { totalOrders: -1 };
         if (sortBy === 'spent') sortOptions = { totalSpent: -1 };
 
-        const customers = await Customer.find(query).sort(sortOptions);
+        // Get total count
+        const total = await getCount(Customer, query);
 
-        res.json({
-            success: true,
-            count: customers.length,
+        // Get paginated customers
+        const customers = await applyPagination(
+            Customer.find(query).sort(sortOptions),
+            skip,
+            limit
+        );
+
+        // Return paginated response
+        const response = buildPaginatedResponse(
             customers,
-        });
+            total,
+            page,
+            limit,
+            '/api/customers',
+            req.query
+        );
+
+        res.json(response);
     } catch (error) {
         console.error('Get customers error:', error);
         res.status(500).json({

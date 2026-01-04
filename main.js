@@ -19,10 +19,13 @@ async function loadProducts() {
 
     try {
         // console.log('Loading products from API...');
-        const response = await api.getProducts({ showLoading: false }); // We handle loading manually
+        const response = await api.getProducts({ showLoading: false, limit: 500 }); // We handle loading manually
 
-        if (response.success && response.products) {
-            groceries = response.products.map(p => ({
+        if (response.success) {
+            // Handle both old format (products) and new format (data)
+            const productsList = response.data || response.products || [];
+            
+            groceries = productsList.map(p => ({
                 id: p._id,
                 name: p.name,
                 price: p.price,
