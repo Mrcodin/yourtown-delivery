@@ -1171,6 +1171,18 @@
     flex: 1;
 }
 
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
 .modal-footer {
     display: flex;
     justify-content: flex-end;
