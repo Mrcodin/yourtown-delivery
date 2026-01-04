@@ -289,7 +289,38 @@ class API {
     }
 
     async exportCustomers() {
-        window.open(`${this.baseURL}/customers/export/csv?token=${this.token}`, '_blank');
+        try {
+            const response = await fetch(`${this.baseURL}/customers/export/csv`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+
+            // Get the blob
+            const blob = await response.blob();
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Export error:', error);
+            return { success: false, message: error.message };
+        }
     }
 
     // ========== DRIVER ENDPOINTS ==========
