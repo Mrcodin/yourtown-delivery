@@ -273,9 +273,8 @@
     <script src="loading.js"></script>
     <script src="customer-auth.js"></script>
     
-    <!-- Code Splitting - Module Loader -->
-    <script src="module-loader.js"></script>
-    <script src="shop-entry.js"></script>
+    <!-- Main Shop Script -->
+    <script src="main.js"></script>
     
     <!-- Deferred Enhancement Scripts -->
     <script src="breadcrumb.js" defer></script>
@@ -283,9 +282,9 @@
     <script src="sw-register.js" defer></script>
     <script src="lazy-load.js" defer></script>
     <script src="back-to-top.js" defer></script>
-    
-    <!-- Note: wishlist.js, recently-viewed.js, frequently-bought.js, performance.js -->
-    <!-- are now loaded dynamically by shop-entry.js when needed -->
+    <script src="recently-viewed.js" defer></script>
+    <script src="frequently-bought.js" defer></script>
+    <script src="performance.js" defer></script>
     
     <script>
         // Update navigation
@@ -300,13 +299,15 @@
         }
         
         // Wait for customerAuth to load
-        const checkAuthInterval = setInterval(() => {
-            if (window.customerAuth) {
-                clearInterval(checkAuthInterval);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
                 updateCustomerNav();
                 checkEmailVerificationBanner();
-            }
-        }, 50);
+            });
+        } else {
+            updateCustomerNav();
+            checkEmailVerificationBanner();
+        }
         
         // Show email verification banner if needed
         function checkEmailVerificationBanner() {
@@ -319,16 +320,6 @@
                 banner.style.display = 'block';
             }
         }
-        
-        // Display recently viewed products (loaded dynamically now)
-        document.addEventListener('DOMContentLoaded', () => {
-            // Recently viewed is loaded by shop-entry.js
-            setTimeout(() => {
-                if (window.displayRecentlyViewed) {
-                    displayRecentlyViewed();
-                }
-            }, 1500);
-        });
     </script>
 </body>
 </html>
