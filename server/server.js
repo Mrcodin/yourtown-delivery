@@ -179,6 +179,15 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
+// Test error endpoint for Sentry testing (development only)
+if (process.env.NODE_ENV !== 'production') {
+    app.get('/api/test-error', (req, res, next) => {
+        const error = new Error('This is a test error for Sentry monitoring');
+        error.status = 500;
+        next(error);
+    });
+}
+
 // 404 handler for API routes only
 app.use('/api/*', (req, res) => {
     res.status(404).json({

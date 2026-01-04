@@ -8,6 +8,14 @@
     <!-- Sentry DSN (replace with your actual DSN) -->
     <meta name="sentry-dsn" content="https://c1bd18e53723e846cd4cecf129cb178c@o4510650599342080.ingest.us.sentry.io/4510650605961216">
     
+    <!-- Load Sentry from CDN -->
+    <script
+        src="https://browser.sentry-cdn.com/8.40.0/bundle.tracing.min.js"
+        crossorigin="anonymous"
+        onload="console.log('✅ Sentry CDN loaded')"
+        onerror="console.error('❌ Failed to load Sentry CDN')"
+    ></script>
+    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -231,51 +239,114 @@
         </div>
     </div>
     
-    <script type="module">
-        // Import Sentry (in production, this would be bundled)
-        import { initSentry, captureException, captureMessage, addBreadcrumb, trackAction } from './sentry-frontend.js';
+    <script>
+        // Wait for Sentry to load, then initialize
+        function initializeSentry() {
+            const sentryDsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+            
+            console.log('Sentry available?', typeof Sentry !== 'undefined');
+            console.log('DSN:', sentryDsn);
+            
+            if (!sentryDsn) {
+                console.error('❌ No Sentry DSN found');
+                log('⚠️ Sentry DSN not configured');
+                return;
+            }
+            
+            if (typeof Sentry === 'undefined') {
+                console.error('❌ Sentry not loaded from CDN');
+                log('⚠️ Sentry failed to load from CDN');
+                return;
+            }
+            
+            try {
+                Sentry.init({
+                    dsn: sentryDsn,
+                    environment: 'development',
+                    tracesSampleRate: 1.0,
+                    beforeSend(event) {
+                        console.log('📤 Sending error to Sentry:', event);
+                        // Remove sensitive data
+                        if (event.request && event.request.headers) {
+                            delete event.request.headers.authorization;
+                            delete event.request.headers.cookie;
+                        }
+                        return event;
+                    },
+                });
+                
+                console.log('✅ Sentry initialized successfully');
+                
+                // Update status
+                const statusEl = document.getElementById('status');
+                statusEl.className = 'status enabled';
+                statusEl.textContent = '✅ Sentry enabled and tracking errors';
+                log('✅ Sentry initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize Sentry:', error);
+                log('❌ Failed to initialize Sentry: ' + error.message);
+            }
+        }
         
-        // Initialize Sentry
-        initSentry();
-        
-        // Check if Sentry is enabled
-        const sentryDsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
-        const statusEl = document.getElementById('status');
-        
-        if (sentryDsn) {
-            statusEl.className = 'status enabled';
-            statusEl.textContent = '✅ Sentry enabled and tracking errors';
-            log('✅ Sentry initialized successfully');
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeSentry);
         } else {
-            log('⚠️ Sentry DSN not configured');
+            initializeSentry();
+        }
+        
+        // Utility function for logging
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = '<div class="log-entry">Log cleared...</div>';
         }
         
         // Make functions global
         window.testJavaScriptError = function() {
             log('Testing JavaScript error...');
-            trackAction('test-js-error');
+            Sentry.addBreadcrumb({
+                message: 'User clicked test JS error button',
+                category: 'user-action',
+            });
             throw new Error('This is a test JavaScript error from Sentry test page');
         };
         
         window.testUnhandledPromiseRejection = function() {
             log('Testing unhandled promise rejection...');
-            trackAction('test-promise-rejection');
+            Sentry.addBreadcrumb({
+                message: 'User clicked test promise rejection button',
+                category: 'user-action',
+            });
             Promise.reject(new Error('This is a test promise rejection'));
         };
         
         window.testAPIError = async function() {
             log('Testing API error...');
-            trackAction('test-api-error');
+            Sentry.addBreadcrumb({
+                message: 'User clicked test API error button',
+                category: 'user-action',
+            });
             try {
-                const response = await fetch('/api/products/nonexistent-id');
+                const response = await fetch('http://localhost:3000/api/products/nonexistent-id');
                 if (!response.ok) {
                     throw new Error(`API Error: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                captureException(error, {
-                    api: {
-                        endpoint: '/api/products/nonexistent-id',
-                        method: 'GET',
+                Sentry.captureException(error, {
+                    contexts: {
+                        api: {
+                            endpoint: '/api/products/nonexistent-id',
+                            method: 'GET',
+                        }
                     }
                 });
                 log('❌ API error captured and sent to Sentry');
@@ -284,12 +355,17 @@
         
         window.testManualException = function() {
             log('Testing manual exception capture...');
-            trackAction('test-manual-exception');
+            Sentry.addBreadcrumb({
+                message: 'User clicked test manual exception button',
+                category: 'user-action',
+            });
             const error = new Error('This is a manually captured test error');
-            captureException(error, {
-                custom: {
-                    testType: 'manual',
-                    timestamp: new Date().toISOString(),
+            Sentry.captureException(error, {
+                contexts: {
+                    custom: {
+                        testType: 'manual',
+                        timestamp: new Date().toISOString(),
+                    }
                 }
             });
             log('✅ Manual exception captured and sent to Sentry');
@@ -297,13 +373,13 @@
         
         window.testBreadcrumbs = function() {
             log('Testing breadcrumbs...');
-            addBreadcrumb('User clicked breadcrumb test button', 'user-action', { test: true });
-            addBreadcrumb('User navigated to shop page', 'navigation', { page: 'shop' });
-            addBreadcrumb('User added item to cart', 'user-action', { item: 'Test Product' });
+            Sentry.addBreadcrumb({ message: 'User clicked breadcrumb test button', category: 'user-action', data: { test: true } });
+            Sentry.addBreadcrumb({ message: 'User navigated to shop page', category: 'navigation', data: { page: 'shop' } });
+            Sentry.addBreadcrumb({ message: 'User added item to cart', category: 'user-action', data: { item: 'Test Product' } });
             
             // Now trigger an error to see breadcrumbs in context
             const error = new Error('Test error with breadcrumbs');
-            captureException(error);
+            Sentry.captureException(error);
             log('✅ Breadcrumbs added and error sent to Sentry');
         };
         
@@ -311,7 +387,7 @@
             log('Testing backend error...');
             try {
                 // This endpoint intentionally causes an error for testing
-                const response = await fetch('/api/test-error', {
+                const response = await fetch('http://localhost:3000/api/test-error', {
                     method: 'GET',
                 });
                 if (response.ok) {
@@ -327,7 +403,7 @@
         window.test404Error = async function() {
             log('Testing 404 error...');
             try {
-                const response = await fetch('/api/this-endpoint-does-not-exist');
+                const response = await fetch('http://localhost:3000/api/this-endpoint-does-not-exist');
                 log(`Response: ${response.status} - ${response.statusText}`);
             } catch (error) {
                 log('❌ Error: ' + error.message);
@@ -337,7 +413,7 @@
         window.testValidationError = async function() {
             log('Testing validation error...');
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ /* missing required fields */ })
@@ -348,22 +424,6 @@
                 log('❌ Error: ' + error.message);
             }
         };
-        
-        function log(message) {
-            const logEl = document.getElementById('log');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logEl.appendChild(entry);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-        
-        window.clearLog = function() {
-            document.getElementById('log').innerHTML = '<div class="log-entry">Log cleared...</div>';
-        };
-        
-        // Export log function for global use
-        window.log = log;
     </script>
 </body>
 </html>

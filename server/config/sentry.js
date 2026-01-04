@@ -25,6 +25,9 @@ function initSentry(app) {
         // We recommend adjusting this value in production
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         
+        // Enable debug mode in development only
+        debug: process.env.NODE_ENV !== 'production',
+        
         // No additional integrations needed - Sentry auto-instruments Node.js
         
         // Filter out sensitive data
@@ -101,7 +104,17 @@ function getTracingHandler() {
 function getErrorHandler() {
     // Custom error handler that captures errors to Sentry
     return (err, req, res, next) => {
-        if (process.env.SENTRY_DSN && (!err.statusCode || err.statusCode >= 500)) {
+        const statusCode = err.statusCode || err.status;
+        
+        console.log('Error handler called:', {
+            hasStatus: !!statusCode,
+            status: statusCode,
+            message: err.message,
+            hasDSN: !!process.env.SENTRY_DSN
+        });
+        
+        if (process.env.SENTRY_DSN && (!statusCode || statusCode >= 500)) {
+            console.log('📤 Capturing error to Sentry...');
             Sentry.captureException(err, {
                 contexts: {
                     request: {
@@ -110,6 +123,13 @@ function getErrorHandler() {
                         headers: req.headers,
                     },
                 },
+            });
+            
+            // Flush to ensure the event is sent immediately
+            Sentry.flush(2000).then(() => {
+                console.log('✅ Error sent to Sentry');
+            }).catch(e => {
+                console.error('❌ Failed to send error to Sentry:', e.message);
             });
         }
         next(err);
