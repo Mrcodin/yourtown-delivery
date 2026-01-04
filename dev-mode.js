@@ -147,4 +147,4 @@
     } else {
         console.log('📦 Production mode - service worker enabled');
     }
-
+})();
