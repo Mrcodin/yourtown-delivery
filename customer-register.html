@@ -20,6 +20,12 @@
     <link rel="stylesheet" href="form-validation.css">
     <link rel="stylesheet" href="mobile-touch.css">
     <link rel="stylesheet" href="mobile-improvements.css">
+    <link rel="stylesheet" href="card-hover.css">
+    <link rel="stylesheet" href="back-to-top.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <script src="api.js"></script>
     <script src="customer-auth.js"></script>
     <script src="loading.js"></script>
@@ -28,20 +34,41 @@
     <script src="page-config.js"></script>
 </head>
 <body>
+    <!-- ACCESSIBILITY TOOLBAR -->
+    <div class="accessibility-bar">
+        <div class="container accessibility-container">
+            <span>Accessibility:</span>
+            <button onclick="toggleLargeText()" id="text-size-btn" class="access-btn">🔤 Larger Text</button>
+            <button onclick="toggleContrast()" id="contrast-btn" class="access-btn">🌓 High Contrast</button>
+            <button onclick="speakPage()" id="speak-btn" class="access-btn">🔊 Read Aloud</button>
+        </div>
+    </div>
+
+    <!-- PHONE BAR -->
+    <div class="phone-bar">
+        <div class="container">
+            📞 <strong>Prefer to Call?</strong> 
+            <a href="tel:555-123-4567">555-123-4567</a> | 
+            Mon-Fri 8am-6pm, Sat 9am-3pm
+        </div>
+    </div>
+
     <!-- HEADER -->
-    <header class="site-header">
-        <div class="container header-content">
-            <div class="logo">
-                <a href="index.html">
-                    <span class="logo-icon">📦</span>
-                    <span class="logo-text">Hometown Delivery</span>
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛒</span>
+                <span class="logo-text">Hometown Delivery</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            <nav class="nav" id="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="shop.html" class="nav-link">Shop Groceries</a>
+                <a href="cart.html" class="nav-link">
+                    🛒 Cart (<span id="cart-count">0</span>)
                 </a>
-            </div>
-            <nav class="main-nav">
-                <a href="index.html">Home</a>
-                <a href="shop.html">Shop</a>
-                <a href="about.html">About</a>
-                <a href="customer-login.html">Login</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="customer-register.html" class="nav-link active">Register</a>
             </nav>
         </div>
     </header>
@@ -98,11 +125,55 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 Hometown Delivery. All rights reserved.</p>
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-section">
+                <h4>Hometown Delivery</h4>
+                <p>📍 Delivering happiness to your doorstep since 2020. Fresh groceries, household essentials, and more - all in one place.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="shop.html">Shop Groceries</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="customer-login.html">Login</a></li>
+                    <li><a href="customer-register.html">Register</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li>📞 <a href="tel:555-123-4567">555-123-4567</a></li>
+                    <li>📧 <a href="mailto:hello@hometown-delivery.com">hello@hometown-delivery.com</a></li>
+                    <li>🕐 Mon-Fri 8am-6pm, Sat 9am-3pm</li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>We're Safe & Reliable</h4>
+                <ul>
+                    <li>✅ Contactless delivery available</li>
+                    <li>✅ Fresh products guarantee</li>
+                    <li>✅ Secure online payment</li>
+                    <li>✅ Easy returns policy</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Hometown Delivery. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
+    <!-- Floating Call Button -->
+    <a href="tel:555-123-4567" class="floating-call-btn" title="Call us now">
+        📞
+    </a>
 
     <script>
         // Check if already logged in
@@ -272,11 +343,53 @@
             }
         }
     </style>
+    <script src="back-to-top.js" defer></script>
+    <script src="main.js" defer></script>
     <script src="form-validation.js"></script>
     <!-- Performance Scripts -->
     <script src="sw-register.js" defer></script>
     <script src="lazy-load.js" defer></script>
     <script src="performance.js" defer></script>
+    
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('show');
+        }
+
+        // Accessibility functions
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            const btn = document.getElementById('text-size-btn');
+            btn.textContent = document.body.classList.contains('large-text') ? '🔤 Normal Text' : '🔤 Larger Text';
+        }
+
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+            const btn = document.getElementById('contrast-btn');
+            btn.textContent = document.body.classList.contains('high-contrast') ? '🌓 Normal Contrast' : '🌓 High Contrast';
+        }
+
+        function speakPage() {
+            const text = document.body.innerText;
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartCountEl = document.getElementById('cart-count');
+            if (cartCountEl) {
+                cartCountEl.textContent = totalItems;
+            }
+        }
+
+        // Update cart count on load
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
     
 </body>
 </html>
