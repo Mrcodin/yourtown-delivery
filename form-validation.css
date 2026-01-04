@@ -84,17 +84,17 @@
 }
 
 .form-group.valid .validation-icon::before {
-    content: '✓';
+    content: '\2713'; /* ✓ checkmark */
     color: #10b981;
 }
 
 .form-group.invalid .validation-icon::before {
-    content: '✕';
+    content: '\2715'; /* ✕ cross */
     color: #ef4444;
 }
 
 .form-group.warning .validation-icon::before {
-    content: '⚠';
+    content: '\26A0'; /* ⚠ warning */
     color: #f59e0b;
 }
 
