@@ -1771,7 +1771,7 @@ function viewCustomerOrders(phone) {
     
     const modalHTML = `
         <div class="modal-overlay active" id="customer-orders-modal" onclick="if(event.target === this) closeCustomerOrdersModal()">
-            <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal modal-large" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header">
                     <h2>📦 Orders for ${customerName}</h2>
                     <button class="modal-close" onclick="closeCustomerOrdersModal()">×</button>
