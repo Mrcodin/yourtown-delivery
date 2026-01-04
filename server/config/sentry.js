@@ -4,7 +4,6 @@
  */
 
 const Sentry = require('@sentry/node');
-const { ProfilingIntegration } = require('@sentry/profiling-node');
 
 /**
  * Initialize Sentry error tracking
@@ -26,17 +25,7 @@ function initSentry(app) {
         // We recommend adjusting this value in production
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         
-        // Set profilesSampleRate to profile 10% of transactions
-        profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-        
-        integrations: [
-            // Enable HTTP calls tracing
-            new Sentry.Integrations.Http({ tracing: true }),
-            // Enable Express.js middleware tracing
-            new Sentry.Integrations.Express({ app }),
-            // Enable profiling
-            new ProfilingIntegration(),
-        ],
+        // No additional integrations needed - Sentry auto-instruments Node.js
         
         // Filter out sensitive data
         beforeSend(event, hint) {
@@ -92,10 +81,8 @@ function initSentry(app) {
  * Must be added BEFORE all other middleware
  */
 function getRequestHandler() {
-    if (!process.env.SENTRY_DSN) {
-        return (req, res, next) => next();
-    }
-    return Sentry.Handlers.requestHandler();
+    // Return empty middleware - Sentry v8+ doesn't need explicit handlers
+    return (req, res, next) => next();
 }
 
 /**
@@ -103,10 +90,8 @@ function getRequestHandler() {
  * Must be added BEFORE all routes
  */
 function getTracingHandler() {
-    if (!process.env.SENTRY_DSN) {
-        return (req, res, next) => next();
-    }
-    return Sentry.Handlers.tracingHandler();
+    // Return empty middleware - Sentry v8+ auto-instruments
+    return (req, res, next) => next();
 }
 
 /**
@@ -114,16 +99,21 @@ function getTracingHandler() {
  * Must be added AFTER all routes but BEFORE other error handlers
  */
 function getErrorHandler() {
-    if (!process.env.SENTRY_DSN) {
-        return (err, req, res, next) => next(err);
-    }
-    return Sentry.Handlers.errorHandler({
-        shouldHandleError(error) {
-            // Capture all errors with status >= 500
-            // Or any error without a status code
-            return !error.statusCode || error.statusCode >= 500;
-        },
-    });
+    // Custom error handler that captures errors to Sentry
+    return (err, req, res, next) => {
+        if (process.env.SENTRY_DSN && (!err.statusCode || err.statusCode >= 500)) {
+            Sentry.captureException(err, {
+                contexts: {
+                    request: {
+                        method: req.method,
+                        url: req.url,
+                        headers: req.headers,
+                    },
+                },
+            });
+        }
+        next(err);
+    };
 }
 
 /**
