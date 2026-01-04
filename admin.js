@@ -1612,10 +1612,6 @@ function renderCustomersTable() {
     const searchTerm = document.getElementById('customer-search')?.value.toLowerCase() || '';
     const sortBy = document.getElementById('customer-sort')?.value || 'recent';
 
-    console.log('Search term:', searchTerm);
-    console.log('Sort by:', sortBy);
-    console.log('Total customers before filter:', customers.length);
-
     // Filter customers based on search
     let filteredCustomers = customers.filter(customer => {
         if (!searchTerm) return true;
@@ -1657,10 +1653,6 @@ function renderCustomersTable() {
                 return getLastOrderDate(b) - getLastOrderDate(a);
         }
     });
-
-    console.log('Filtered customers:', filteredCustomers.length);
-
-    // console.log(`Rendering ${filteredCustomers.length} customers`);
 
     if (filteredCustomers.length === 0) {
         container.innerHTML = searchTerm ? `
@@ -1751,8 +1743,6 @@ function renderCustomersTable() {
 }
 
 function filterCustomers() {
-    console.log('filterCustomers called');
-    console.log('Customers array length:', customers.length);
     renderCustomersTable();
 }
 
@@ -1809,7 +1799,6 @@ function viewCustomerOrders(phone) {
                                     <td><span class="order-status ${order.status}">${formatStatus(order.status)}</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline" onclick="viewOrderReceipt('${order._id || order.id}')">📄 Receipt</button>
-                                        <button class="btn btn-sm btn-outline" onclick="closeCustomerOrdersModal(); viewOrderDetail('${order._id || order.id}')">👁️ Details</button>
                                     </td>
                                 </tr>
                             `).join('')}
