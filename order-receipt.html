@@ -194,6 +194,17 @@
             text-align: center;
             padding: 50px;
             color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .error {
+            background: #fee;
+            border: 2px solid #c33;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            color: #c33;
         }
     </style>
 </head>
@@ -210,46 +221,68 @@
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('id');
         
+        console.log('Order Receipt - Order ID:', orderId);
+        
         if (!orderId) {
+            console.error('No order ID provided in URL');
             document.getElementById('receipt').innerHTML = '<div class="loading">❌ No order ID provided</div>';
         } else {
             loadReceipt(orderId);
         }
         
         async function loadReceipt(orderId) {
+            console.log('Loading receipt for order:', orderId);
             try {
                 // API Configuration
                 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3000'
                     : 'https://yourtown-delivery.onrender.com';
                 
+                console.log('API_BASE_URL:', API_BASE_URL);
+                
                 const token = localStorage.getItem('authToken');
+                console.log('Auth token exists:', !!token);
                 
                 if (!token) {
-                    throw new Error('Not authenticated');
+                    throw new Error('Not authenticated - please log in first');
                 }
                 
-                const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+                const url = `${API_BASE_URL}/api/orders/${orderId}`;
+                console.log('Fetching order from:', url);
+                
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
+                console.log('Response status:', response.status);
+                
                 if (!response.ok) {
-                    throw new Error('Failed to load order');
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    throw new Error(`Failed to load order (${response.status}): ${errorText}`);
                 }
                 
                 const data = await response.json();
+                console.log('Order data received:', data);
                 
                 if (!data.success || !data.order) {
-                    throw new Error('Order not found');
+                    throw new Error('Order not found in response');
                 }
                 
+                console.log('Rendering receipt...');
                 renderReceipt(data.order);
             } catch (error) {
                 console.error('Error loading receipt:', error);
                 document.getElementById('receipt').innerHTML = `
-                    <div class="loading">❌ Error loading receipt: ${error.message}</div>
+                    <div class="error">
+                        <h2 style="margin-bottom: 10px;">❌ Error Loading Receipt</h2>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 15px; font-size: 14px;">
+                            <a href="admin-customers.html" style="color: #667eea; text-decoration: underline;">← Back to Customers</a>
+                        </p>
+                    </div>
                 `;
             }
         }
