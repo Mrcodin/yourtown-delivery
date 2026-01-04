@@ -265,35 +265,32 @@
         </div>
     </footer>
 
+    <!-- Critical Scripts (Load First) -->
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
-    <script src="api.js"></script>
-    <script src="customer-auth.js"></script>
-    <script src="loading.js"></script>
-    <script src="breadcrumb.js"></script>
     <script src="config.js"></script>
     <script src="page-config.js"></script>
+    <script src="api.js"></script>
+    <script src="loading.js"></script>
+    <script src="customer-auth.js"></script>
     
-    <!-- Performance Optimization Scripts -->
-    <script src="dev-mode.js"></script>
+    <!-- Code Splitting - Module Loader -->
+    <script src="module-loader.js"></script>
+    <script src="shop-entry.js"></script>
+    
+    <!-- Deferred Enhancement Scripts -->
+    <script src="breadcrumb.js" defer></script>
+    <script src="dev-mode.js" defer></script>
     <script src="sw-register.js" defer></script>
     <script src="lazy-load.js" defer></script>
-    <script src="performance.js" defer></script>
+    <script src="back-to-top.js" defer></script>
     
-    <!-- UI/UX Enhancement Scripts -->
-    <script src="wishlist.js"></script>
-    <script src="recently-viewed.js"></script>
-    <script src="frequently-bought.js"></script>
-    
-    <!-- Modular JavaScript -->
-    <script src="js/error-tracking.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/shop.js"></script>
-    <script src="js/ui-helpers.js"></script>
+    <!-- Note: wishlist.js, recently-viewed.js, frequently-bought.js, performance.js -->
+    <!-- are now loaded dynamically by shop-entry.js when needed -->
     
     <script>
         // Update navigation
         function updateCustomerNav() {
+            if (!window.customerAuth) return;
             const navSpan = document.getElementById('customer-nav');
             if (customerAuth.isLoggedIn()) {
                 navSpan.innerHTML = '<a href="customer-account.html" class="nav-link">👤 My Account</a>';
@@ -301,30 +298,37 @@
                 navSpan.innerHTML = '<a href="customer-login.html" class="nav-link">Login</a>';
             }
         }
-        updateCustomerNav();
+        
+        // Wait for customerAuth to load
+        const checkAuthInterval = setInterval(() => {
+            if (window.customerAuth) {
+                clearInterval(checkAuthInterval);
+                updateCustomerNav();
+                checkEmailVerificationBanner();
+            }
+        }, 50);
         
         // Show email verification banner if needed
         function checkEmailVerificationBanner() {
+            if (!window.customerAuth) return;
             const banner = document.getElementById('email-verification-banner');
             const isLoggedIn = customerAuth.isLoggedIn();
             const isVerified = customerAuth.isEmailVerified();
             
-            console.log('Banner check:', { isLoggedIn, isVerified, banner: !!banner });
-            
             if (banner && isLoggedIn && !isVerified) {
                 banner.style.display = 'block';
-                console.log('✅ Verification banner shown');
             }
         }
         
-        // Delay check to ensure customer data is loaded
-        setTimeout(checkEmailVerificationBanner, 100);
-        
-        // Display recently viewed products
+        // Display recently viewed products (loaded dynamically now)
         document.addEventListener('DOMContentLoaded', () => {
-            displayRecentlyViewed();
+            // Recently viewed is loaded by shop-entry.js
+            setTimeout(() => {
+                if (window.displayRecentlyViewed) {
+                    displayRecentlyViewed();
+                }
+            }, 1500);
         });
     </script>
-    <script src="back-to-top.js"></script>
 </body>
 </html>

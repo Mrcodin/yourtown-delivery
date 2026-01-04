@@ -128,6 +128,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// CDN-ready cache headers for static assets
+app.use((req, res, next) => {
+    const path = req.path;
+    
+    // CSS and JavaScript files - 30 days
+    if (path.match(/\.(css|js)$/i)) {
+        res.setHeader('Cache-Control', 'public, max-age=2592000'); // 30 days
+        res.setHeader('CDN-Cache-Control', 'public, max-age=2592000');
+    }
+    // Images - 7 days locally, 30 days on CDN
+    else if (path.match(/\.(jpg|jpeg|png|gif|svg|webp|ico)$/i)) {
+        res.setHeader('Cache-Control', 'public, max-age=604800'); // 7 days
+        res.setHeader('CDN-Cache-Control', 'public, max-age=2592000'); // 30 days
+    }
+    // Fonts - 1 year (immutable)
+    else if (path.match(/\.(woff|woff2|ttf|eot)$/i)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
+        res.setHeader('CDN-Cache-Control', 'public, max-age=31536000');
+    }
+    // HTML - No cache locally, 1 hour on CDN
+    else if (path.match(/\.html?$/i)) {
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+        res.setHeader('CDN-Cache-Control', 'public, max-age=3600'); // 1 hour
+    }
+    
+    next();
+});
+
 // Serve static files from parent directory
 app.use(express.static(path.join(__dirname, '..')));
 

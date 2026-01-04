@@ -1,0 +1,187 @@
+/* ===================================
+   WEBP SUPPORT CSS
+   Modern image format support
+   =================================== */
+
+/**
+ * WebP Background Images
+ * Use with .webp and .no-webp classes on <html>
+ */
+
+/* Hero sections with WebP backgrounds */
+.hero-section {
+    background-size: cover;
+    background-position: center;
+}
+
+/* WebP supported - use WebP images */
+.webp .hero-section {
+    background-image: url('images/hero-banner.webp');
+}
+
+/* WebP not supported - use fallback */
+.no-webp .hero-section {
+    background-image: url('images/hero-banner.jpg');
+}
+
+/* Product card backgrounds */
+.webp .product-card[data-bg-image] {
+    background-image: var(--webp-bg);
+}
+
+.no-webp .product-card[data-bg-image] {
+    background-image: var(--fallback-bg);
+}
+
+/* ===================================
+   IMAGE OPTIMIZATION UTILITIES
+   =================================== */
+
+/* Lazy loading shimmer effect for WebP images */
+img[loading="lazy"],
+picture img {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 0%,
+        #f8f8f8 50%,
+        #f0f0f0 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+img[loading="lazy"].loaded,
+picture img.loaded {
+    animation: none;
+    background: none;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Aspect ratio boxes for images */
+.aspect-ratio-box {
+    position: relative;
+    width: 100%;
+    height: 0;
+}
+
+.aspect-ratio-box.ratio-16-9 {
+    padding-bottom: 56.25%; /* 16:9 */
+}
+
+.aspect-ratio-box.ratio-4-3 {
+    padding-bottom: 75%; /* 4:3 */
+}
+
+.aspect-ratio-box.ratio-1-1 {
+    padding-bottom: 100%; /* 1:1 (square) */
+}
+
+.aspect-ratio-box > img,
+.aspect-ratio-box > picture {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Responsive images */
+picture,
+picture img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Image fade-in on load */
+.fade-in-image {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.fade-in-image.loaded {
+    opacity: 1;
+}
+
+/* ===================================
+   PRODUCT IMAGE OPTIMIZATION
+   =================================== */
+
+.product-image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* 1:1 aspect ratio */
+    overflow: hidden;
+    background: #f5f5f5;
+    border-radius: 12px;
+}
+
+.product-image-wrapper picture,
+.product-image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image-wrapper img,
+.product-card:hover .product-image-wrapper picture img {
+    transform: scale(1.05);
+}
+
+/* ===================================
+   PERFORMANCE OPTIMIZATIONS
+   =================================== */
+
+/* Prevent layout shift during image load */
+img[width][height] {
+    height: auto;
+}
+
+/* Optimize rendering for large images */
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* High quality for small images */
+.icon-image,
+.thumbnail-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Smooth for large hero images */
+.hero-image,
+.banner-image {
+    image-rendering: auto;
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+
+@media print {
+    /* Use high quality images for printing */
+    img {
+        image-rendering: auto;
+        max-width: 100% !important;
+    }
+    
+    /* Hide lazy loading placeholders */
+    img[loading="lazy"]:not(.loaded) {
+        display: none;
+    }
+}
