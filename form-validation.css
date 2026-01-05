@@ -31,22 +31,43 @@
 /* Valid state */
 .form-group.valid input,
 .form-group.valid textarea,
-.form-group.valid select {
-    border-color: #10b981;
-    background: linear-gradient(to right, #ffffff 0%, #f0fdf4 100%);
+/* Input box with checkmark inside, right-aligned */
+.form-group.valid {
+    position: relative;
 }
-
-.form-group.valid input:focus,
-.form-group.valid textarea:focus,
-.form-group.valid select:focus {
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+.form-group.valid input {
+    background: #e6fbe6;
+    border-color: var(--success);
+    padding-right: 36px;
 }
-
-/* Invalid state */
-.form-group.invalid input,
-.form-group.invalid textarea,
-.form-group.invalid select {
-    border-color: #ef4444;
+.form-group.valid .validation-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--success);
+    content: '\2713';
+    font-size: 22px;
+    pointer-events: none;
+}
+.form-group.valid .validation-message {
+    display: block;
+    color: var(--success);
+    font-weight: 600;
+    margin-top: 6px;
+    margin-left: 2px;
+    font-size: 15px;
+}
+.form-group .email-suggestion {
+    background: #e7f0fd;
+    color: #2563eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 15px;
+    border: 1px solid #dbeafe;
+    font-weight: 500;
+}
     background: linear-gradient(to right, #ffffff 0%, #fef2f2 100%);
 }
 
